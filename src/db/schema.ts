@@ -69,3 +69,28 @@ export const payment = pgTable("payment", {
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
+
+// Credits table: stores user's current credit balance and last refresh date
+export const userCredit = pgTable("user_credit", {
+	id: text("id").primaryKey(),
+	userId: text("user_id").notNull().references(() => user.id, { onDelete: 'cascade' }),
+	balance: text("balance").notNull(), // store as string for bigints, or use integer if preferred
+	lastRefresh: timestamp("last_refresh"), // last time free/monthly credits were refreshed
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Credit transaction table: records all credit changes (earn/spend/expire)
+export const creditTransaction = pgTable("credit_transaction", {
+	id: text("id").primaryKey(),
+	userId: text("user_id").notNull().references(() => user.id, { onDelete: 'cascade' }),
+	type: text("type").notNull(), // main type, e.g. REGISTER, MONTHLY_REFRESH, PURCHASE, USAGE, EXPIRE
+	reason: text("reason"), // sub reason, e.g. REGISTER, MONTHLY_REFRESH, FEATURE_USE
+  amount: text("amount").notNull(), // positive for earn, negative for spend
+	remainingAmount: text("remaining_amount"), // for FIFO consumption
+	paymentId: text("payment_id"), // associated payment order, can be null, only has value when purchasing credits
+	expirationDate: timestamp("expiration_date"), // when these credits expire
+	expirationDateProcessedAt: timestamp("expiration_date_processed_at"), // when expired credits were processed
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
