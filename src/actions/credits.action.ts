@@ -1,4 +1,7 @@
-import { CREDIT_TRANSACTION_TYPE } from '@/lib/constants';
+import {
+  CREDIT_TRANSACTION_DESCRIPTION,
+  CREDIT_TRANSACTION_TYPE,
+} from '@/lib/constants';
 import {
   addCredits,
   addMonthlyFreeCredits,
@@ -22,8 +25,9 @@ export const getCreditsAction = actionClient.action(async () => {
 // consume credits (simulate button)
 const consumeSchema = z.object({
   amount: z.number().min(1),
-  reason: z.string().optional(),
+  description: z.string().optional(),
 });
+
 export const consumeCreditsAction = actionClient
   .schema(consumeSchema)
   .action(async ({ parsedInput }) => {
@@ -33,7 +37,8 @@ export const consumeCreditsAction = actionClient
       await consumeCredits({
         userId: session.user.id,
         amount: parsedInput.amount,
-        reason: parsedInput.reason || 'SIMULATE_USE',
+        description:
+          parsedInput.description || CREDIT_TRANSACTION_DESCRIPTION.USAGE,
       });
       return { success: true };
     } catch (e) {
@@ -48,8 +53,8 @@ export const addRegisterCreditsAction = actionClient.action(async () => {
   await addCredits({
     userId: session.user.id,
     amount: 100,
-    type: CREDIT_TRANSACTION_TYPE.REGISTER,
-    reason: 'REGISTER',
+    type: CREDIT_TRANSACTION_TYPE.REGISTER_GIFT,
+    description: CREDIT_TRANSACTION_DESCRIPTION.REGISTER_GIFT,
   });
   return { success: true };
 });

@@ -1,9 +1,10 @@
 import db from '@/db';
-import { creditTransaction, payment, userCredit } from '@/db/schema';
+import { creditTransaction, userCredit } from '@/db/schema';
 import { addDays, isAfter } from 'date-fns';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, or } from 'drizzle-orm';
 import {
   CREDIT_EXPIRE_DAYS,
+  CREDIT_TRANSACTION_DESCRIPTION,
   CREDIT_TRANSACTION_TYPE,
   FREE_MONTHLY_CREDITS,
 } from './constants';
@@ -23,7 +24,7 @@ async function logCreditTransaction(params: {
   userId: string;
   type: string;
   amount: number;
-  reason: string;
+  description: string;
   paymentId?: string;
   expirationDate?: Date;
 }) {
@@ -33,7 +34,7 @@ async function logCreditTransaction(params: {
     type: params.type,
     amount: params.amount.toString(),
     remainingAmount: params.amount > 0 ? params.amount.toString() : undefined,
-    reason: params.reason,
+    description: params.description,
     paymentId: params.paymentId,
     expirationDate: params.expirationDate,
     createdAt: new Date(),
@@ -46,14 +47,14 @@ export async function addCredits({
   userId,
   amount,
   type,
-  reason,
+  description,
   paymentId,
   expireDays = CREDIT_EXPIRE_DAYS,
 }: {
   userId: string;
   amount: number;
   type: string;
-  reason: string;
+  description: string;
   paymentId?: string;
   expireDays?: number;
 }) {
@@ -88,7 +89,7 @@ export async function addCredits({
     userId,
     type,
     amount,
-    reason,
+    description,
     paymentId,
     expirationDate: addDays(new Date(), expireDays),
   });
@@ -100,13 +101,15 @@ export async function addCredits({
 export async function consumeCredits({
   userId,
   amount,
-  reason,
+  description,
 }: {
   userId: string;
   amount: number;
-  reason: string;
+  description: string;
 }) {
+  // Process expired credits first
   await processExpiredCredits(userId);
+  // Check balance
   const balance = await getUserCredits(userId);
   if (balance < amount) throw new Error('Insufficient credits');
   // FIFO consumption: consume from the earliest unexpired credits first
@@ -116,18 +119,24 @@ export async function consumeCredits({
     .where(
       and(
         eq(creditTransaction.userId, userId),
-        eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.PURCHASE)
+        or(
+          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.PURCHASE),
+          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH),
+          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.REGISTER_GIFT)
+        )
       )
     )
     .orderBy(
       asc(creditTransaction.expirationDate),
       asc(creditTransaction.createdAt)
     );
+  // Consume credits
   let left = amount;
   for (const tx of txs) {
     if (left <= 0) break;
     const remain = Number.parseInt(tx.remainingAmount || '0', 10);
     if (remain <= 0) continue;
+    // credits to consume at most in this transaction
     const consume = Math.min(remain, left);
     await db
       .update(creditTransaction)
@@ -156,7 +165,7 @@ export async function consumeCredits({
     userId,
     type: CREDIT_TRANSACTION_TYPE.USAGE,
     amount: -amount,
-    reason,
+    description,
   });
   // Refresh session if needed
   // await refreshUserSession(userId);
@@ -165,16 +174,22 @@ export async function consumeCredits({
 // Process expired credits
 export async function processExpiredCredits(userId: string) {
   const now = new Date();
+  // Get all credit transactions without type EXPIRE
   const txs = await db
     .select()
     .from(creditTransaction)
     .where(
       and(
         eq(creditTransaction.userId, userId),
-        eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.PURCHASE)
+        or(
+          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.PURCHASE),
+          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH),
+          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.REGISTER_GIFT)
+        )
       )
     );
   let expiredTotal = 0;
+  // Process expired credit transactions
   for (const tx of txs) {
     if (
       tx.expirationDate &&
@@ -202,7 +217,8 @@ export async function processExpiredCredits(userId: string) {
       .from(userCredit)
       .where(eq(userCredit.userId, userId))
       .limit(1);
-    const newBalance = (
+    const newBalance = Math.max(
+      0,
       Number.parseInt(current[0]?.balance || '0', 10) - expiredTotal
     ).toString();
     await db
@@ -214,7 +230,7 @@ export async function processExpiredCredits(userId: string) {
       userId,
       type: CREDIT_TRANSACTION_TYPE.EXPIRE,
       amount: -expiredTotal,
-      reason: 'EXPIRE',
+      description: CREDIT_TRANSACTION_DESCRIPTION.EXPIRE,
     });
   }
 }
@@ -241,7 +257,7 @@ export async function addMonthlyFreeCredits(userId: string) {
       userId,
       amount: FREE_MONTHLY_CREDITS,
       type: CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH,
-      reason: 'MONTHLY_FREE',
+      description: CREDIT_TRANSACTION_DESCRIPTION.MONTHLY_REFRESH,
     });
     await db
       .update(userCredit)
