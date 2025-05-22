@@ -84,12 +84,12 @@ export const userCredit = pgTable("user_credit", {
 export const creditTransaction = pgTable("credit_transaction", {
 	id: text("id").primaryKey(),
 	userId: text("user_id").notNull().references(() => user.id, { onDelete: 'cascade' }),
-	type: text("type").notNull(), // main type, e.g. REGISTER, MONTHLY_REFRESH, PURCHASE, USAGE, EXPIRE
-	reason: text("reason"), // sub reason, e.g. REGISTER, MONTHLY_REFRESH, FEATURE_USE
+	type: text("type").notNull(), // main type, e.g. REGISTER_GIFT, MONTHLY_REFRESH, PURCHASE, USAGE, EXPIRE
+	description: text("description"), // description, e.g. REGISTER_GIFT, MONTHLY_REFRESH, USAGE, EXPIRE
   amount: text("amount").notNull(), // positive for earn, negative for spend
 	remainingAmount: text("remaining_amount"), // for FIFO consumption
 	paymentId: text("payment_id"), // associated payment order, can be null, only has value when purchasing credits
-	expirationDate: timestamp("expiration_date"), // when these credits expire
+	expirationDate: timestamp("expiration_date"), // when these credits expire, null for no expiration
 	expirationDateProcessedAt: timestamp("expiration_date_processed_at"), // when expired credits were processed
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	updatedAt: timestamp("updated_at").notNull().defaultNow(),
