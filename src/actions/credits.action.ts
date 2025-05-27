@@ -1,10 +1,6 @@
 import {
-  CREDIT_TRANSACTION_DESCRIPTION,
-  CREDIT_TRANSACTION_TYPE,
-} from '@/lib/constants';
-import {
-  addCredits,
   addMonthlyFreeCredits,
+  addRegisterGiftCredits,
   consumeCredits,
   getUserCredits,
 } from '@/lib/credits';
@@ -20,6 +16,22 @@ export const getCreditsAction = actionClient.action(async () => {
   if (!session) return { success: false, error: 'Unauthorized' };
   const credits = await getUserCredits(session.user.id);
   return { success: true, credits };
+});
+
+// add register gift credits (for testing)
+export const addRegisterCreditsAction = actionClient.action(async () => {
+  const session = await getSession();
+  if (!session) return { success: false, error: 'Unauthorized' };
+  await addRegisterGiftCredits(session.user.id);
+  return { success: true };
+});
+
+// add monthly free credits (for testing)
+export const addMonthlyCreditsAction = actionClient.action(async () => {
+  const session = await getSession();
+  if (!session) return { success: false, error: 'Unauthorized' };
+  await addMonthlyFreeCredits(session.user.id);
+  return { success: true };
 });
 
 // consume credits (simulate button)
@@ -38,31 +50,10 @@ export const consumeCreditsAction = actionClient
         userId: session.user.id,
         amount: parsedInput.amount,
         description:
-          parsedInput.description || CREDIT_TRANSACTION_DESCRIPTION.USAGE,
+          parsedInput.description || `Consume credits: ${parsedInput.amount}`,
       });
       return { success: true };
     } catch (e) {
       return { success: false, error: (e as Error).message };
     }
   });
-
-// add register credits (for testing)
-export const addRegisterCreditsAction = actionClient.action(async () => {
-  const session = await getSession();
-  if (!session) return { success: false, error: 'Unauthorized' };
-  await addCredits({
-    userId: session.user.id,
-    amount: 100,
-    type: CREDIT_TRANSACTION_TYPE.REGISTER_GIFT,
-    description: CREDIT_TRANSACTION_DESCRIPTION.REGISTER_GIFT,
-  });
-  return { success: true };
-});
-
-// add monthly free credits (for testing)
-export const addMonthlyCreditsAction = actionClient.action(async () => {
-  const session = await getSession();
-  if (!session) return { success: false, error: 'Unauthorized' };
-  await addMonthlyFreeCredits(session.user.id);
-  return { success: true };
-});
