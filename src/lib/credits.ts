@@ -4,9 +4,9 @@ import { addDays, isAfter } from 'date-fns';
 import { and, asc, eq, or } from 'drizzle-orm';
 import {
   CREDIT_EXPIRE_DAYS,
-  CREDIT_TRANSACTION_DESCRIPTION,
   CREDIT_TRANSACTION_TYPE,
   FREE_MONTHLY_CREDITS,
+  REGISTER_GIFT_CREDITS,
 } from './constants';
 
 // Get user's current credit balance
@@ -60,7 +60,7 @@ export async function addCredits({
 }) {
   // Process expired credits first
   await processExpiredCredits(userId);
-  // Update balance
+  // Update user credit balance
   const current = await db
     .select()
     .from(userCredit)
@@ -72,7 +72,11 @@ export async function addCredits({
   if (current.length > 0) {
     await db
       .update(userCredit)
-      .set({ balance: newBalance, updatedAt: new Date() })
+      .set({
+        balance: newBalance,
+        lastRefresh: new Date(),
+        updatedAt: new Date(),
+      })
       .where(eq(userCredit.userId, userId));
   } else {
     await db.insert(userCredit).values({
@@ -84,7 +88,7 @@ export async function addCredits({
       updatedAt: new Date(),
     });
   }
-  // Write transaction record
+  // Write credit transaction record
   await logCreditTransaction({
     userId,
     type,
@@ -230,12 +234,36 @@ export async function processExpiredCredits(userId: string) {
       userId,
       type: CREDIT_TRANSACTION_TYPE.EXPIRE,
       amount: -expiredTotal,
-      description: CREDIT_TRANSACTION_DESCRIPTION.EXPIRE,
+      description: `Expire credits: ${expiredTotal}`,
     });
   }
 }
 
-// Add free monthly credits (can be called by scheduler)
+// Add register gift credits
+export async function addRegisterGiftCredits(userId: string) {
+  // Check if user has already received register gift credits
+  const record = await db
+    .select()
+    .from(creditTransaction)
+    .where(
+      and(
+        eq(creditTransaction.userId, userId),
+        eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.REGISTER_GIFT)
+      )
+    )
+    .limit(1);
+  // add register gift credits if user has not received them yet
+  if (record.length === 0) {
+    await addCredits({
+      userId,
+      amount: REGISTER_GIFT_CREDITS,
+      type: CREDIT_TRANSACTION_TYPE.REGISTER_GIFT,
+      description: `Register gift credits: ${REGISTER_GIFT_CREDITS}`,
+    });
+  }
+}
+
+// Add free monthly credits
 export async function addMonthlyFreeCredits(userId: string) {
   // Check last refresh time
   const record = await db
@@ -245,23 +273,27 @@ export async function addMonthlyFreeCredits(userId: string) {
     .limit(1);
   const now = new Date();
   let canAdd = false;
-  if (!record[0]?.lastRefresh) canAdd = true;
-  else {
+  // never added credits before
+  if (!record[0]?.lastRefresh) {
+    canAdd = true;
+  } else {
     const last = new Date(record[0].lastRefresh);
     canAdd =
       now.getMonth() !== last.getMonth() ||
       now.getFullYear() !== last.getFullYear();
   }
+  // add credits if it's a new month
   if (canAdd) {
     await addCredits({
       userId,
       amount: FREE_MONTHLY_CREDITS,
       type: CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH,
-      description: CREDIT_TRANSACTION_DESCRIPTION.MONTHLY_REFRESH,
+      description: `Free monthly credits: ${FREE_MONTHLY_CREDITS} for ${now.getFullYear()}-${now.getMonth() + 1}`,
     });
-    await db
-      .update(userCredit)
-      .set({ lastRefresh: now, updatedAt: now })
-      .where(eq(userCredit.userId, userId));
+    // update last refresh time ? addCredits has already updated it
+    // await db
+    //   .update(userCredit)
+    //   .set({ lastRefresh: now, updatedAt: now })
+    //   .where(eq(userCredit.userId, userId));
   }
 }

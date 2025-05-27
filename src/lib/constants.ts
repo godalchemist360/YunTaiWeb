@@ -3,28 +3,22 @@ export const PLACEHOLDER_IMAGE =
 
 // credit package definition (example)
 export const CREDIT_PACKAGES = [
-  { id: 'package-1', credits: 500, price: 5 },
-  { id: 'package-2', credits: 1200, price: 10 },
-  { id: 'package-3', credits: 3000, price: 20 },
+  { id: 'package-1', credits: 1000, price: 10 },
+  { id: 'package-2', credits: 2500, price: 20 },
+  { id: 'package-3', credits: 5000, price: 30 },
 ];
 
 // free monthly credits (10% of the smallest package)
 export const FREE_MONTHLY_CREDITS = 50;
+
+// register gift credits (for new user registration)
+export const REGISTER_GIFT_CREDITS = 100;
 
 // default credit expiration days
 export const CREDIT_EXPIRE_DAYS = 30;
 
 // credit transaction type
 export const CREDIT_TRANSACTION_TYPE = {
-  MONTHLY_REFRESH: 'MONTHLY_REFRESH', // credits earned by monthly refresh
-  REGISTER_GIFT: 'REGISTER_GIFT', // credits earned by register gift
-  PURCHASE: 'PURCHASE', // credits earned by purchase
-  USAGE: 'USAGE', // credits spent by usage
-  EXPIRE: 'EXPIRE', // credits expired
-};
-
-// credit transaction description
-export const CREDIT_TRANSACTION_DESCRIPTION = {
   MONTHLY_REFRESH: 'MONTHLY_REFRESH', // credits earned by monthly refresh
   REGISTER_GIFT: 'REGISTER_GIFT', // credits earned by register gift
   PURCHASE: 'PURCHASE', // credits earned by purchase
