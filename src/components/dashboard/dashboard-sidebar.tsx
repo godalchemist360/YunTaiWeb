@@ -10,8 +10,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { getSidebarLinks } from '@/config/sidebar-config';
+import { websiteConfig } from '@/config/website';
 import { LocaleLink } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
 import { Routes } from '@/routes';
@@ -31,6 +33,7 @@ export function DashboardSidebar({
   const [mounted, setMounted] = useState(false);
   const { data: session, isPending } = authClient.useSession();
   const currentUser = session?.user;
+  const { state } = useSidebar();
   // console.log('sidebar currentUser:', currentUser);
 
   const sidebarLinks = getSidebarLinks();
@@ -73,8 +76,10 @@ export function DashboardSidebar({
         {/* Only show UI components when not in loading state */}
         {!isPending && mounted && (
           <>
-            {/* show upgrade card if user is not a member */}
-            {currentUser && <UpgradeCard />}
+            {/* show upgrade card if user is not a member, and sidebar is not collapsed */}
+            {currentUser &&
+              state !== 'collapsed' &&
+              websiteConfig.features.enableUpgradeCard && <UpgradeCard />}
 
             {/* show user profile if user is logged in */}
             {currentUser && <SidebarUser user={currentUser} />}
