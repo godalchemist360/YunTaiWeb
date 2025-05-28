@@ -28,6 +28,12 @@ async function logCreditTransaction(params: {
   paymentId?: string;
   expirationDate?: Date;
 }) {
+  if (!params.userId || !params.type || !params.description) {
+    throw new Error('Invalid params');
+  }
+  if (!Number.isFinite(params.amount) || params.amount === 0) {
+    throw new Error('Amount must be positive');
+  }
   await db.insert(creditTransaction).values({
     id: crypto.randomUUID(),
     userId: params.userId,
@@ -58,6 +64,15 @@ export async function addCredits({
   paymentId?: string;
   expireDays?: number;
 }) {
+  if (!userId || !type || !description) {
+    throw new Error('Invalid params');
+  }
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('Amount must be positive');
+  }
+  if (!Number.isFinite(expireDays) || expireDays <= 0) {
+    throw new Error('expireDays must be positive');
+  }
   // Process expired credits first
   await processExpiredCredits(userId);
   // Update user credit balance
@@ -111,6 +126,12 @@ export async function consumeCredits({
   amount: number;
   description: string;
 }) {
+  if (!userId || !description) {
+    throw new Error('Invalid params');
+  }
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('Amount must be positive');
+  }
   // Process expired credits first
   await processExpiredCredits(userId);
   // Check balance
