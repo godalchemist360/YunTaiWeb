@@ -1,12 +1,12 @@
 import { randomUUID } from 'crypto';
 import { getDb } from '@/db';
 import { payment, session, user } from '@/db/schema';
-import { sendMessageToDiscord } from '@/lib/discord';
 import {
   findPlanByPlanId,
   findPlanByPriceId,
   findPriceInPlan,
 } from '@/lib/price-plan';
+import { sendNotification } from '@/notification/notification';
 import { desc, eq } from 'drizzle-orm';
 import { Stripe } from 'stripe';
 import {
@@ -626,9 +626,9 @@ export class StripeProvider implements PaymentProvider {
       `<< Created one-time payment record for user ${userId}, price: ${priceId}`
     );
 
-    // Send message to Discord channel
+    // Send notification
     const amount = session.amount_total ? session.amount_total / 100 : 0;
-    await sendMessageToDiscord(session.id, customerId, userId, amount);
+    await sendNotification(session.id, customerId, userId, amount);
   }
 
   /**
