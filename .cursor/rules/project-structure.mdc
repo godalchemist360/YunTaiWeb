@@ -19,6 +19,7 @@ alwaysApply: false
 - `src/payment/`: Payment integration
 - `src/analytics/`: Analytics and tracking
 - `src/storage/`: File storage integration
+- `src/notification/`: Sending Notifications
 
 ## Configuration Files
 - `next.config.ts`: Next.js configuration
