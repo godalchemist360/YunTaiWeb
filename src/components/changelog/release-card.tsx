@@ -3,13 +3,14 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import type { changelogSource } from '@/lib/docs/source';
 import { formatDate } from '@/lib/formatter';
+import type { InferPageType } from 'fumadocs-core/source';
 import { CalendarIcon, TagIcon } from 'lucide-react';
 import { getMDXComponents } from '../custom/mdx-components';
 
-type ChangelogPage = ReturnType<typeof changelogSource.getPages>[number];
+type ChangelogRelease = InferPageType<typeof changelogSource>;
 
 interface ReleaseCardProps {
-  releaseItem: ChangelogPage;
+  releaseItem: ChangelogRelease;
 }
 
 export function ReleaseCard({ releaseItem }: ReleaseCardProps) {

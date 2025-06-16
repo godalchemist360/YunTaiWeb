@@ -42,3 +42,17 @@ export const changelog = defineCollections({
     published: z.boolean().default(true),
   }),
 });
+
+/**
+ * Pages
+ */
+export const pages = defineCollections({
+  type: 'doc',
+  dir: 'content/pages',
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    date: z.string().datetime(),
+    published: z.boolean().default(true),
+  }),
+});

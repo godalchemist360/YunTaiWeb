@@ -1,5 +1,5 @@
+import { ReleaseCard } from '@/components/changelog/release-card';
 import Container from '@/components/layout/container';
-import { ReleaseCard } from '@/components/release/release-card';
 import { changelogSource } from '@/lib/docs/source';
 import { constructMetadata } from '@/lib/metadata';
 import { getUrlWithLocale } from '@/lib/urls/urls';

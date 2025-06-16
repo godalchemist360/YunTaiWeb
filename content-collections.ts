@@ -200,42 +200,42 @@ export const posts = defineCollection({
  * slug: /pages/privacy-policy
  * slugAsParams: privacy-policy
  */
-export const pages = defineCollection({
-  name: 'page',
-  directory: 'content/pages',
-  include: '**/*.mdx',
-  schema: (z) => ({
-    title: z.string(),
-    description: z.string(),
-    date: z.string().datetime(),
-    published: z.boolean().default(true),
-  }),
-  transform: async (data, context) => {
-    // Use Fumadocs transformMDX for consistent MDX processing
-    const transformedData = await transformMDX(data, context);
+// export const pages = defineCollection({
+//   name: 'page',
+//   directory: 'content/pages',
+//   include: '**/*.mdx',
+//   schema: (z) => ({
+//     title: z.string(),
+//     description: z.string(),
+//     date: z.string().datetime(),
+//     published: z.boolean().default(true),
+//   }),
+//   transform: async (data, context) => {
+//     // Use Fumadocs transformMDX for consistent MDX processing
+//     const transformedData = await transformMDX(data, context);
 
-    // Get the filename from the path
-    const filePath = data._meta.path;
-    const fileName = filePath.split(path.sep).pop() || '';
+//     // Get the filename from the path
+//     const filePath = data._meta.path;
+//     const fileName = filePath.split(path.sep).pop() || '';
 
-    // Extract locale and base from filename
-    const { locale, base } = extractLocaleAndBase(fileName);
-    // console.log(`page processed: ${fileName}, base=${base}, locale=${locale}`);
+//     // Extract locale and base from filename
+//     const { locale, base } = extractLocaleAndBase(fileName);
+//     // console.log(`page processed: ${fileName}, base=${base}, locale=${locale}`);
 
-    // Create the slug and slugAsParams
-    const slug = `/pages/${base}`;
-    const slugAsParams = base;
+//     // Create the slug and slugAsParams
+//     const slug = `/pages/${base}`;
+//     const slugAsParams = base;
 
-    return {
-      ...data,
-      locale,
-      slug,
-      slugAsParams,
-      body: transformedData.body,
-      toc: transformedData.toc,
-    };
-  },
-});
+//     return {
+//       ...data,
+//       locale,
+//       slug,
+//       slugAsParams,
+//       body: transformedData.body,
+//       toc: transformedData.toc,
+//     };
+//   },
+// });
 
 /**
  * Releases collection for changelog

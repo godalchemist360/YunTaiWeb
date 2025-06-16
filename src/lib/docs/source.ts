@@ -2,7 +2,7 @@ import { loader } from 'fumadocs-core/source';
 import { createMDXSource } from 'fumadocs-mdx';
 import * as LucideIcons from 'lucide-react';
 import { createElement } from 'react';
-import { changelog, docs } from '../../../.source';
+import { changelog, docs, pages } from '../../../.source';
 import { docsI18nConfig } from './i18n';
 
 /**
@@ -38,4 +38,13 @@ export const changelogSource = loader({
   baseUrl: '/changelog',
   i18n: docsI18nConfig,
   source: createMDXSource(changelog),
+});
+
+/**
+ * Pages source
+ */
+export const pagesSource = loader({
+  baseUrl: '/pages',
+  i18n: docsI18nConfig,
+  source: createMDXSource(pages),
 });

@@ -1,22 +1,20 @@
-import { CustomMDXContent } from '@/components/shared/custom-mdx-content';
+import type { pagesSource } from '@/lib/docs/source';
 import { formatDate } from '@/lib/formatter';
+import type { InferPageType } from 'fumadocs-core/source';
 import { CalendarIcon } from 'lucide-react';
+import { getMDXComponents } from '../custom/mdx-components';
 import { Card, CardContent } from '../ui/card';
 
+type Page = InferPageType<typeof pagesSource>;
+
 interface CustomPageProps {
-  title: string;
-  description: string;
-  date: string;
-  content: any; // MDX content
+  page: Page;
 }
 
-export function CustomPage({
-  title,
-  description,
-  date,
-  content,
-}: CustomPageProps) {
+export function CustomPage({ page }: CustomPageProps) {
+  const { title, description, date } = page.data;
   const formattedDate = formatDate(new Date(date));
+  const MDX = page.data.body;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -38,7 +36,7 @@ export function CustomPage({
       <Card className="mb-8">
         <CardContent>
           <div className="max-w-none prose prose-neutral dark:prose-invert prose-img:rounded-lg">
-            <CustomMDXContent code={content} />
+            <MDX components={getMDXComponents()} />
           </div>
         </CardContent>
       </Card>
