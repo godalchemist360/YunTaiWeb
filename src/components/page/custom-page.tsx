@@ -1,14 +1,11 @@
-import type { pagesSource } from '@/lib/docs/source';
+import type { PagesType } from '@/lib/docs/source';
 import { formatDate } from '@/lib/formatter';
-import type { InferPageType } from 'fumadocs-core/source';
 import { CalendarIcon } from 'lucide-react';
 import { getMDXComponents } from '../custom/mdx-components';
 import { Card, CardContent } from '../ui/card';
 
-type Page = InferPageType<typeof pagesSource>;
-
 interface CustomPageProps {
-  page: Page;
+  page: PagesType;
 }
 
 export function CustomPage({ page }: CustomPageProps) {

@@ -6,25 +6,21 @@ import {
 } from 'fumadocs-mdx/config';
 import { z } from 'zod';
 
-const customDocsSchema = frontmatterSchema.extend({
-  preview: z.string().optional(),
-  index: z.boolean().default(false),
-});
-
-const customMetaSchema = metaSchema.extend({
-  description: z.string().optional(),
-});
-
 /**
  * https://fumadocs.dev/docs/mdx/collections#schema-1
  */
 export const docs = defineDocs({
   dir: 'content/docs',
   docs: {
-    schema: customDocsSchema,
+    schema: frontmatterSchema.extend({
+      preview: z.string().optional(),
+      index: z.boolean().default(false),
+    }),
   },
   meta: {
-    schema: customMetaSchema,
+    schema: metaSchema.extend({
+      description: z.string().optional(),
+    }),
   },
 });
 
@@ -34,25 +30,61 @@ export const docs = defineDocs({
 export const changelog = defineCollections({
   type: 'doc',
   dir: 'content/changelog',
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    date: z.string().datetime(),
+  schema: frontmatterSchema.extend({
     version: z.string(),
+    date: z.string().date(),
     published: z.boolean().default(true),
   }),
 });
 
 /**
- * Pages
+ * Pages, like privacy policy, terms of service, etc.
  */
 export const pages = defineCollections({
   type: 'doc',
   dir: 'content/pages',
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    date: z.string().datetime(),
+  schema: frontmatterSchema.extend({
+    date: z.string().date(),
     published: z.boolean().default(true),
+  }),
+});
+
+/**
+ * Blog authors
+ *
+ * description is optional, but we must add it to the schema
+ */
+export const author = defineCollections({
+  type: 'doc',
+  dir: 'content/author',
+  schema: frontmatterSchema.extend({
+    name: z.string(),
+    avatar: z.string(),
+  }),
+});
+
+/**
+ * Blog categories
+ */
+export const category = defineCollections({
+  type: 'doc',
+  dir: 'content/category',
+  schema: frontmatterSchema.extend({
+    name: z.string(),
+  }),
+});
+
+/**
+ * Blog posts
+ */
+export const blog = defineCollections({
+  type: 'doc',
+  dir: 'content/blog',
+  schema: frontmatterSchema.extend({
+    image: z.string(),
+    date: z.string().date(),
+    published: z.boolean().default(true),
+    categories: z.array(z.string()),
+    author: z.string(),
   }),
 });

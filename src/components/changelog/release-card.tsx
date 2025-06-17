@@ -1,22 +1,19 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import type { changelogSource } from '@/lib/docs/source';
+import type { ChangelogType } from '@/lib/docs/source';
 import { formatDate } from '@/lib/formatter';
-import type { InferPageType } from 'fumadocs-core/source';
 import { CalendarIcon, TagIcon } from 'lucide-react';
 import { getMDXComponents } from '../custom/mdx-components';
 
-type ChangelogRelease = InferPageType<typeof changelogSource>;
-
 interface ReleaseCardProps {
-  releaseItem: ChangelogRelease;
+  releaseItem: ChangelogType;
 }
 
 export function ReleaseCard({ releaseItem }: ReleaseCardProps) {
   const { title, description, date, version } = releaseItem.data;
-  const MDX = releaseItem.data.body;
   const formattedDate = formatDate(new Date(date));
+  const MDX = releaseItem.data.body;
 
   return (
     <Card className="mb-8">

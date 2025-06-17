@@ -30,7 +30,7 @@ alwaysApply: false
 
 ## Content Management
 - `content/`: MDX content files
-- `content-collections.ts`: Content collection configuration
+- `source.config.ts`: Fumadocs source configuration
 
 ## Environment
 - `env.example`: Environment variables template
