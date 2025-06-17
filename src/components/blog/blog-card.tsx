@@ -18,12 +18,8 @@ export default function BlogCard({ locale, post }: BlogCardProps) {
     .getPages(locale)
     .filter((category) => categories.includes(category.slugs[0] ?? ''));
 
-  // Extract the slug parts for the Link component
-  const slugParts = post.slugs[0].split('/');
-  // console.log('BlogCard, slugParts', slugParts);
-
   return (
-    <LocaleLink href={`/blog/${slugParts.join('/')}`} className="block h-full">
+    <LocaleLink href={`/blog/${post.slugs}`} className="block h-full">
       <div className="group flex flex-col border rounded-lg overflow-hidden h-full">
         {/* Image container - fixed aspect ratio */}
         <div className="group overflow-hidden relative aspect-16/9 w-full">

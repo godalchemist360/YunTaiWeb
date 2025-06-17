@@ -90,14 +90,11 @@ export const category = defineCollections({
 export const blog = defineCollections({
   type: 'doc',
   dir: 'content/blog',
-  schema: (ctx) => {
-    // console.log('ctx', ctx); // {source, path}
-    return frontmatterSchema.extend({
-      image: z.string(),
-      date: z.string().date(),
-      published: z.boolean().default(true),
-      categories: z.array(z.string()),
-      author: z.string(),
-    });
-  },
+  schema: frontmatterSchema.extend({
+    image: z.string(),
+    date: z.string().date(),
+    published: z.boolean().default(true),
+    categories: z.array(z.string()),
+    author: z.string(),
+  }),
 });
