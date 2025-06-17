@@ -26,6 +26,8 @@ export const docs = defineDocs({
 
 /**
  * Changelog
+ *
+ * title is required, but description is optional in frontmatter
  */
 export const changelog = defineCollections({
   type: 'doc',
@@ -39,6 +41,8 @@ export const changelog = defineCollections({
 
 /**
  * Pages, like privacy policy, terms of service, etc.
+ *
+ * title is required, but description is optional in frontmatter
  */
 export const pages = defineCollections({
   type: 'doc',
@@ -52,39 +56,48 @@ export const pages = defineCollections({
 /**
  * Blog authors
  *
- * description is optional, but we must add it to the schema
+ * description is optional in frontmatter, but we must add it to the schema
  */
 export const author = defineCollections({
   type: 'doc',
   dir: 'content/author',
-  schema: frontmatterSchema.extend({
+  schema: z.object({
     name: z.string(),
     avatar: z.string(),
+    description: z.string().optional(),
   }),
 });
 
 /**
  * Blog categories
+ *
+ * description is optional in frontmatter, but we must add it to the schema
  */
 export const category = defineCollections({
   type: 'doc',
   dir: 'content/category',
-  schema: frontmatterSchema.extend({
+  schema: z.object({
     name: z.string(),
+    description: z.string().optional(),
   }),
 });
 
 /**
  * Blog posts
+ *
+ * dtitle is required, but description is optional in frontmatter
  */
 export const blog = defineCollections({
   type: 'doc',
   dir: 'content/blog',
-  schema: frontmatterSchema.extend({
-    image: z.string(),
-    date: z.string().date(),
-    published: z.boolean().default(true),
-    categories: z.array(z.string()),
-    author: z.string(),
-  }),
+  schema: (ctx) => {
+    // console.log('ctx', ctx); // {source, path}
+    return frontmatterSchema.extend({
+      image: z.string(),
+      date: z.string().date(),
+      published: z.boolean().default(true),
+      categories: z.array(z.string()),
+      author: z.string(),
+    });
+  },
 });
