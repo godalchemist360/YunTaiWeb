@@ -20,7 +20,8 @@
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "knip": "knip"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.1.13",
@@ -136,16 +137,17 @@
     "@content-collections/cli": "^0.1.6",
     "@tailwindcss/postcss": "^4.0.14",
     "@types/mdx": "^2.0.13",
-    "@types/node": "^20",
+    "@types/node": "^20.19.0",
     "@types/pg": "^8.11.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "concurrently": "^9.1.2",
     "drizzle-kit": "^0.30.4",
+    "knip": "^5.61.2",
     "postcss": "^8",
     "react-email": "3.0.7",
     "tailwindcss": "^4.0.14",
     "tsx": "^4.19.3",
-    "typescript": "^5"
+    "typescript": "^5.8.3"
   }
 }
