@@ -9,6 +9,9 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json pnpm-lock.yaml* ./
+# Copy config files needed for fumadocs-mdx postinstall
+COPY source.config.ts ./
+COPY content ./content
 RUN npm install -g pnpm && pnpm i --frozen-lockfile
 
 # Rebuild the source code only when needed
@@ -29,7 +32,7 @@ RUN npm install -g pnpm \
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
@@ -51,8 +54,8 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
