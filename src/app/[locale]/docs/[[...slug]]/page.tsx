@@ -6,8 +6,8 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { LOCALES } from '@/i18n/routing';
-import { source } from '@/lib/docs/source';
 import { constructMetadata } from '@/lib/metadata';
+import { source } from '@/lib/source';
 import { getUrlWithLocale } from '@/lib/urls/urls';
 import Link from 'fumadocs-core/link';
 import {

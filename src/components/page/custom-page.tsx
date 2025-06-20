@@ -1,5 +1,5 @@
-import type { PagesType } from '@/lib/docs/source';
 import { formatDate } from '@/lib/formatter';
+import type { PagesType } from '@/lib/source';
 import { CalendarIcon } from 'lucide-react';
 import { getMDXComponents } from '../custom/mdx-components';
 import { Card, CardContent } from '../ui/card';
