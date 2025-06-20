@@ -1,5 +1,5 @@
-import { getMDXComponents } from '@/components/custom/mdx-components';
 import * as Preview from '@/components/docs';
+import { getMDXComponents } from '@/components/docs/mdx-components';
 import {
   HoverCard,
   HoverCardContent,

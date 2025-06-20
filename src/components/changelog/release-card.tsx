@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { formatDate } from '@/lib/formatter';
 import type { ChangelogType } from '@/lib/source';
 import { CalendarIcon, TagIcon } from 'lucide-react';
-import { getMDXComponents } from '../custom/mdx-components';
+import { getMDXComponents } from '../docs/mdx-components';
 
 interface ReleaseCardProps {
   releaseItem: ChangelogType;
