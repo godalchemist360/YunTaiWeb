@@ -1,24 +1,28 @@
 import { BlogCategoryFilter } from '@/components/blog/blog-category-filter';
 import Container from '@/components/layout/container';
-import type { NextPageProps } from '@/types/next-page-props';
-import { allCategories } from 'content-collections';
+import { categorySource } from '@/lib/source';
 import { getTranslations } from 'next-intl/server';
 import type { PropsWithChildren } from 'react';
 
-interface BlogListLayoutProps extends PropsWithChildren, NextPageProps {}
+interface BlogListLayoutProps extends PropsWithChildren {
+  params: Promise<{ locale: string }>;
+}
 
 export default async function BlogListLayout({
   children,
   params,
 }: BlogListLayoutProps) {
-  const resolvedParams = await params;
-  const { locale } = resolvedParams;
+  const { locale } = await params;
   const t = await getTranslations('BlogPage');
 
   // Filter categories by locale
-  const categoryList = allCategories.filter(
-    (category) => category.locale === locale
-  );
+  const language = locale as string;
+  const categoryList = categorySource.getPages(language).map((category) => ({
+    slug: category.slugs[0],
+    name: category.data.name,
+    description: category.data.description || '',
+  }));
+  // console.log('categoryList', categoryList);
 
   return (
     <div className="mb-16">

@@ -1,13 +1,13 @@
 import * as Preview from '@/components/docs';
-import { CustomMDXContent } from '@/components/shared/custom-mdx-content';
+import { getMDXComponents } from '@/components/docs/mdx-components';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { LOCALES } from '@/i18n/routing';
-import { source } from '@/lib/docs/source';
 import { constructMetadata } from '@/lib/metadata';
+import { source } from '@/lib/source';
 import { getUrlWithLocale } from '@/lib/urls/urls';
 import Link from 'fumadocs-core/link';
 import {
@@ -87,6 +87,8 @@ export default async function DocPage({ params }: DocPageProps) {
 
   const preview = page.data.preview;
 
+  const MDX = page.data.body;
+
   return (
     <DocsPage
       toc={page.data.toc}
@@ -102,9 +104,8 @@ export default async function DocPage({ params }: DocPageProps) {
         {preview ? <PreviewRenderer preview={preview} /> : null}
 
         {/* MDX Content */}
-        <CustomMDXContent
-          code={page.data.body}
-          customComponents={{
+        <MDX
+          components={getMDXComponents({
             a: ({ href, ...props }: { href?: string; [key: string]: any }) => {
               const found = source.getPageByHref(href ?? '', {
                 dir: page.file.dirname,
@@ -133,7 +134,7 @@ export default async function DocPage({ params }: DocPageProps) {
                 </HoverCard>
               );
             },
-          }}
+          })}
         />
       </DocsBody>
     </DocsPage>

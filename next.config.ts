@@ -1,4 +1,4 @@
-import { withContentCollections } from '@content-collections/next';
+import { createMDX } from 'fumadocs-mdx/next';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
@@ -6,13 +6,16 @@ import createNextIntlPlugin from 'next-intl/plugin';
  * https://nextjs.org/docs/app/api-reference/config/next-config-js
  */
 const nextConfig: NextConfig = {
+  // Docker standalone output
+  ...(process.env.DOCKER_BUILD === 'true' && { output: 'standalone' }),
+
   /* config options here */
   devIndicators: false,
 
   // https://nextjs.org/docs/architecture/nextjs-compiler#remove-console
   // Remove all console.* calls in production only
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    // removeConsole: process.env.NODE_ENV === 'production',
   },
 
   images: {
@@ -41,6 +44,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'ik.imagekit.io',
       },
+      {
+        protocol: 'https',
+        hostname: 'html.tailus.io',
+      },
     ],
   },
 };
@@ -53,8 +60,9 @@ const nextConfig: NextConfig = {
 const withNextIntl = createNextIntlPlugin();
 
 /**
- * withContentCollections must be the outermost plugin
- *
- * https://www.content-collections.dev/docs/quickstart/next
+ * https://fumadocs.dev/docs/ui/manual-installation
+ * https://fumadocs.dev/docs/mdx/plugin
  */
-export default withContentCollections(withNextIntl(nextConfig));
+const withMDX = createMDX();
+
+export default withMDX(withNextIntl(nextConfig));
