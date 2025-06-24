@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { PricePlan } from '@/payment/types';
 
 /**
  * website config, without translations
