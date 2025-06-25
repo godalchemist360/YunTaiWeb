@@ -70,6 +70,7 @@ export interface FeaturesConfig {
   enableUpgradeCard?: boolean;        // Whether to enable the upgrade card in the sidebar
   enableAffonsoAffiliate?: boolean;   // Whether to enable affonso affiliate
   enablePromotekitAffiliate?: boolean;   // Whether to enable promotekit affiliate
+  enableDatafastRevenueTrack?: boolean;   // Whether to enable datafast revenue tracking
 }
 
 /**

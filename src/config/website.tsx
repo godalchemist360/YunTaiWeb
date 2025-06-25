@@ -37,6 +37,7 @@ export const websiteConfig: WebsiteConfig = {
     enableUpgradeCard: true,
     enableAffonsoAffiliate: false,
     enablePromotekitAffiliate: false,
+    enableDatafastRevenueTrack: false,
   },
   routes: {
     defaultLoginRedirect: '/dashboard',
