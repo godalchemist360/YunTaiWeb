@@ -75,8 +75,9 @@ export function ImagePlayground({
   };
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen rounded-lg bg-background py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        {/* input prompt */}
         <PromptInput
           onSubmit={handlePromptSubmit}
           isLoading={isLoading}
@@ -86,6 +87,8 @@ export function ImagePlayground({
           onModeChange={handleModeChange}
           suggestions={suggestions}
         />
+
+        {/* models carousel */}
         {(() => {
           const getModelProps = () =>
             (Object.keys(PROVIDERS) as ProviderKey[]).map((key) => {
@@ -125,7 +128,7 @@ export function ImagePlayground({
                 ))}
               </div>
               {activePrompt && activePrompt.length > 0 && (
-                <div className="text-center mt-4 text-muted-foreground">
+                <div className="text-center mt-8 text-muted-foreground">
                   {activePrompt}
                 </div>
               )}
