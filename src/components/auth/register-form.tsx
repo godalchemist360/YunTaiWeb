@@ -16,14 +16,16 @@ import { Input } from '@/components/ui/input';
 import { websiteConfig } from '@/config/website';
 import { authClient } from '@/lib/auth-client';
 import { getUrlWithLocaleInCallbackUrl } from '@/lib/urls/urls';
+import { validateTurnstileToken } from '@/lib/validate-captcha';
 import { DEFAULT_LOGIN_REDIRECT, Routes } from '@/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import * as z from 'zod';
+import { Captcha } from '../shared/captcha';
 import { SocialLoginButton } from './social-login-button';
 
 interface RegisterFormProps {
@@ -50,6 +52,12 @@ export const RegisterForm = ({
   const [isPending, setIsPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // turnstile captcha schema
+  const turnstileEnabled = websiteConfig.features.enableTurnstileCaptcha;
+  const captchaSchema = turnstileEnabled
+    ? z.string().min(1, 'Please complete the captcha')
+    : z.string().optional();
+
   const RegisterSchema = z.object({
     email: z.string().email({
       message: t('emailRequired'),
@@ -60,6 +68,7 @@ export const RegisterForm = ({
     name: z.string().min(1, {
       message: t('nameRequired'),
     }),
+    captchaToken: captchaSchema,
   });
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
@@ -68,10 +77,34 @@ export const RegisterForm = ({
       email: '',
       password: '',
       name: '',
+      captchaToken: '',
     },
   });
 
+  const captchaToken = useWatch({
+    control: form.control,
+    name: 'captchaToken',
+  });
+
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
+    // Validate captcha token if turnstile is enabled
+    if (turnstileEnabled && values.captchaToken) {
+      try {
+        const isCaptchaValid = await validateTurnstileToken(
+          values.captchaToken
+        );
+        if (!isCaptchaValid) {
+          console.log('register, captcha invalid:', values.captchaToken);
+          setError(t('captchaInvalid') || 'Captcha verification failed');
+          return;
+        }
+      } catch (error) {
+        console.error('register, captcha validation error:', error);
+        setError(t('captchaError') || 'Captcha verification error');
+        return;
+      }
+    }
+
     // 1. if requireEmailVerification is true, callbackURL will be used in the verification email,
     // the user will be redirected to the callbackURL after the email is verified.
     // 2. if requireEmailVerification is false, the user will not be redirected to the callbackURL,
@@ -200,8 +233,12 @@ export const RegisterForm = ({
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
+          <Captcha
+            onSuccess={(token) => form.setValue('captchaToken', token)}
+            validationError={form.formState.errors.captchaToken?.message}
+          />
           <Button
-            disabled={isPending}
+            disabled={isPending || (turnstileEnabled && !captchaToken)}
             size="lg"
             type="submit"
             className="cursor-pointer w-full flex items-center justify-center gap-2"

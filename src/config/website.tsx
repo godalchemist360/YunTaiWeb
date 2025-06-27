@@ -38,6 +38,7 @@ export const websiteConfig: WebsiteConfig = {
     enableAffonsoAffiliate: false,
     enablePromotekitAffiliate: false,
     enableDatafastRevenueTrack: false,
+    enableTurnstileCaptcha: true,
   },
   routes: {
     defaultLoginRedirect: '/dashboard',

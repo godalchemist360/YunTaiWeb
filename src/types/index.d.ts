@@ -71,6 +71,7 @@ export interface FeaturesConfig {
   enableAffonsoAffiliate?: boolean;   // Whether to enable affonso affiliate
   enablePromotekitAffiliate?: boolean;   // Whether to enable promotekit affiliate
   enableDatafastRevenueTrack?: boolean;   // Whether to enable datafast revenue tracking
+  enableTurnstileCaptcha?: boolean;   // Whether to enable turnstile captcha
 }
 
 /**
