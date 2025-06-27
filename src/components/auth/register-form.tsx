@@ -15,8 +15,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { websiteConfig } from '@/config/website';
 import { authClient } from '@/lib/auth-client';
+import { isTurnstileEnabled, validateTurnstileToken } from '@/lib/captcha';
 import { getUrlWithLocaleInCallbackUrl } from '@/lib/urls/urls';
-import { validateTurnstileToken } from '@/lib/validate-captcha';
 import { DEFAULT_LOGIN_REDIRECT, Routes } from '@/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react';
@@ -53,7 +53,7 @@ export const RegisterForm = ({
   const [showPassword, setShowPassword] = useState(false);
 
   // turnstile captcha schema
-  const turnstileEnabled = websiteConfig.features.enableTurnstileCaptcha;
+  const turnstileEnabled = isTurnstileEnabled();
   const captchaSchema = turnstileEnabled
     ? z.string().min(1, 'Please complete the captcha')
     : z.string().optional();

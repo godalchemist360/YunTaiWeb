@@ -1,4 +1,9 @@
-import { websiteConfig } from '@/config/website';
+export function isTurnstileEnabled() {
+  return (
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY !== '' &&
+    process.env.TURNSTILE_SECRET_KEY !== ''
+  );
+}
 
 interface TurnstileResponse {
   success: boolean;
@@ -9,8 +14,8 @@ interface TurnstileResponse {
  * https://developers.cloudflare.com/turnstile/get-started/server-side-validation/
  */
 export async function validateTurnstileToken(token: string) {
-  const isTurnstileEnabled = websiteConfig.features.enableTurnstileCaptcha;
-  if (!isTurnstileEnabled) {
+  const turnstileEnabled = isTurnstileEnabled();
+  if (!turnstileEnabled) {
     console.log('validateTurnstileToken, turnstile is disabled');
     return true;
   }

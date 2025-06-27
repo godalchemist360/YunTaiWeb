@@ -1,7 +1,7 @@
 'use client';
 
 import { FormMessage } from '@/components/ui/form';
-import { websiteConfig } from '@/config/website';
+import { isTurnstileEnabled } from '@/lib/captcha';
 import { useLocale } from 'next-intl';
 import { useTheme } from 'next-themes';
 import dynamic from 'next/dynamic';
@@ -22,11 +22,11 @@ type Props = Omit<ComponentProps<typeof Turnstile>, 'siteKey'> & {
  * Captcha component for Cloudflare Turnstile
  */
 export const Captcha = ({ validationError, ...props }: Props) => {
-  const isTurnstileEnabled = websiteConfig.features.enableTurnstileCaptcha;
+  const turnstileEnabled = isTurnstileEnabled();
   const theme = useTheme();
   const locale = useLocale();
 
-  return isTurnstileEnabled ? (
+  return turnstileEnabled ? (
     <>
       <Turnstile
         options={{
