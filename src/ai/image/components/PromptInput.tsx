@@ -3,7 +3,6 @@ import { cn } from '@/lib/utils';
 import { ArrowUp, ArrowUpRight, Loader2, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { type Suggestion, getRandomSuggestions } from '../lib/suggestions';
-import { Spinner } from './spinner';
 
 type QualityMode = 'performance' | 'quality';
 
