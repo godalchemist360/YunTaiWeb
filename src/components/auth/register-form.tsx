@@ -1,5 +1,6 @@
 'use client';
 
+import { validateCaptchaAction } from '@/actions/validate-captcha';
 import { AuthCard } from '@/components/auth/auth-card';
 import { FormError } from '@/components/shared/form-error';
 import { FormSuccess } from '@/components/shared/form-success';
@@ -15,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { websiteConfig } from '@/config/website';
 import { authClient } from '@/lib/auth-client';
-import { isTurnstileEnabled, validateTurnstileToken } from '@/lib/captcha';
+import { isTurnstileEnabled } from '@/lib/captcha';
 import { getUrlWithLocaleInCallbackUrl } from '@/lib/urls/urls';
 import { DEFAULT_LOGIN_REDIRECT, Routes } from '@/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -89,18 +90,14 @@ export const RegisterForm = ({
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
     // Validate captcha token if turnstile is enabled
     if (turnstileEnabled && values.captchaToken) {
-      try {
-        const isCaptchaValid = await validateTurnstileToken(
-          values.captchaToken
-        );
-        if (!isCaptchaValid) {
-          console.log('register, captcha invalid:', values.captchaToken);
-          setError(t('captchaInvalid') || 'Captcha verification failed');
-          return;
-        }
-      } catch (error) {
-        console.error('register, captcha validation error:', error);
-        setError(t('captchaError') || 'Captcha verification error');
+      const captchaResult = await validateCaptchaAction({
+        captchaToken: values.captchaToken,
+      });
+
+      if (!captchaResult?.data?.success || !captchaResult?.data?.valid) {
+        console.error('register, captcha invalid:', values.captchaToken);
+        const errorMessage = captchaResult?.data?.error || t('captchaInvalid');
+        setError(errorMessage);
         return;
       }
     }
