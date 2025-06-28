@@ -11,6 +11,7 @@ import {
   initializeProviderRecord,
 } from '../lib/provider-config';
 import type { Suggestion } from '../lib/suggestions';
+import { ImageGeneratorHeader } from './ImageGeneratorHeader';
 import { ModelCardCarousel } from './ModelCardCarousel';
 import { ModelSelect } from './ModelSelect';
 import { PromptInput } from './PromptInput';
@@ -75,8 +76,11 @@ export function ImagePlayground({
   };
 
   return (
-    <div className="min-h-screen rounded-lg bg-background py-8 px-4 sm:px-6 lg:px-8">
+    <div className="rounded-lg bg-background py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        {/* header */}
+        <ImageGeneratorHeader />
+
         {/* input prompt */}
         <PromptInput
           onSubmit={handlePromptSubmit}

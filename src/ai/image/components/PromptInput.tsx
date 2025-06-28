@@ -1,12 +1,13 @@
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { ArrowUp, ArrowUpRight, RefreshCw } from 'lucide-react';
+import { ArrowUp, ArrowUpRight, Loader2, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { type Suggestion, getRandomSuggestions } from '../lib/suggestions';
 import { Spinner } from './spinner';
 
 type QualityMode = 'performance' | 'quality';
 
+// showProviders/onToggleProviders/mode/onModeChange are not used yet
 interface PromptInputProps {
   onSubmit: (prompt: string) => void;
   isLoading?: boolean;
@@ -62,10 +63,11 @@ export function PromptInput({
             onKeyDown={handleKeyDown}
             placeholder="Enter your prompt here"
             rows={3}
-            className="text-base bg-transparent border-muted-foreground p-2 resize-none placeholder:text-muted-foreground text-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="text-base bg-transparent border-muted p-2 resize-none placeholder:text-muted-foreground text-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center justify-between space-x-2">
+              {/* refresh suggestions */}
               <button
                 type="button"
                 onClick={updateSuggestions}
@@ -73,6 +75,7 @@ export function PromptInput({
               >
                 <RefreshCw className="w-4 h-4 text-muted-foreground group-hover:opacity-70" />
               </button>
+              {/* suggestions */}
               {suggestions.map((suggestion, index) => (
                 <button
                   type="button"
@@ -96,14 +99,15 @@ export function PromptInput({
                 </button>
               ))}
             </div>
+            {/* submit prompt */}
             <button
               type="button"
               onClick={handleSubmit}
               disabled={isLoading || !input.trim()}
-              className="h-8 w-8 rounded-full bg-primary flex items-center justify-center disabled:opacity-50"
+              className="h-8 w-8 cursor-pointer rounded-full bg-primary flex items-center justify-center disabled:opacity-50"
             >
               {isLoading ? (
-                <Spinner className="w-3 h-3 text-primary-foreground" />
+                <Loader2 className="w-3 h-3 text-primary-foreground animate-spin" />
               ) : (
                 <ArrowUp className="w-5 h-5 text-primary-foreground" />
               )}

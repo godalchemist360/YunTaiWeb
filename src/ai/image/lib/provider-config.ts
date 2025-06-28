@@ -15,6 +15,7 @@ export const PROVIDERS: Record<
     models: string[];
   }
 > = {
+  // https://ai-sdk.dev/providers/ai-sdk-providers/replicate#image-models
   replicate: {
     displayName: 'Replicate',
     iconPath: '/provider-icons/replicate.svg',
@@ -30,6 +31,8 @@ export const PROVIDERS: Record<
       'luma/photon',
       'luma/photon-flash',
       'recraft-ai/recraft-v3',
+      // 'recraft-ai/recraft-v3-svg', // added by Fox
+      // 'stability-ai/stable-diffusion-3.5-medium', // added by Fox
       'stability-ai/stable-diffusion-3.5-large',
       'stability-ai/stable-diffusion-3.5-large-turbo',
     ],
@@ -40,12 +43,18 @@ export const PROVIDERS: Record<
   //   color: 'from-green-500 to-emerald-500',
   //   models: ['imagen-3.0-generate-001', 'imagen-3.0-fast-generate-001'],
   // },
+  // https://ai-sdk.dev/providers/ai-sdk-providers/openai#image-models
   openai: {
     displayName: 'OpenAI',
     iconPath: '/provider-icons/openai.svg',
     color: 'from-blue-500 to-cyan-500',
-    models: ['dall-e-2', 'dall-e-3'],
+    models: [
+      // 'gpt-image-1', // added by Fox
+      'dall-e-2',
+      'dall-e-3',
+    ],
   },
+  // https://ai-sdk.dev/providers/ai-sdk-providers/fireworks#image-models
   fireworks: {
     displayName: 'Fireworks',
     iconPath: '/provider-icons/fireworks.svg',
@@ -60,26 +69,31 @@ export const PROVIDERS: Record<
       'accounts/fireworks/models/stable-diffusion-xl-1024-v1-0',
     ],
   },
+  // https://ai-sdk.dev/providers/ai-sdk-providers/fal#image-models
   fal: {
     displayName: 'Fal',
     iconPath: '/provider-icons/fal.svg',
     color: 'from-orange-500 to-red-500',
     models: [
-      'fal-ai/flux/dev',
+      'fal-ai/flux/dev', // added by Fox
+      'fal-ai/flux-pro/kontext',
+      'fal-ai/flux-pro/kontext/max',
+      'fal-ai/flux-lora',
       'fal-ai/fast-sdxl',
       'fal-ai/flux-pro/v1.1-ultra',
       'fal-ai/ideogram/v2',
       'fal-ai/recraft-v3',
       'fal-ai/hyper-sdxl',
+      // 'fal-ai/stable-diffusion-3.5-large',
     ],
   },
 };
 
 export const MODEL_CONFIGS: Record<ModelMode, Record<ProviderKey, string>> = {
   performance: {
-    replicate: 'stability-ai/stable-diffusion-3.5-large-turbo',
+    replicate: 'stability-ai/stable-diffusion-3.5-medium',
     // vertex: 'imagen-3.0-fast-generate-001',
-    openai: 'dall-e-2',
+    openai: 'dall-e-3',
     fireworks: 'accounts/fireworks/models/flux-1-schnell-fp8',
     fal: 'fal-ai/flux/dev',
   },
