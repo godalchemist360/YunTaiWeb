@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { getDb } from '@/db';
 import { creditTransaction, userCredit } from '@/db/schema';
 import { addDays, isAfter } from 'date-fns';
@@ -9,7 +10,11 @@ import {
   REGISTER_GIFT_CREDITS,
 } from './constants';
 
-// Get user's current credit balance
+/**
+ * Get user's current credit balance
+ * @param userId - User ID
+ * @returns User's current credit balance
+ */
 export async function getUserCredits(userId: string): Promise<number> {
   const db = await getDb();
   const record = await db
@@ -20,8 +25,18 @@ export async function getUserCredits(userId: string): Promise<number> {
   return record[0]?.currentCredits || 0;
 }
 
-// Write a credit transaction record
-async function logCreditTransaction(params: {
+/**
+ * Write a credit transaction record
+ * @param params - Credit transaction parameters
+ */
+async function logCreditTransaction({
+  userId,
+  type,
+  amount,
+  description,
+  paymentId,
+  expirationDate,
+}: {
   userId: string;
   type: string;
   amount: number;
@@ -29,28 +44,33 @@ async function logCreditTransaction(params: {
   paymentId?: string;
   expirationDate?: Date;
 }) {
-  if (!params.userId || !params.type || !params.description) {
+  if (!userId || !type || !description) {
     throw new Error('Invalid params');
   }
-  if (!Number.isFinite(params.amount) || params.amount === 0) {
-    throw new Error('Amount must be positive');
+  if (!Number.isFinite(amount) || amount === 0) {
+    throw new Error('Invalid amount');
   }
   const db = await getDb();
   await db.insert(creditTransaction).values({
-    id: crypto.randomUUID(),
-    userId: params.userId,
-    type: params.type,
-    amount: params.amount,
-    remainingAmount: params.amount > 0 ? params.amount : null,
-    description: params.description,
-    paymentId: params.paymentId,
-    expirationDate: params.expirationDate,
+    id: randomUUID(),
+    userId,
+    type,
+    amount,
+    // remaining amount is the same as amount for earn transactions
+    // remaining amount is null for spend transactions
+    remainingAmount: amount > 0 ? amount : null,
+    description,
+    paymentId,
+    expirationDate,
     createdAt: new Date(),
     updatedAt: new Date(),
   });
 }
 
-// Add credits (registration, monthly, purchase, etc.)
+/**
+ * Add credits (registration, monthly, purchase, etc.)
+ * @param params - Credit creation parameters
+ */
 export async function addCredits({
   userId,
   amount,
@@ -70,10 +90,10 @@ export async function addCredits({
     throw new Error('Invalid params');
   }
   if (!Number.isFinite(amount) || amount <= 0) {
-    throw new Error('Amount must be positive');
+    throw new Error('Invalid amount');
   }
   if (!Number.isFinite(expireDays) || expireDays <= 0) {
-    throw new Error('expireDays must be positive');
+    throw new Error('Invalid expire days');
   }
   // Process expired credits first
   await processExpiredCredits(userId);
@@ -90,16 +110,16 @@ export async function addCredits({
       .update(userCredit)
       .set({
         currentCredits: newBalance,
-        lastRefreshAt: new Date(),
+        lastRefreshAt: new Date(), // TODO: maybe we can not update this field here
         updatedAt: new Date(),
       })
       .where(eq(userCredit.userId, userId));
   } else {
     await db.insert(userCredit).values({
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       userId,
       currentCredits: newBalance,
-      lastRefreshAt: new Date(),
+      lastRefreshAt: new Date(), // TODO: maybe we can not update this field here
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -111,13 +131,15 @@ export async function addCredits({
     amount,
     description,
     paymentId,
+    // TODO: maybe there is no expiration date for PURCHASE type?
     expirationDate: addDays(new Date(), expireDays),
   });
-  // Refresh session if needed
-  // await refreshUserSession(userId);
 }
 
-// Consume credits (FIFO, by expiration)
+/**
+ * Consume credits (FIFO, by expiration)
+ * @param params - Credit consumption parameters
+ */
 export async function consumeCredits({
   userId,
   amount,
@@ -131,16 +153,21 @@ export async function consumeCredits({
     throw new Error('Invalid params');
   }
   if (!Number.isFinite(amount) || amount <= 0) {
-    throw new Error('Amount must be positive');
+    throw new Error('Invalid amount');
   }
   // Process expired credits first
   await processExpiredCredits(userId);
   // Check balance
   const balance = await getUserCredits(userId);
-  if (balance < amount) throw new Error('Insufficient credits');
+  if (balance < amount) {
+    console.error(
+      `Insufficient credits for user ${userId}, balance: ${balance}, amount: ${amount}, description: ${description}`
+    );
+    throw new Error('Insufficient credits');
+  }
   // FIFO consumption: consume from the earliest unexpired credits first
   const db = await getDb();
-  const txs = await db
+  const transactions = await db
     .select()
     .from(creditTransaction)
     .where(
@@ -159,9 +186,9 @@ export async function consumeCredits({
     );
   // Consume credits
   let left = amount;
-  for (const tx of txs) {
+  for (const transaction of transactions) {
     if (left <= 0) break;
-    const remain = tx.remainingAmount || 0;
+    const remain = transaction.remainingAmount || 0;
     if (remain <= 0) continue;
     // credits to consume at most in this transaction
     const consume = Math.min(remain, left);
@@ -171,7 +198,7 @@ export async function consumeCredits({
         remainingAmount: remain - consume,
         updatedAt: new Date(),
       })
-      .where(eq(creditTransaction.id, tx.id));
+      .where(eq(creditTransaction.id, transaction.id));
     left -= consume;
   }
   // Update balance
@@ -181,6 +208,7 @@ export async function consumeCredits({
     .where(eq(userCredit.userId, userId))
     .limit(1);
   const newBalance = (current[0]?.currentCredits || 0) - amount;
+  // TODO: there must have one record for this user in userCredit?
   await db
     .update(userCredit)
     .set({ currentCredits: newBalance, updatedAt: new Date() })
@@ -192,23 +220,25 @@ export async function consumeCredits({
     amount: -amount,
     description,
   });
-  // Refresh session if needed
-  // await refreshUserSession(userId);
 }
 
-// Process expired credits
+/**
+ * Process expired credits
+ * @param userId - User ID
+ */
 export async function processExpiredCredits(userId: string) {
   const now = new Date();
   // Get all credit transactions without type EXPIRE
   const db = await getDb();
-  const txs = await db
+  const transactions = await db
     .select()
     .from(creditTransaction)
     .where(
       and(
         eq(creditTransaction.userId, userId),
         or(
-          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.PURCHASE),
+          // TODO: credits with PURCHASE type can not be expired?
+          // eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.PURCHASE),
           eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH),
           eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.REGISTER_GIFT)
         )
@@ -216,13 +246,13 @@ export async function processExpiredCredits(userId: string) {
     );
   let expiredTotal = 0;
   // Process expired credit transactions
-  for (const tx of txs) {
+  for (const transaction of transactions) {
     if (
-      tx.expirationDate &&
-      isAfter(now, tx.expirationDate) &&
-      !tx.expirationDateProcessedAt
+      transaction.expirationDate &&
+      isAfter(now, transaction.expirationDate) &&
+      !transaction.expirationDateProcessedAt
     ) {
-      const remain = tx.remainingAmount || 0;
+      const remain = transaction.remainingAmount || 0;
       if (remain > 0) {
         expiredTotal += remain;
         await db
@@ -232,7 +262,7 @@ export async function processExpiredCredits(userId: string) {
             expirationDateProcessedAt: now,
             updatedAt: now,
           })
-          .where(eq(creditTransaction.id, tx.id));
+          .where(eq(creditTransaction.id, transaction.id));
       }
     }
   }
@@ -261,7 +291,10 @@ export async function processExpiredCredits(userId: string) {
   }
 }
 
-// Add register gift credits
+/**
+ * Add register gift credits
+ * @param userId - User ID
+ */
 export async function addRegisterGiftCredits(userId: string) {
   // Check if user has already received register gift credits
   const db = await getDb();
@@ -286,7 +319,10 @@ export async function addRegisterGiftCredits(userId: string) {
   }
 }
 
-// Add free monthly credits
+/**
+ * Add free monthly credits
+ * @param userId - User ID
+ */
 export async function addMonthlyFreeCredits(userId: string) {
   // Check last refresh time
   const db = await getDb();
@@ -314,10 +350,5 @@ export async function addMonthlyFreeCredits(userId: string) {
       type: CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH,
       description: `Free monthly credits: ${FREE_MONTHLY_CREDITS} for ${now.getFullYear()}-${now.getMonth() + 1}`,
     });
-    // update last refresh time ? addCredits has already updated it
-    // await db
-    //   .update(userCredit)
-    //   .set({ lastRefresh: now, updatedAt: now })
-    //   .where(eq(userCredit.userId, userId));
   }
 }
