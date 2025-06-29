@@ -1,4 +1,4 @@
-import db from '@/db';
+import { getDb } from '@/db';
 import { creditTransaction, userCredit } from '@/db/schema';
 import { addDays, isAfter } from 'date-fns';
 import { and, asc, eq, or } from 'drizzle-orm';
@@ -11,6 +11,7 @@ import {
 
 // Get user's current credit balance
 export async function getUserCredits(userId: string): Promise<number> {
+  const db = await getDb();
   const record = await db
     .select()
     .from(userCredit)
@@ -34,6 +35,7 @@ async function logCreditTransaction(params: {
   if (!Number.isFinite(params.amount) || params.amount === 0) {
     throw new Error('Amount must be positive');
   }
+  const db = await getDb();
   await db.insert(creditTransaction).values({
     id: crypto.randomUUID(),
     userId: params.userId,
@@ -76,6 +78,7 @@ export async function addCredits({
   // Process expired credits first
   await processExpiredCredits(userId);
   // Update user credit balance
+  const db = await getDb();
   const current = await db
     .select()
     .from(userCredit)
@@ -138,6 +141,7 @@ export async function consumeCredits({
   const balance = await getUserCredits(userId);
   if (balance < amount) throw new Error('Insufficient credits');
   // FIFO consumption: consume from the earliest unexpired credits first
+  const db = await getDb();
   const txs = await db
     .select()
     .from(creditTransaction)
@@ -200,6 +204,7 @@ export async function consumeCredits({
 export async function processExpiredCredits(userId: string) {
   const now = new Date();
   // Get all credit transactions without type EXPIRE
+  const db = await getDb();
   const txs = await db
     .select()
     .from(creditTransaction)
@@ -263,6 +268,7 @@ export async function processExpiredCredits(userId: string) {
 // Add register gift credits
 export async function addRegisterGiftCredits(userId: string) {
   // Check if user has already received register gift credits
+  const db = await getDb();
   const record = await db
     .select()
     .from(creditTransaction)
@@ -287,6 +293,7 @@ export async function addRegisterGiftCredits(userId: string) {
 // Add free monthly credits
 export async function addMonthlyFreeCredits(userId: string) {
   // Check last refresh time
+  const db = await getDb();
   const record = await db
     .select()
     .from(userCredit)
