@@ -17,7 +17,7 @@ export async function getUserCredits(userId: string): Promise<number> {
     .from(userCredit)
     .where(eq(userCredit.userId, userId))
     .limit(1);
-  return record[0]?.balance ? Number.parseInt(record[0].balance, 10) : 0;
+  return record[0]?.currentCredits || 0;
 }
 
 // Write a credit transaction record
@@ -40,8 +40,8 @@ async function logCreditTransaction(params: {
     id: crypto.randomUUID(),
     userId: params.userId,
     type: params.type,
-    amount: params.amount.toString(),
-    remainingAmount: params.amount > 0 ? params.amount.toString() : undefined,
+    amount: params.amount,
+    remainingAmount: params.amount > 0 ? params.amount : null,
     description: params.description,
     paymentId: params.paymentId,
     expirationDate: params.expirationDate,
@@ -84,15 +84,13 @@ export async function addCredits({
     .from(userCredit)
     .where(eq(userCredit.userId, userId))
     .limit(1);
-  const newBalance = (
-    Number.parseInt(current[0]?.balance || '0', 10) + amount
-  ).toString();
+  const newBalance = (current[0]?.currentCredits || 0) + amount;
   if (current.length > 0) {
     await db
       .update(userCredit)
       .set({
-        balance: newBalance,
-        lastRefresh: new Date(),
+        currentCredits: newBalance,
+        lastRefreshAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(userCredit.userId, userId));
@@ -100,8 +98,8 @@ export async function addCredits({
     await db.insert(userCredit).values({
       id: crypto.randomUUID(),
       userId,
-      balance: newBalance,
-      lastRefresh: new Date(),
+      currentCredits: newBalance,
+      lastRefreshAt: new Date(),
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -163,14 +161,14 @@ export async function consumeCredits({
   let left = amount;
   for (const tx of txs) {
     if (left <= 0) break;
-    const remain = Number.parseInt(tx.remainingAmount || '0', 10);
+    const remain = tx.remainingAmount || 0;
     if (remain <= 0) continue;
     // credits to consume at most in this transaction
     const consume = Math.min(remain, left);
     await db
       .update(creditTransaction)
       .set({
-        remainingAmount: (remain - consume).toString(),
+        remainingAmount: remain - consume,
         updatedAt: new Date(),
       })
       .where(eq(creditTransaction.id, tx.id));
@@ -182,12 +180,10 @@ export async function consumeCredits({
     .from(userCredit)
     .where(eq(userCredit.userId, userId))
     .limit(1);
-  const newBalance = (
-    Number.parseInt(current[0]?.balance || '0', 10) - amount
-  ).toString();
+  const newBalance = (current[0]?.currentCredits || 0) - amount;
   await db
     .update(userCredit)
-    .set({ balance: newBalance, updatedAt: new Date() })
+    .set({ currentCredits: newBalance, updatedAt: new Date() })
     .where(eq(userCredit.userId, userId));
   // Write usage record
   await logCreditTransaction({
@@ -226,13 +222,13 @@ export async function processExpiredCredits(userId: string) {
       isAfter(now, tx.expirationDate) &&
       !tx.expirationDateProcessedAt
     ) {
-      const remain = Number.parseInt(tx.remainingAmount || '0', 10);
+      const remain = tx.remainingAmount || 0;
       if (remain > 0) {
         expiredTotal += remain;
         await db
           .update(creditTransaction)
           .set({
-            remainingAmount: '0',
+            remainingAmount: 0,
             expirationDateProcessedAt: now,
             updatedAt: now,
           })
@@ -249,11 +245,11 @@ export async function processExpiredCredits(userId: string) {
       .limit(1);
     const newBalance = Math.max(
       0,
-      Number.parseInt(current[0]?.balance || '0', 10) - expiredTotal
-    ).toString();
+      (current[0]?.currentCredits || 0) - expiredTotal
+    );
     await db
       .update(userCredit)
-      .set({ balance: newBalance, updatedAt: now })
+      .set({ currentCredits: newBalance, updatedAt: now })
       .where(eq(userCredit.userId, userId));
     // Write expire record
     await logCreditTransaction({
@@ -302,10 +298,10 @@ export async function addMonthlyFreeCredits(userId: string) {
   const now = new Date();
   let canAdd = false;
   // never added credits before
-  if (!record[0]?.lastRefresh) {
+  if (!record[0]?.lastRefreshAt) {
     canAdd = true;
   } else {
-    const last = new Date(record[0].lastRefresh);
+    const last = new Date(record[0].lastRefreshAt);
     canAdd =
       now.getMonth() !== last.getMonth() ||
       now.getFullYear() !== last.getFullYear();
