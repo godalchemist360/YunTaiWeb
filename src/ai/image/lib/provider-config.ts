@@ -91,7 +91,7 @@ export const PROVIDERS: Record<
 
 export const MODEL_CONFIGS: Record<ModelMode, Record<ProviderKey, string>> = {
   performance: {
-    replicate: 'stability-ai/stable-diffusion-3.5-medium',
+    replicate: 'black-forest-labs/flux-1.1-pro',
     // vertex: 'imagen-3.0-fast-generate-001',
     openai: 'dall-e-3',
     fireworks: 'accounts/fireworks/models/flux-1-schnell-fp8',
