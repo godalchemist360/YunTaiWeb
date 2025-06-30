@@ -230,10 +230,12 @@ export const RegisterForm = ({
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Captcha
-            onSuccess={(token) => form.setValue('captchaToken', token)}
-            validationError={form.formState.errors.captchaToken?.message}
-          />
+          {turnstileEnabled && (
+            <Captcha
+              onSuccess={(token) => form.setValue('captchaToken', token)}
+              validationError={form.formState.errors.captchaToken?.message}
+            />
+          )}
           <Button
             disabled={isPending || (turnstileEnabled && !captchaToken)}
             size="lg"
