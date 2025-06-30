@@ -1,9 +1,4 @@
-export function isTurnstileEnabled() {
-  return (
-    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY !== '' &&
-    process.env.TURNSTILE_SECRET_KEY !== ''
-  );
-}
+import { websiteConfig } from '@/config/website';
 
 interface TurnstileResponse {
   success: boolean;
@@ -14,10 +9,15 @@ interface TurnstileResponse {
  * https://developers.cloudflare.com/turnstile/get-started/server-side-validation/
  */
 export async function validateTurnstileToken(token: string) {
-  const turnstileEnabled = isTurnstileEnabled();
+  const turnstileEnabled = websiteConfig.features.enableTurnstileCaptcha;
   if (!turnstileEnabled) {
     console.log('validateTurnstileToken, turnstile is disabled');
-    return true;
+    return false;
+  }
+
+  if (!process.env.TURNSTILE_SECRET_KEY) {
+    console.error('validateTurnstileToken, TURNSTILE_SECRET_KEY is not set');
+    return false;
   }
 
   const response = await fetch(
