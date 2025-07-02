@@ -73,8 +73,6 @@ export default async function HomePage(props: HomePageProps) {
         <TestimonialsSection />
 
         <NewsletterCard />
-
-        <DiscordWidget />
       </div>
     </>
   );
