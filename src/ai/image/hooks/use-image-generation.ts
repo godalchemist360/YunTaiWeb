@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { GenerateImageResponse } from '../lib/api-types';
 import type {
   ImageError,
   ImageResult,
@@ -89,7 +90,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(request),
           });
-          const data = await response.json();
+          const data = (await response.json()) as GenerateImageResponse;
           if (!response.ok) {
             throw new Error(data.error || `Server error: ${response.status}`);
           }
