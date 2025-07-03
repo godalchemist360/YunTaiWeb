@@ -25,11 +25,27 @@ export async function getUserCredits(userId: string): Promise<number> {
   return record[0]?.currentCredits || 0;
 }
 
+export async function updateUserCredits(userId: string, credits: number) {
+  const db = await getDb();
+  await db
+    .update(userCredit)
+    .set({ currentCredits: credits, updatedAt: new Date() })
+    .where(eq(userCredit.userId, userId));
+}
+
+export async function updateUserLastRefreshAt(userId: string, date: Date) {
+  const db = await getDb();
+  await db
+    .update(userCredit)
+    .set({ lastRefreshAt: date, updatedAt: new Date() })
+    .where(eq(userCredit.userId, userId));
+}
+
 /**
  * Write a credit transaction record
  * @param params - Credit transaction parameters
  */
-async function logCreditTransaction({
+export async function logCreditTransaction({
   userId,
   type,
   amount,
@@ -45,9 +61,11 @@ async function logCreditTransaction({
   expirationDate?: Date;
 }) {
   if (!userId || !type || !description) {
+    console.error('Invalid params', userId, type, description);
     throw new Error('Invalid params');
   }
   if (!Number.isFinite(amount) || amount === 0) {
+    console.error('Invalid amount', userId, amount);
     throw new Error('Invalid amount');
   }
   const db = await getDb();
@@ -87,12 +105,15 @@ export async function addCredits({
   expireDays?: number;
 }) {
   if (!userId || !type || !description) {
+    console.error('Invalid params', userId, type, description);
     throw new Error('Invalid params');
   }
   if (!Number.isFinite(amount) || amount <= 0) {
+    console.error('Invalid amount', userId, amount);
     throw new Error('Invalid amount');
   }
   if (!Number.isFinite(expireDays) || expireDays <= 0) {
+    console.error('Invalid expire days', userId, expireDays);
     throw new Error('Invalid expire days');
   }
   // Process expired credits first
@@ -104,22 +125,26 @@ export async function addCredits({
     .from(userCredit)
     .where(eq(userCredit.userId, userId))
     .limit(1);
-  const newBalance = (current[0]?.currentCredits || 0) + amount;
+  // const newBalance = (current[0]?.currentCredits || 0) + amount;
   if (current.length > 0) {
+    const newBalance = (current[0]?.currentCredits || 0) + amount;
+    console.log('update user credit', userId, newBalance);
     await db
       .update(userCredit)
       .set({
         currentCredits: newBalance,
-        lastRefreshAt: new Date(), // TODO: maybe we can not update this field here
+        // lastRefreshAt: new Date(), // NOTE: we can not update this field here
         updatedAt: new Date(),
       })
       .where(eq(userCredit.userId, userId));
   } else {
+    const newBalance = amount;
+    console.log('insert user credit', userId, newBalance);
     await db.insert(userCredit).values({
       id: randomUUID(),
       userId,
       currentCredits: newBalance,
-      lastRefreshAt: new Date(), // TODO: maybe we can not update this field here
+      // lastRefreshAt: new Date(), // NOTE: we can not update this field here
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -131,9 +156,23 @@ export async function addCredits({
     amount,
     description,
     paymentId,
-    // TODO: maybe there is no expiration date for PURCHASE type?
-    expirationDate: addDays(new Date(), expireDays),
+    // NOTE: there is no expiration date for PURCHASE type
+    expirationDate:
+      type === CREDIT_TRANSACTION_TYPE.PURCHASE
+        ? undefined
+        : addDays(new Date(), expireDays),
   });
+}
+
+export async function hasEnoughCredits({
+  userId,
+  requiredCredits,
+}: {
+  userId: string;
+  requiredCredits: number;
+}) {
+  const balance = await getUserCredits(userId);
+  return balance >= requiredCredits;
 }
 
 /**
@@ -150,19 +189,18 @@ export async function consumeCredits({
   description: string;
 }) {
   if (!userId || !description) {
+    console.error('Invalid params', userId, description);
     throw new Error('Invalid params');
   }
   if (!Number.isFinite(amount) || amount <= 0) {
+    console.error('Invalid amount', userId, amount);
     throw new Error('Invalid amount');
   }
   // Process expired credits first
   await processExpiredCredits(userId);
   // Check balance
-  const balance = await getUserCredits(userId);
-  if (balance < amount) {
-    console.error(
-      `Insufficient credits for user ${userId}, balance: ${balance}, amount: ${amount}, description: ${description}`
-    );
+  if (!(await hasEnoughCredits({ userId, requiredCredits: amount }))) {
+    console.error( `Insufficient credits for user ${userId}, required: ${amount}` );
     throw new Error('Insufficient credits');
   }
   // FIFO consumption: consume from the earliest unexpired credits first
@@ -185,21 +223,21 @@ export async function consumeCredits({
       asc(creditTransaction.createdAt)
     );
   // Consume credits
-  let left = amount;
+  let remainingToDeduct = amount;
   for (const transaction of transactions) {
-    if (left <= 0) break;
-    const remain = transaction.remainingAmount || 0;
-    if (remain <= 0) continue;
+    if (remainingToDeduct <= 0) break;
+    const remainingAmount = transaction.remainingAmount || 0;
+    if (remainingAmount <= 0) continue;
     // credits to consume at most in this transaction
-    const consume = Math.min(remain, left);
+    const deductFromThis = Math.min(remainingAmount, remainingToDeduct);
     await db
       .update(creditTransaction)
       .set({
-        remainingAmount: remain - consume,
+        remainingAmount: remainingAmount - deductFromThis,
         updatedAt: new Date(),
       })
       .where(eq(creditTransaction.id, transaction.id));
-    left -= consume;
+    remainingToDeduct -= deductFromThis;
   }
   // Update balance
   const current = await db
@@ -208,7 +246,6 @@ export async function consumeCredits({
     .where(eq(userCredit.userId, userId))
     .limit(1);
   const newBalance = (current[0]?.currentCredits || 0) - amount;
-  // TODO: there must have one record for this user in userCredit?
   await db
     .update(userCredit)
     .set({ currentCredits: newBalance, updatedAt: new Date() })
@@ -237,7 +274,7 @@ export async function processExpiredCredits(userId: string) {
       and(
         eq(creditTransaction.userId, userId),
         or(
-          // TODO: credits with PURCHASE type can not be expired?
+          // NOTE: credits with PURCHASE type can not be expired
           // eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.PURCHASE),
           eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH),
           eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.REGISTER_GIFT)
