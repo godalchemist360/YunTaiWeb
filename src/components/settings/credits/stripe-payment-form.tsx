@@ -4,6 +4,7 @@ import { confirmCreditPayment } from '@/actions/credits.action';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice } from '@/lib/formatter';
+import { useTransactionStore } from '@/stores/transaction-store';
 import {
   Elements,
   PaymentElement,
@@ -82,6 +83,7 @@ function PaymentForm({
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
+  const { triggerRefresh } = useTransactionStore();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -115,6 +117,10 @@ function PaymentForm({
           if (result?.data?.success) {
             console.log('PaymentForm, payment success');
             toast.success(`${packageInfo.credits} credits have been added to your account.`);
+
+            // Trigger refresh for transaction-dependent UI components
+            triggerRefresh();
+
             onPaymentSuccess();
           } else {
             console.error('PaymentForm, payment error:', result?.data?.error);

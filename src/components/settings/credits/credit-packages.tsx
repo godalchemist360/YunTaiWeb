@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CREDIT_PACKAGES } from '@/lib/constants';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
+import { useTransactionStore } from '@/stores/transaction-store';
 import { CircleCheckBigIcon, CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -27,6 +28,8 @@ export function CreditPackages() {
     packageId: null,
     clientSecret: null,
   });
+
+  const { refreshTrigger } = useTransactionStore();
 
   const fetchCredits = async () => {
     try {
@@ -48,9 +51,10 @@ export function CreditPackages() {
     }
   };
 
+  // Initial fetch and listen for transaction updates
   useEffect(() => {
     fetchCredits();
-  }, []);
+  }, [refreshTrigger]);
 
   const handlePurchase = async (packageId: string) => {
     try {
@@ -82,11 +86,6 @@ export function CreditPackages() {
       packageId: null,
       clientSecret: null,
     });
-
-    // Refresh credit balance without page reload
-    fetchCredits();
-
-    // Show success toast
     toast.success('Your credits have been added to your account');
   };
 
