@@ -29,6 +29,7 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import LocaleSwitcher from './locale-switcher';
+import { CreditsBalance } from './credits-balance';
 
 interface NavBarProps {
   scroll?: boolean;
@@ -222,7 +223,10 @@ export function Navbar({ scroll }: NavBarProps) {
             {!mounted || isPending ? (
               <Skeleton className="size-8 border rounded-full" />
             ) : currentUser ? (
-              <UserButton user={currentUser} />
+              <>
+                <CreditsBalance />
+                <UserButton user={currentUser} />
+              </>
             ) : (
               <div className="flex items-center gap-x-4">
                 <LoginWrapper mode="modal" asChild>

@@ -2,7 +2,7 @@
 
 import { confirmCreditPayment } from '@/actions/credits.action';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice } from '@/lib/formatter';
 import { useTransactionStore } from '@/stores/transaction-store';
 import {
@@ -143,7 +143,7 @@ function PaymentForm({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <CoinsIcon className="h-4 w-4" />
@@ -155,16 +155,12 @@ function PaymentForm({
                 {formatPrice(packageInfo.price, 'USD')}
               </div>
             </div>
+            {/* <div className="text-sm text-muted-foreground flex items-center gap-2">
+              <CircleCheckBigIcon className="h-4 w-4 text-green-500" />
+              {packageInfo.description}
+            </div> */}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-xs text-muted-foreground space-y-2">
-            <p>
-              We use Stripe, a trusted global payment provider, to process your payment.
-              For your security, your payment details are handled directly by Stripe and never touch our servers.
-            </p>
-          </div>
-        </CardContent>
       </Card>
 
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -187,6 +183,7 @@ function PaymentForm({
             {processing ? (
               <>
                 <Loader2Icon className="h-4 w-4 animate-spin" />
+                Processing...
               </>
             ) : (
               <>

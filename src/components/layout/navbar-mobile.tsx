@@ -28,6 +28,7 @@ import { useEffect, useState } from 'react';
 import { RemoveScroll } from 'react-remove-scroll';
 import { Skeleton } from '../ui/skeleton';
 import { UserButtonMobile } from './user-button-mobile';
+import { CreditsBalance } from './credits-balance';
 
 export function NavbarMobile({
   className,
@@ -94,7 +95,10 @@ export function NavbarMobile({
           {isPending ? (
             <Skeleton className="size-8 border rounded-full" />
           ) : currentUser ? (
-            <UserButtonMobile user={currentUser} />
+            <>
+              <CreditsBalance />
+              <UserButtonMobile user={currentUser} />
+            </>
           ) : null}
 
           <Button
