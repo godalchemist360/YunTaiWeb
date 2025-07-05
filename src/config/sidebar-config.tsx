@@ -5,6 +5,7 @@ import type { NestedMenuItem } from '@/types';
 import {
   BellIcon,
   CircleUserRoundIcon,
+  CoinsIcon,
   CreditCardIcon,
   LayoutDashboardIcon,
   LockKeyholeIcon,
@@ -64,6 +65,12 @@ export function getSidebarLinks(): NestedMenuItem[] {
           title: t('settings.billing.title'),
           icon: <CreditCardIcon className="size-4 shrink-0" />,
           href: Routes.SettingsBilling,
+          external: false,
+        },
+        {
+          title: t('settings.credits.title'),
+          icon: <CoinsIcon className="size-4 shrink-0" />,
+          href: Routes.SettingsCredits,
           external: false,
         },
         {

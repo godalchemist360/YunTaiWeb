@@ -2,8 +2,11 @@ import { websiteConfig } from '@/config/website';
 import { StripeProvider } from './provider/stripe';
 import type {
   CheckoutResult,
+  ConfirmPaymentIntentParams,
   CreateCheckoutParams,
+  CreatePaymentIntentParams,
   CreatePortalParams,
+  PaymentIntentResult,
   PaymentProvider,
   PortalResult,
   Subscription,
@@ -91,4 +94,28 @@ export const getSubscriptions = async (
 ): Promise<Subscription[]> => {
   const provider = getPaymentProvider();
   return provider.getSubscriptions(params);
+};
+
+/**
+ * Create a payment intent
+ * @param params Parameters for creating the payment intent
+ * @returns Payment intent result
+ */
+export const createPaymentIntent = async (
+  params: CreatePaymentIntentParams
+): Promise<PaymentIntentResult> => {
+  const provider = getPaymentProvider();
+  return provider.createPaymentIntent(params);
+};
+
+/**
+ * Confirm a payment intent
+ * @param params Parameters for confirming the payment intent
+ * @returns True if successful
+ */
+export const confirmPaymentIntent = async (
+  params: ConfirmPaymentIntentParams
+): Promise<boolean> => {
+  const provider = getPaymentProvider();
+  return provider.confirmPaymentIntent(params);
 };

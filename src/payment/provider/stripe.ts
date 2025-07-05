@@ -7,12 +7,17 @@ import {
   findPriceInPlan,
 } from '@/lib/price-plan';
 import { sendNotification } from '@/notification/notification';
+import { addCredits } from '@/lib/credits';
+import { CREDIT_TRANSACTION_TYPE } from '@/lib/constants';
 import { desc, eq } from 'drizzle-orm';
 import { Stripe } from 'stripe';
 import {
   type CheckoutResult,
+  type ConfirmPaymentIntentParams,
   type CreateCheckoutParams,
+  type CreatePaymentIntentParams,
   type CreatePortalParams,
+  type PaymentIntentResult,
   type PaymentProvider,
   type PaymentStatus,
   PaymentTypes,
@@ -397,6 +402,12 @@ export class StripeProvider implements PaymentProvider {
             await this.onOnetimePayment(session);
           }
         }
+      } else if (eventType.startsWith('payment_intent.')) {
+        // Handle payment intent events
+        if (eventType === 'payment_intent.succeeded') {
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          await this.onPaymentIntentSucceeded(paymentIntent);
+        }
       }
     } catch (error) {
       console.error('handle webhook event error:', error);
@@ -630,6 +641,97 @@ export class StripeProvider implements PaymentProvider {
     // Send notification
     const amount = session.amount_total ? session.amount_total / 100 : 0;
     await sendNotification(session.id, customerId, userId, amount);
+  }
+
+  /**
+   * Handle payment intent succeeded event
+   * @param paymentIntent Stripe payment intent
+   */
+  private async onPaymentIntentSucceeded(
+    paymentIntent: Stripe.PaymentIntent
+  ): Promise<void> {
+    console.log(`>> Handle payment intent succeeded: ${paymentIntent.id}`);
+
+    // Get metadata from payment intent
+    const { packageId, userId, credits } = paymentIntent.metadata;
+
+    if (!packageId || !userId || !credits) {
+      console.warn(
+        `<< Missing metadata for payment intent ${paymentIntent.id}: packageId=${packageId}, userId=${userId}, credits=${credits}`
+      );
+      return;
+    }
+
+    try {
+      // Add credits to user account using existing addCredits method
+      await addCredits({
+        userId,
+        amount: parseInt(credits),
+        type: CREDIT_TRANSACTION_TYPE.PURCHASE,
+        description: `Credit package purchase: ${packageId} - ${credits} credits for $${paymentIntent.amount / 100}`,
+        paymentId: paymentIntent.id,
+      });
+
+      console.log(
+        `<< Successfully processed payment intent ${paymentIntent.id}: Added ${credits} credits to user ${userId}`
+      );
+    } catch (error) {
+      console.error(
+        `<< Error processing payment intent ${paymentIntent.id}:`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Create a payment intent
+   * @param params Parameters for creating the payment intent
+   * @returns Payment intent result
+   */
+  public async createPaymentIntent(
+    params: CreatePaymentIntentParams
+  ): Promise<PaymentIntentResult> {
+    const { amount, currency, metadata } = params;
+
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.create({
+        amount,
+        currency,
+        metadata,
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      return {
+        id: paymentIntent.id,
+        clientSecret: paymentIntent.client_secret!,
+      };
+    } catch (error) {
+      console.error('Create payment intent error:', error);
+      throw new Error('Failed to create payment intent');
+    }
+  }
+
+  /**
+   * Confirm a payment intent
+   * @param params Parameters for confirming the payment intent
+   * @returns True if successful
+   */
+  public async confirmPaymentIntent(
+    params: ConfirmPaymentIntentParams
+  ): Promise<boolean> {
+    const { paymentIntentId } = params;
+
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
+
+      return paymentIntent.status === 'succeeded';
+    } catch (error) {
+      console.error('Confirm payment intent error:', error);
+      throw new Error('Failed to confirm payment intent');
+    }
   }
 
   /**
