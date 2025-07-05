@@ -6,7 +6,7 @@ import {
   addRegisterGiftCredits,
   consumeCredits,
   getUserCredits,
-} from '@/lib/credits';
+} from '@/credits/credits';
 import { getSession } from '@/lib/server';
 import { confirmPaymentIntent, createPaymentIntent } from '@/payment';
 import { createSafeActionClient } from 'next-safe-action';

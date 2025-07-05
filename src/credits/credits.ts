@@ -8,7 +8,7 @@ import {
   CREDIT_TRANSACTION_TYPE,
   FREE_MONTHLY_CREDITS,
   REGISTER_GIFT_CREDITS,
-} from './constants';
+} from '../lib/constants';
 
 /**
  * Get user's current credit balance

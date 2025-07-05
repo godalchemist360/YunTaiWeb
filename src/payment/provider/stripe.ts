@@ -7,7 +7,7 @@ import {
   findPriceInPlan,
 } from '@/lib/price-plan';
 import { sendNotification } from '@/notification/notification';
-import { addCredits } from '@/lib/credits';
+import { addCredits } from '@/credits/credits';
 import { CREDIT_TRANSACTION_TYPE } from '@/lib/constants';
 import { desc, eq } from 'drizzle-orm';
 import { Stripe } from 'stripe';

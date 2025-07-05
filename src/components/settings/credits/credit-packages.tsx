@@ -19,6 +19,7 @@ export function CreditPackages() {
   const [loadingCredits, setLoadingCredits] = useState(true);
   const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
+  const { refreshTrigger } = useTransactionStore();
   const [paymentDialog, setPaymentDialog] = useState<{
     isOpen: boolean;
     packageId: string | null;
@@ -28,8 +29,6 @@ export function CreditPackages() {
     packageId: null,
     clientSecret: null,
   });
-
-  const { refreshTrigger } = useTransactionStore();
 
   const fetchCredits = async () => {
     try {
@@ -86,7 +85,7 @@ export function CreditPackages() {
       packageId: null,
       clientSecret: null,
     });
-    toast.success('Your credits have been added to your account');
+    toast.success('Credits have been added to your account');
   };
 
   const handlePaymentCancel = () => {

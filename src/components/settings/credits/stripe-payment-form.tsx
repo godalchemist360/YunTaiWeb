@@ -116,12 +116,12 @@ function PaymentForm({
 
           if (result?.data?.success) {
             console.log('PaymentForm, payment success');
-            toast.success(`${packageInfo.credits} credits have been added to your account.`);
-
             // Trigger refresh for transaction-dependent UI components
             triggerRefresh();
 
+            // Show success toast
             onPaymentSuccess();
+            // toast.success(`${packageInfo.credits} credits have been added to your account.`);
           } else {
             console.error('PaymentForm, payment error:', result?.data?.error);
             throw new Error( result?.data?.error || 'Failed to confirm payment' );
