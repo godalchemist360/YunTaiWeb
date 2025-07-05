@@ -3,6 +3,7 @@
 import { Routes } from '@/routes';
 import type { MenuItem } from '@/types';
 import {
+  CoinsIcon,
   CreditCardIcon,
   LayoutDashboardIcon,
   Settings2Icon,
@@ -32,6 +33,11 @@ export function getAvatarLinks(): MenuItem[] {
       title: t('billing'),
       href: Routes.SettingsBilling,
       icon: <CreditCardIcon className="size-4 shrink-0" />,
+    },
+    {
+      title: t('credits'),
+      href: Routes.SettingsCredits,
+      icon: <CoinsIcon className="size-4 shrink-0" />,
     },
     {
       title: t('settings'),

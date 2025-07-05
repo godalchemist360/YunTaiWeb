@@ -433,6 +433,7 @@
     "avatar": {
       "dashboard": "工作台",
       "billing": "账单",
+      "credits": "积分",
       "settings": "设置"
     }
   },

@@ -432,6 +432,7 @@
     "avatar": {
       "dashboard": "Dashboard",
       "billing": "Billing",
+      "credits": "Credits",
       "settings": "Settings"
     }
   },

@@ -28,15 +28,23 @@ interface StripePaymentFormProps {
   onPaymentCancel: () => void;
 }
 
+/**
+ * StripePaymentForm is a component that displays a payment form for a credit package.
+ * It uses the Stripe Elements API to display a payment form.
+ *
+ * @param props - The props for the StripePaymentForm component.
+ * @returns The StripePaymentForm component.
+ */
 export function StripePaymentForm(props: StripePaymentFormProps) {
-  const { resolvedTheme: theme } = useTheme();
+  if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+    throw new Error('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set');
+  }
+
   const stripePromise = useMemo(() => {
-    if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
-      throw new Error('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set');
-    }
-    return loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+    return loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
   }, []);
 
+  const { resolvedTheme: theme } = useTheme();
   const options = useMemo(() => ({
     clientSecret: props.clientSecret,
     appearance: {
@@ -110,11 +118,7 @@ function PaymentForm({
             onPaymentSuccess();
           } else {
             console.error('PaymentForm, payment error:', result?.data?.error);
-            throw new Error(
-              result?.data?.error ||
-              result?.serverError ||
-              'Failed to confirm payment'
-            );
+            throw new Error( result?.data?.error || 'Failed to confirm payment' );
           }
         } else {
           console.error('PaymentForm, no payment intent found');
@@ -180,7 +184,7 @@ function PaymentForm({
               </>
             ) : (
               <>
-                Pay {formatPrice(packageInfo.price, 'USD')}
+                Pay {/* {formatPrice(packageInfo.price, 'USD')} */}
               </>
             )}
           </Button>

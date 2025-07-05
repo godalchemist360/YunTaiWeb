@@ -1,18 +1,17 @@
 'use server';
 
+import { CREDIT_PACKAGES } from '@/lib/constants';
 import {
   addMonthlyFreeCredits,
   addRegisterGiftCredits,
   consumeCredits,
   getUserCredits,
-  addCredits,
 } from '@/lib/credits';
 import { getSession } from '@/lib/server';
+import { confirmPaymentIntent, createPaymentIntent } from '@/payment';
 import { createSafeActionClient } from 'next-safe-action';
-import { z } from 'zod';
-import { createPaymentIntent, confirmPaymentIntent } from '@/payment';
-import { CREDIT_PACKAGES } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 const actionClient = createSafeActionClient();
 
@@ -73,7 +72,7 @@ export const createCreditPaymentIntent = actionClient
   .schema(createPaymentIntentSchema)
   .action(async ({ parsedInput }) => {
     const session = await getSession();
-    if (!session) return { success: false, error: 'User not authenticated' };
+    if (!session) return { success: false, error: 'Unauthorized' };
 
     const { packageId } = parsedInput;
 
@@ -115,7 +114,7 @@ export const confirmCreditPayment = actionClient
   .schema(confirmPaymentSchema)
   .action(async ({ parsedInput }) => {
     const session = await getSession();
-    if (!session) return { success: false, error: 'User not authenticated' };
+    if (!session) return { success: false, error: 'Unauthorized' };
 
     const { packageId, paymentIntentId } = parsedInput;
 

@@ -8,29 +8,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CREDIT_PACKAGES } from '@/lib/constants';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
-import { CheckIcon, CoinsIcon, Loader2Icon } from 'lucide-react';
+import { CircleCheckBigIcon, CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Separator } from '../../ui/separator';
 import { StripePaymentForm } from './stripe-payment-form';
-import { toast } from 'sonner';
 
 export function CreditPackages() {
+  const [loadingCredits, setLoadingCredits] = useState(true);
   const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
+  const [credits, setCredits] = useState<number | null>(null);
   const [paymentDialog, setPaymentDialog] = useState<{
     isOpen: boolean;
-    clientSecret: string | null;
     packageId: string | null;
+    clientSecret: string | null;
   }>({
     isOpen: false,
-    clientSecret: null,
     packageId: null,
+    clientSecret: null,
   });
-  const [credits, setCredits] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const fetchCredits = async () => {
     try {
-      setLoading(true);
+      setLoadingCredits(true);
       const result = await getCreditsAction();
       if (result?.data?.success) {
         console.log('CreditPackages, fetched credits:', result.data.credits);
@@ -44,7 +44,7 @@ export function CreditPackages() {
       console.error('CreditPackages, failed to fetch credits:', error);
       toast.error('Failed to fetch credits');
     } finally {
-      setLoading(false);
+      setLoadingCredits(false);
     }
   };
 
@@ -55,13 +55,12 @@ export function CreditPackages() {
   const handlePurchase = async (packageId: string) => {
     try {
       setLoadingPackage(packageId);
-
       const result = await createCreditPaymentIntent({ packageId });
       if (result?.data?.success && result?.data?.clientSecret) {
         setPaymentDialog({
           isOpen: true,
-          clientSecret: result.data.clientSecret,
           packageId,
+          clientSecret: result.data.clientSecret,
         });
       } else {
         const errorMessage = result?.data?.error || 'Failed to create payment intent';
@@ -77,11 +76,11 @@ export function CreditPackages() {
   };
 
   const handlePaymentSuccess = () => {
-    console.log('CreditPackages, payment successful');
+    console.log('CreditPackages, payment success');
     setPaymentDialog({
       isOpen: false,
-      clientSecret: null,
       packageId: null,
+      clientSecret: null,
     });
 
     // Refresh credit balance without page reload
@@ -95,8 +94,8 @@ export function CreditPackages() {
     console.log('CreditPackages, payment cancelled');
     setPaymentDialog({
       isOpen: false,
-      clientSecret: null,
       packageId: null,
+      clientSecret: null,
     });
   };
 
@@ -108,14 +107,14 @@ export function CreditPackages() {
     <div className="space-y-6">
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-medium">Credit Balance</CardTitle>
+          <CardTitle className="text-lg font-semibold">Credit Balance</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4">
             <div className="flex items-center space-x-2">
               <CoinsIcon className="h-4 w-4 text-muted-foreground" />
               <div className="text-2xl font-bold">
-                {loading ? (
+                {loadingCredits ? (
                   <span className="animate-pulse">...</span>
                 ) : (
                   credits?.toLocaleString() || 0
@@ -127,7 +126,7 @@ export function CreditPackages() {
 
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
-                <h2 className="text-lg font-medium">Credit Packages</h2>
+                <h2 className="text-lg font-semibold">Credit Packages</h2>
                 <p className="text-sm text-muted-foreground">
                   Purchase additional credits to use our services
                 </p>
@@ -153,7 +152,8 @@ export function CreditPackages() {
                       <div className="flex items-center justify-between py-2">
                         <div className="text-left">
                           <div className="text-2xl font-semibold flex items-center gap-2">
-                            <CoinsIcon className="h-4 w-4 text-muted-foreground" /> {pkg.credits.toLocaleString()}
+                            <CoinsIcon className="h-4 w-4 text-muted-foreground" />
+                            {pkg.credits.toLocaleString()}
                           </div>
                         </div>
                         <div className="text-right">
@@ -164,7 +164,7 @@ export function CreditPackages() {
                       </div>
 
                       <div className="text-sm text-muted-foreground text-left py-2 flex items-center gap-2">
-                        <CheckIcon className="h-4 w-4 text-green-500" />
+                        <CircleCheckBigIcon className="h-4 w-4 text-green-500" />
                         {pkg.description}
                       </div>
 
