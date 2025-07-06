@@ -115,7 +115,10 @@ export function UsersTable({
   onSortingChange,
 }: UsersTableProps) {
   const t = useTranslations('Dashboard.admin.users');
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const tTable = useTranslations('Common.table');
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'createdAt', desc: true }
+  ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
@@ -401,7 +404,7 @@ export function UsersTable({
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    {t('loading')}
+                    {tTable('loading')}
                   </TableCell>
                 </TableRow>
               ) : table.getRowModel().rows?.length ? (
@@ -426,7 +429,7 @@ export function UsersTable({
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    {t('noResults')}
+                    {tTable('noResults')}
                   </TableCell>
                 </TableRow>
               )}
@@ -440,7 +443,7 @@ export function UsersTable({
           <div className="flex w-full items-center gap-8 lg:w-fit">
             <div className="hidden items-center gap-2 lg:flex">
               <Label htmlFor="rows-per-page" className="text-sm font-medium">
-                {t('rowsPerPage')}
+                {tTable('rowsPerPage')}
               </Label>
               <Select
                 value={`${pageSize}`}
@@ -466,7 +469,7 @@ export function UsersTable({
               </Select>
             </div>
             <div className="flex w-fit items-center justify-center text-sm font-medium">
-              {t('page')} {pageIndex + 1} {' / '}
+              {tTable('page')} {pageIndex + 1} {' / '}
               {Math.max(1, Math.ceil(total / pageSize))}
             </div>
             <div className="ml-auto flex items-center gap-2 lg:ml-0">
@@ -476,7 +479,7 @@ export function UsersTable({
                 onClick={() => onPageChange(0)}
                 disabled={pageIndex === 0}
               >
-                <span className="sr-only">{t('firstPage')}</span>
+                <span className="sr-only">{tTable('firstPage')}</span>
                 <ChevronsLeftIcon />
               </Button>
               <Button
@@ -486,7 +489,7 @@ export function UsersTable({
                 onClick={() => onPageChange(pageIndex - 1)}
                 disabled={pageIndex === 0}
               >
-                <span className="sr-only">{t('previousPage')}</span>
+                <span className="sr-only">{tTable('previousPage')}</span>
                 <ChevronLeftIcon />
               </Button>
               <Button
@@ -496,7 +499,7 @@ export function UsersTable({
                 onClick={() => onPageChange(pageIndex + 1)}
                 disabled={pageIndex + 1 >= Math.ceil(total / pageSize)}
               >
-                <span className="sr-only">{t('nextPage')}</span>
+                <span className="sr-only">{tTable('nextPage')}</span>
                 <ChevronRightIcon />
               </Button>
               <Button
@@ -508,7 +511,7 @@ export function UsersTable({
                 }
                 disabled={pageIndex + 1 >= Math.ceil(total / pageSize)}
               >
-                <span className="sr-only">{t('lastPage')}</span>
+                <span className="sr-only">{tTable('lastPage')}</span>
                 <ChevronsRightIcon />
               </Button>
             </div>

@@ -470,14 +470,6 @@
           "banReason": "Ban Reason",
           "banExpires": "Ban Expires"
         },
-        "noResults": "No results",
-        "firstPage": "First Page",
-        "lastPage": "Last Page",
-        "nextPage": "Next Page",
-        "previousPage": "Previous Page",
-        "rowsPerPage": "Rows per page",
-        "page": "Page",
-        "loading": "Loading...",
         "admin": "Admin",
         "user": "User",
         "email": {

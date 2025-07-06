@@ -125,12 +125,27 @@ export function CreditTransactionsTable({
 }: CreditTransactionsTableProps) {
   const t = useTranslations('Dashboard.settings.credits.transactions');
   const tTable = useTranslations('Common.table');
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'createdAt', desc: true }
+  ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   // show fake data in demo website
   const isDemo = process.env.NEXT_PUBLIC_DEMO_WEBSITE === 'true';
+
+  // Map column IDs to translation keys
+  const columnIdToTranslationKey = {
+    type: 'columns.type' as const,
+    amount: 'columns.amount' as const,
+    remainingAmount: 'columns.remainingAmount' as const,
+    description: 'columns.description' as const,
+    paymentId: 'columns.paymentId' as const,
+    expirationDate: 'columns.expirationDate' as const,
+    expirationDateProcessedAt: 'columns.expirationDateProcessedAt' as const,
+    createdAt: 'columns.createdAt' as const,
+    updatedAt: 'columns.updatedAt' as const,
+  } as const;
 
   // Get transaction type icon and color
   const getTransactionTypeIcon = (type: string) => {
@@ -425,30 +440,6 @@ export function CreditTransactionsTable({
               .getAllColumns()
               .filter((column) => column.getCanHide())
               .map((column) => {
-                const getColumnDisplayName = (columnId: string) => {
-                  switch (columnId) {
-                    case 'type':
-                      return t('columns.type');
-                    case 'amount':
-                      return t('columns.amount');
-                    case 'remainingAmount':
-                      return t('columns.remainingAmount');
-                    case 'description':
-                      return t('columns.description');
-                    case 'paymentId':
-                      return t('columns.paymentId');
-                    case 'expirationDate':
-                      return t('columns.expirationDate');
-                    case 'expirationDateProcessedAt':
-                      return t('columns.expirationDateProcessedAt');
-                    case 'createdAt':
-                      return t('columns.createdAt');
-                    case 'updatedAt':
-                      return t('columns.updatedAt');
-                    default:
-                      return columnId;
-                  }
-                };
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
@@ -458,7 +449,11 @@ export function CreditTransactionsTable({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {getColumnDisplayName(column.id)}
+                    {t(
+                      columnIdToTranslationKey[
+                        column.id as keyof typeof columnIdToTranslationKey
+                      ] || 'columns.columns'
+                    )}
                   </DropdownMenuCheckboxItem>
                 );
               })}
