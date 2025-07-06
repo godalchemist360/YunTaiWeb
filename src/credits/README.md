@@ -41,7 +41,7 @@ This document describes the credit management system implementation for the mksa
 - `src/payment/types.ts` - Payment types (updated)
 
 ### Configuration
-- `src/lib/constants.ts` - Credit packages configuration
+- `src/config/website.tsx` - Credit packages configuration
 - `env.example` - Environment variables template
 
 ### Pages
@@ -98,23 +98,33 @@ await addCredits({
   type: 'PURCHASE',
   description: 'Credit purchase'
 });
+
+// Access credit packages from config
+import { websiteConfig } from '@/config/website';
+const creditPackages = Object.values(websiteConfig.credits.packages);
 ```
 
 ## Credit Packages Configuration
 
-Edit `src/lib/constants.ts` to modify available credit packages:
+Edit `src/config/website.tsx` to modify available credit packages:
 
 ```typescript
-export const CREDIT_PACKAGES = [
-  {
-    id: 'basic',
-    credits: 100,
-    price: 9.99,
-    popular: false,
-    description: 'Perfect for getting started',
+export const websiteConfig: WebsiteConfig = {
+  // ... other config
+  credits: {
+    enableCredits: true,
+    packages: {
+      basic: {
+        id: 'basic',
+        credits: 100,
+        price: 990, // Price in cents
+        popular: false,
+        description: 'Perfect for getting started',
+      },
+      // ... more packages
+    },
   },
-  // ... more packages
-];
+};
 ```
 
 ## Webhook Events

@@ -3,6 +3,7 @@
 import { confirmCreditPayment } from '@/actions/credits.action';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import type { CreditPackage } from '@/credits/types';
 import { formatPrice } from '@/lib/formatter';
 import { useTransactionStore } from '@/stores/transaction-store';
 import {
@@ -13,19 +14,15 @@ import {
 } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { CoinsIcon, Loader2Icon } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
+import { useTheme } from 'next-themes';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 interface StripePaymentFormProps {
   clientSecret: string;
   packageId: string;
-  packageInfo: {
-    credits: number;
-    price: number;
-    description: string;
-  };
+  packageInfo: CreditPackage;
   onPaymentSuccess: () => void;
   onPaymentCancel: () => void;
 }
@@ -47,13 +44,16 @@ export function StripePaymentForm(props: StripePaymentFormProps) {
   }, []);
 
   const { resolvedTheme: theme } = useTheme();
-  const options = useMemo(() => ({
-    clientSecret: props.clientSecret,
-    appearance: {
-      theme: (theme === "dark" ? "night" : "stripe") as "night" | "stripe",
-    },
-    loader: 'auto' as const,
-  }), [props.clientSecret, theme]);
+  const options = useMemo(
+    () => ({
+      clientSecret: props.clientSecret,
+      appearance: {
+        theme: (theme === 'dark' ? 'night' : 'stripe') as 'night' | 'stripe',
+      },
+      loader: 'auto' as const,
+    }),
+    [props.clientSecret, theme]
+  );
 
   return (
     <Elements stripe={stripePromise} options={options}>
@@ -65,11 +65,7 @@ export function StripePaymentForm(props: StripePaymentFormProps) {
 interface PaymentFormProps {
   clientSecret: string;
   packageId: string;
-  packageInfo: {
-    credits: number;
-    price: number;
-    description: string;
-  };
+  packageInfo: CreditPackage;
   onPaymentSuccess: () => void;
   onPaymentCancel: () => void;
 }
@@ -101,12 +97,12 @@ function PaymentForm({
       // Confirm the payment using PaymentElement
       const { error } = await stripe.confirmPayment({
         elements,
-        redirect: "if_required",
+        redirect: 'if_required',
       });
 
       if (error) {
         console.error('PaymentForm, payment error:', error);
-        throw new Error(error.message || "Payment failed");
+        throw new Error(error.message || 'Payment failed');
       } else {
         // The payment was successful
         const paymentIntent = await stripe.retrievePaymentIntent(clientSecret);
@@ -126,11 +122,11 @@ function PaymentForm({
             // toast.success(`${packageInfo.credits} credits have been added to your account.`);
           } else {
             console.error('PaymentForm, payment error:', result?.data?.error);
-            throw new Error( result?.data?.error || 'Failed to confirm payment' );
+            throw new Error(result?.data?.error || 'Failed to confirm payment');
           }
         } else {
           console.error('PaymentForm, no payment intent found');
-          throw new Error("No payment intent found");
+          throw new Error('No payment intent found');
         }
       }
     } catch (error) {

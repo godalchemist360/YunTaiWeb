@@ -129,4 +129,37 @@ export const websiteConfig: WebsiteConfig = {
       },
     },
   },
+  credits: {
+    enableCredits: true,
+    packages: {
+      basic: {
+        id: 'basic',
+        credits: 100,
+        price: 990,
+        popular: false,
+        description: 'Perfect for getting started',
+      },
+      standard: {
+        id: 'standard',
+        credits: 200,
+        price: 1490,
+        popular: true,
+        description: 'Most popular package',
+      },
+      premium: {
+        id: 'premium',
+        credits: 500,
+        price: 3990,
+        popular: false,
+        description: 'Best value for heavy users',
+      },
+      enterprise: {
+        id: 'enterprise',
+        credits: 1000,
+        price: 6990,
+        popular: false,
+        description: 'Tailored for enterprises',
+      },
+    },
+  },
 };

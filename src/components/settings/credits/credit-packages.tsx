@@ -1,11 +1,25 @@
 'use client';
 
-import { createCreditPaymentIntent, getCreditsAction } from '@/actions/credits.action';
+import {
+  createCreditPaymentIntent,
+  getCreditsAction,
+} from '@/actions/credits.action';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { CREDIT_PACKAGES } from '@/lib/constants';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { getCreditPackageById, getCreditPackages } from '@/credits';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { useTransactionStore } from '@/stores/transaction-store';
@@ -21,6 +35,7 @@ export function CreditPackages() {
   const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
   const { refreshTrigger } = useTransactionStore();
+
   const [paymentDialog, setPaymentDialog] = useState<{
     isOpen: boolean;
     packageId: string | null;
@@ -67,8 +82,12 @@ export function CreditPackages() {
           clientSecret: result.data.clientSecret,
         });
       } else {
-        const errorMessage = result?.data?.error || t('failedToCreatePaymentIntent');
-        console.error('CreditPackages, failed to create payment intent:', errorMessage);
+        const errorMessage =
+          result?.data?.error || t('failedToCreatePaymentIntent');
+        console.error(
+          'CreditPackages, failed to create payment intent:',
+          errorMessage
+        );
         toast.error(errorMessage);
       }
     } catch (error) {
@@ -98,15 +117,13 @@ export function CreditPackages() {
     });
   };
 
-  const getPackageInfo = (packageId: string) => {
-    return CREDIT_PACKAGES.find((pkg) => pkg.id === packageId);
-  };
-
   return (
     <div className="space-y-6">
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-semibold">{t('balance')}</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            {t('balance')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4">
@@ -133,12 +150,20 @@ export function CreditPackages() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {CREDIT_PACKAGES.map((pkg) => (
-              <Card key={pkg.id} className={cn(`relative ${pkg.popular ? 'border-primary' : ''}`,
-                'shadow-none border-1 border-border')}>
+            {getCreditPackages().map((pkg) => (
+              <Card
+                key={pkg.id}
+                className={cn(
+                  `relative ${pkg.popular ? 'border-primary' : ''}`,
+                  'shadow-none border-1 border-border'
+                )}
+              >
                 {pkg.popular && (
                   <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2">
-                    <Badge variant="default" className="bg-primary text-primary-foreground">
+                    <Badge
+                      variant="default"
+                      className="bg-primary text-primary-foreground"
+                    >
                       {t('popular')}
                     </Badge>
                   </div>
@@ -203,7 +228,7 @@ export function CreditPackages() {
             <StripePaymentForm
               clientSecret={paymentDialog.clientSecret}
               packageId={paymentDialog.packageId}
-              packageInfo={getPackageInfo(paymentDialog.packageId)!}
+              packageInfo={getCreditPackageById(paymentDialog.packageId)!}
               onPaymentSuccess={handlePaymentSuccess}
               onPaymentCancel={handlePaymentCancel}
             />

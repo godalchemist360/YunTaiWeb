@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { PricePlan } from '@/payment/types';
+import type { CreditPackage } from '@/credits/types';
 
 /**
  * website config, without translations
@@ -17,6 +18,7 @@ export type WebsiteConfig = {
   storage: StorageConfig;
   payment: PaymentConfig;
   price: PriceConfig;
+  credits: CreditsConfig;
 };
 
 /**
@@ -146,6 +148,14 @@ export interface PaymentConfig {
  */
 export interface PriceConfig {
   plans: Record<string, PricePlan>;  // Plans indexed by ID
+}
+
+/**
+ * Credits configuration
+ */
+export interface CreditsConfig {
+  enableCredits: boolean;            // Whether to enable credits
+  packages: Record<string, CreditPackage>;  // Packages indexed by ID
 }
 
 /**

@@ -1,6 +1,6 @@
 'use server';
 
-import { CREDIT_PACKAGES } from '@/lib/constants';
+import { getCreditPackageById } from '@/credits';
 import {
   addMonthlyFreeCredits,
   addRegisterGiftCredits,
@@ -77,7 +77,7 @@ export const createCreditPaymentIntent = actionClient
     const { packageId } = parsedInput;
 
     // Find the credit package
-    const creditPackage = CREDIT_PACKAGES.find((pkg) => pkg.id === packageId);
+    const creditPackage = getCreditPackageById(packageId);
     if (!creditPackage) {
       return { success: false, error: 'Invalid credit package' };
     }
@@ -127,7 +127,7 @@ export const confirmCreditPayment = actionClient
     const { packageId, paymentIntentId } = parsedInput;
 
     // Find the credit package
-    const creditPackage = CREDIT_PACKAGES.find((pkg) => pkg.id === packageId);
+    const creditPackage = getCreditPackageById(packageId);
     if (!creditPackage) {
       return { success: false, error: 'Invalid credit package' };
     }
