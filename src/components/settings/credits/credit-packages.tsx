@@ -19,10 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  getCreditPackageByIdInClient,
-  getCreditPackagesInClient,
-} from '@/credits/client';
+import { getCreditPackages } from '@/config/credits-config';
 import type { CreditPackage } from '@/credits/types';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
@@ -33,6 +30,10 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { StripePaymentForm } from './stripe-payment-form';
 
+/**
+ * Credit packages component
+ * @returns Credit packages component
+ */
 export function CreditPackages() {
   const t = useTranslations('Dashboard.settings.credits.packages');
   const [loadingCredits, setLoadingCredits] = useState(true);
@@ -49,6 +50,8 @@ export function CreditPackages() {
     packageId: null,
     clientSecret: null,
   });
+
+  const creditPackages = Object.values(getCreditPackages());
 
   const fetchCredits = async () => {
     try {
@@ -122,7 +125,7 @@ export function CreditPackages() {
   };
 
   const getPackageInfo = (packageId: string): CreditPackage | undefined => {
-    return getCreditPackageByIdInClient(packageId);
+    return creditPackages.find((pkg) => pkg.id === packageId);
   };
 
   return (
@@ -158,7 +161,7 @@ export function CreditPackages() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {getCreditPackagesInClient().map((pkg) => (
+            {creditPackages.map((pkg) => (
               <Card
                 key={pkg.id}
                 className={cn(
@@ -176,10 +179,6 @@ export function CreditPackages() {
                     </Badge>
                   </div>
                 )}
-
-                {/* <CardHeader className="text-center">
-                      <CardTitle className="text-lg capitalize">{pkg.id}</CardTitle>
-                    </CardHeader> */}
 
                 <CardContent className="space-y-3">
                   {/* Price and Credits - Left/Right Layout */}

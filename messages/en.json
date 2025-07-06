@@ -114,19 +114,19 @@
   "CreditPackages": {
     "basic": {
       "name": "Basic",
-      "description": "Basic features for personal use"
+      "description": "Basic credits package description"
     },
     "standard": {
       "name": "Standard",
-      "description": "Standard features for personal use"
+      "description": "Standard credits package description"
     },
     "premium": {
       "name": "Premium",
-      "description": "Premium features for personal use"
+      "description": "Premium credits package description"
     },
     "enterprise": {
       "name": "Enterprise",
-      "description": "Enterprise features for personal use"
+      "description": "Enterprise credits package description"
     }
   },
   "NotFoundPage": {
