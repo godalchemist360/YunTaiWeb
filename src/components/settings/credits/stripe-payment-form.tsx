@@ -14,6 +14,7 @@ import {
 import { loadStripe } from '@stripe/stripe-js';
 import { CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -82,6 +83,7 @@ function PaymentForm({
 }: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
+  const t = useTranslations('Dashboard.settings.credits.packages');
   const [processing, setProcessing] = useState(false);
   const { triggerRefresh } = useTransactionStore();
 
@@ -133,7 +135,7 @@ function PaymentForm({
       }
     } catch (error) {
       console.error('PaymentForm, payment error:', error);
-      toast.error('Purchase credits failed');
+      toast.error(t('purchaseFailed'));
     } finally {
       setProcessing(false);
     }
@@ -173,7 +175,7 @@ function PaymentForm({
             disabled={processing}
             className="cursor-pointer"
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button
             type="submit"
@@ -183,11 +185,11 @@ function PaymentForm({
             {processing ? (
               <>
                 <Loader2Icon className="h-4 w-4 animate-spin" />
-                Processing...
+                {t('processing')}
               </>
             ) : (
               <>
-                Pay {/* {formatPrice(packageInfo.price, 'USD')} */}
+                {t('pay')} {/* {formatPrice(packageInfo.price, 'USD')} */}
               </>
             )}
           </Button>

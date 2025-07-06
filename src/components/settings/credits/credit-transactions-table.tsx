@@ -123,26 +123,14 @@ export function CreditTransactionsTable({
   onPageSizeChange,
   onSortingChange,
 }: CreditTransactionsTableProps) {
-  const t = useTranslations('Dashboard.admin.creditTransactions');
+  const t = useTranslations('Dashboard.settings.credits.transactions');
+  const tTable = useTranslations('Common.table');
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   // show fake data in demo website
   const isDemo = process.env.NEXT_PUBLIC_DEMO_WEBSITE === 'true';
-
-  // Map column IDs to translation keys
-  const columnIdToTranslationKey = {
-    type: 'columns.type' as const,
-    amount: 'columns.amount' as const,
-    remainingAmount: 'columns.remainingAmount' as const,
-    description: 'columns.description' as const,
-    paymentId: 'columns.paymentId' as const,
-    expirationDate: 'columns.expirationDate' as const,
-    expirationDateProcessedAt: 'columns.expirationDateProcessedAt' as const,
-    createdAt: 'columns.createdAt' as const,
-    updatedAt: 'columns.updatedAt' as const,
-  } as const;
 
   // Get transaction type icon and color
   const getTransactionTypeIcon = (type: string) => {
@@ -180,6 +168,24 @@ export function CreditTransactionsTable({
     }
   };
 
+  // Get transaction type display name
+  const getTransactionTypeDisplayName = (type: string) => {
+    switch (type) {
+      case CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH:
+        return t('types.MONTHLY_REFRESH');
+      case CREDIT_TRANSACTION_TYPE.REGISTER_GIFT:
+        return t('types.REGISTER_GIFT');
+      case CREDIT_TRANSACTION_TYPE.PURCHASE:
+        return t('types.PURCHASE');
+      case CREDIT_TRANSACTION_TYPE.USAGE:
+        return t('types.USAGE');
+      case CREDIT_TRANSACTION_TYPE.EXPIRE:
+        return t('types.EXPIRE');
+      default:
+        return type;
+    }
+  };
+
   // Table columns definition
   const columns: ColumnDef<CreditTransaction>[] = [
     {
@@ -196,7 +202,7 @@ export function CreditTransactionsTable({
               className={`px-2 py-1 flex items-center gap-1 ${getTransactionTypeColor(transaction.type)}`}
             >
               {getTransactionTypeIcon(transaction.type)}
-              {transaction.type}
+              {getTransactionTypeDisplayName(transaction.type)}
             </Badge>
           </div>
         );
@@ -419,6 +425,30 @@ export function CreditTransactionsTable({
               .getAllColumns()
               .filter((column) => column.getCanHide())
               .map((column) => {
+                const getColumnDisplayName = (columnId: string) => {
+                  switch (columnId) {
+                    case 'type':
+                      return t('columns.type');
+                    case 'amount':
+                      return t('columns.amount');
+                    case 'remainingAmount':
+                      return t('columns.remainingAmount');
+                    case 'description':
+                      return t('columns.description');
+                    case 'paymentId':
+                      return t('columns.paymentId');
+                    case 'expirationDate':
+                      return t('columns.expirationDate');
+                    case 'expirationDateProcessedAt':
+                      return t('columns.expirationDateProcessedAt');
+                    case 'createdAt':
+                      return t('columns.createdAt');
+                    case 'updatedAt':
+                      return t('columns.updatedAt');
+                    default:
+                      return columnId;
+                  }
+                };
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
@@ -428,11 +458,7 @@ export function CreditTransactionsTable({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {t(
-                      columnIdToTranslationKey[
-                        column.id as keyof typeof columnIdToTranslationKey
-                      ] || 'columns.columns'
-                    )}
+                    {getColumnDisplayName(column.id)}
                   </DropdownMenuCheckboxItem>
                 );
               })}
@@ -483,7 +509,7 @@ export function CreditTransactionsTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  {loading ? t('loading') : t('noResults')}
+                  {loading ? tTable('loading') : tTable('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -495,14 +521,14 @@ export function CreditTransactionsTable({
         <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
           {total > 0 && (
             <span>
-              {t('totalRecords', { count: total })}
+              {tTable('totalRecords', { count: total })}
             </span>
           )}
         </div>
         <div className="flex w-full items-center gap-8 lg:w-fit">
           <div className="hidden items-center gap-2 lg:flex">
             <Label htmlFor="rows-per-page" className="text-sm font-medium">
-              {t('rowsPerPage')}
+              {tTable('rowsPerPage')}
             </Label>
             <Select
               value={`${pageSize}`}
@@ -528,7 +554,7 @@ export function CreditTransactionsTable({
             </Select>
           </div>
           <div className="flex w-fit items-center justify-center text-sm font-medium">
-            {t('page')} {pageIndex + 1} {' / '}
+            {tTable('page')} {pageIndex + 1} {' / '}
             {Math.max(1, Math.ceil(total / pageSize))}
           </div>
           <div className="flex items-center gap-2">
@@ -538,7 +564,7 @@ export function CreditTransactionsTable({
               onClick={() => onPageChange(0)}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">{t('goToFirstPage')}</span>
+              <span className="sr-only">{tTable('firstPage')}</span>
               <ChevronsLeftIcon className="h-4 w-4" />
             </Button>
             <Button
@@ -547,7 +573,7 @@ export function CreditTransactionsTable({
               onClick={() => onPageChange(pageIndex - 1)}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">{t('goToPreviousPage')}</span>
+              <span className="sr-only">{tTable('previousPage')}</span>
               <ChevronLeftIcon className="h-4 w-4" />
             </Button>
             <Button
@@ -556,7 +582,7 @@ export function CreditTransactionsTable({
               onClick={() => onPageChange(pageIndex + 1)}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">{t('goToNextPage')}</span>
+              <span className="sr-only">{tTable('nextPage')}</span>
               <ChevronRightIcon className="h-4 w-4" />
             </Button>
             <Button
@@ -565,7 +591,7 @@ export function CreditTransactionsTable({
               onClick={() => onPageChange(Math.ceil(total / pageSize) - 1)}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">{t('goToLastPage')}</span>
+              <span className="sr-only">{tTable('lastPage')}</span>
               <ChevronsRightIcon className="h-4 w-4" />
             </Button>
           </div>

@@ -3,19 +3,20 @@
 import { createCreditPaymentIntent, getCreditsAction } from '@/actions/credits.action';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CREDIT_PACKAGES } from '@/lib/constants';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { useTransactionStore } from '@/stores/transaction-store';
 import { CircleCheckBigIcon, CoinsIcon, Loader2Icon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Separator } from '../../ui/separator';
 import { StripePaymentForm } from './stripe-payment-form';
 
 export function CreditPackages() {
+  const t = useTranslations('Dashboard.settings.credits.packages');
   const [loadingCredits, setLoadingCredits] = useState(true);
   const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
@@ -38,13 +39,13 @@ export function CreditPackages() {
         console.log('CreditPackages, fetched credits:', result.data.credits);
         setCredits(result.data.credits || 0);
       } else {
-        const errorMessage = result?.data?.error || 'Failed to fetch credits';
+        const errorMessage = result?.data?.error || t('failedToFetchCredits');
         console.error('CreditPackages, failed to fetch credits:', errorMessage);
         toast.error(errorMessage);
       }
     } catch (error) {
       console.error('CreditPackages, failed to fetch credits:', error);
-      toast.error('Failed to fetch credits');
+      toast.error(t('failedToFetchCredits'));
     } finally {
       setLoadingCredits(false);
     }
@@ -66,13 +67,13 @@ export function CreditPackages() {
           clientSecret: result.data.clientSecret,
         });
       } else {
-        const errorMessage = result?.data?.error || 'Failed to create payment intent';
+        const errorMessage = result?.data?.error || t('failedToCreatePaymentIntent');
         console.error('CreditPackages, failed to create payment intent:', errorMessage);
         toast.error(errorMessage);
       }
     } catch (error) {
       console.error('CreditPackages, failed to initiate payment:', error);
-      toast.error('Failed to initiate payment');
+      toast.error(t('failedToInitiatePayment'));
     } finally {
       setLoadingPackage(null);
     }
@@ -85,7 +86,7 @@ export function CreditPackages() {
       packageId: null,
       clientSecret: null,
     });
-    toast.success('Credits have been added to your account');
+    toast.success(t('creditsAdded'));
   };
 
   const handlePaymentCancel = () => {
@@ -105,7 +106,7 @@ export function CreditPackages() {
     <div className="space-y-6">
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-semibold">Credit Balance</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('balance')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4">
@@ -119,74 +120,74 @@ export function CreditPackages() {
                 )}
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
 
-            <Separator className="my-2" />
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">{t('title')}</CardTitle>
+          <CardDescription className="text-sm text-muted-foreground">
+            {t('description')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {CREDIT_PACKAGES.map((pkg) => (
+              <Card key={pkg.id} className={cn(`relative ${pkg.popular ? 'border-primary' : ''}`,
+                'shadow-none border-1 border-border')}>
+                {pkg.popular && (
+                  <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2">
+                    <Badge variant="default" className="bg-primary text-primary-foreground">
+                      {t('popular')}
+                    </Badge>
+                  </div>
+                )}
 
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-2">
-                <h2 className="text-lg font-semibold">Credit Packages</h2>
-                <p className="text-sm text-muted-foreground">
-                  Purchase additional credits to use our services
-                </p>
-              </div>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {CREDIT_PACKAGES.map((pkg) => (
-                  <Card key={pkg.id} className={cn(`relative ${pkg.popular ? 'border-primary' : ''}`,
-                    'shadow-none border-1 border-border')}>
-                    {pkg.popular && (
-                      <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2">
-                        <Badge variant="default" className="bg-primary text-primary-foreground">
-                          Most Popular
-                        </Badge>
-                      </div>
-                    )}
-
-                    {/* <CardHeader className="text-center">
+                {/* <CardHeader className="text-center">
                       <CardTitle className="text-lg capitalize">{pkg.id}</CardTitle>
                     </CardHeader> */}
 
-                    <CardContent className="space-y-3">
-                      {/* Price and Credits - Left/Right Layout */}
-                      <div className="flex items-center justify-between py-2">
-                        <div className="text-left">
-                          <div className="text-2xl font-semibold flex items-center gap-2">
-                            <CoinsIcon className="h-4 w-4 text-muted-foreground" />
-                            {pkg.credits.toLocaleString()}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-primary">
-                            {formatPrice(pkg.price, 'USD')}
-                          </div>
-                        </div>
+                <CardContent className="space-y-3">
+                  {/* Price and Credits - Left/Right Layout */}
+                  <div className="flex items-center justify-between py-2">
+                    <div className="text-left">
+                      <div className="text-2xl font-semibold flex items-center gap-2">
+                        <CoinsIcon className="h-4 w-4 text-muted-foreground" />
+                        {pkg.credits.toLocaleString()}
                       </div>
-
-                      <div className="text-sm text-muted-foreground text-left py-2 flex items-center gap-2">
-                        <CircleCheckBigIcon className="h-4 w-4 text-green-500" />
-                        {pkg.description}
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold text-primary">
+                        {formatPrice(pkg.price, 'USD')}
                       </div>
+                    </div>
+                  </div>
 
-                      {/* purchase button */}
-                      <Button
-                        onClick={() => handlePurchase(pkg.id)}
-                        disabled={loadingPackage === pkg.id}
-                        className="w-full cursor-pointer"
-                        variant={pkg.popular ? 'default' : 'outline'}
-                      >
-                        {loadingPackage === pkg.id ? (
-                          <>
-                            <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                            Processing...
-                          </>
-                        ) : (
-                          'Purchase'
-                        )}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+                  <div className="text-sm text-muted-foreground text-left py-2 flex items-center gap-2">
+                    <CircleCheckBigIcon className="h-4 w-4 text-green-500" />
+                    {pkg.description}
+                  </div>
+
+                  {/* purchase button */}
+                  <Button
+                    onClick={() => handlePurchase(pkg.id)}
+                    disabled={loadingPackage === pkg.id}
+                    className="w-full cursor-pointer"
+                    variant={pkg.popular ? 'default' : 'outline'}
+                  >
+                    {loadingPackage === pkg.id ? (
+                      <>
+                        <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                        {t('processing')}
+                      </>
+                    ) : (
+                      t('purchase')
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -195,7 +196,7 @@ export function CreditPackages() {
       <Dialog open={paymentDialog.isOpen} onOpenChange={handlePaymentCancel}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Complete Your Purchase</DialogTitle>
+            <DialogTitle>{t('completePurchase')}</DialogTitle>
           </DialogHeader>
 
           {paymentDialog.clientSecret && paymentDialog.packageId && (

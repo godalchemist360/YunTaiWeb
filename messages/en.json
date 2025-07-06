@@ -28,7 +28,19 @@
     "save": "Save",
     "loading": "Loading...",
     "cancel": "Cancel",
-    "logoutFailed": "Failed to log out"
+    "logoutFailed": "Failed to log out",
+    "table": {
+      "totalRecords": "Total {count} records",
+      "noResults": "No results",
+      "loading": "Loading...",
+      "columns": "Columns",
+      "rowsPerPage": "Rows per page",
+      "page": "Page",
+      "firstPage": "First Page",
+      "lastPage": "Last Page",
+      "nextPage": "Next Page",
+      "previousPage": "Previous Page"
+    }
   },
   "PricingPage": {
     "title": "Pricing",
@@ -494,44 +506,8 @@
           "error": "Failed to unban user"
         },
         "close": "Close"
+        }
       },
-      "creditTransactions": {
-        "title": "Credit Transactions",
-        "error": "Failed to get credit transactions",
-        "search": "Search credit transactions...",
-        "columns": {
-          "columns": "Columns",
-          "id": "ID",
-          "type": "Type",
-          "description": "Description",
-          "amount": "Amount",
-          "remainingAmount": "Remaining Amount",
-          "paymentId": "Payment ID",
-          "expirationDate": "Expiration Date",
-          "expirationDateProcessedAt": "Expiration Date Processed At",
-          "createdAt": "Created At",
-          "updatedAt": "Updated At"
-        },
-        "noResults": "No results",
-        "firstPage": "First Page",
-        "lastPage": "Last Page",
-        "nextPage": "Next Page",
-        "previousPage": "Previous Page",
-        "rowsPerPage": "Rows per page",
-        "page": "Page",
-        "loading": "Loading...",
-        "paymentIdCopied": "Payment ID copied to clipboard",
-        "types": {
-          "MONTHLY_REFRESH": "Monthly Refresh",
-          "REGISTER_GIFT": "Register Gift",
-          "PURCHASE": "Purchase",
-          "USAGE": "Usage",
-          "EXPIRE": "Expire"
-        },
-        "expired": "Expired",
-        "never": "Never"
-      }
-    },
     "settings": {
       "title": "Settings",
       "profile": {
@@ -596,9 +572,60 @@
       "credits": {
         "title": "Credits",
         "description": "Manage your credits",
-        "credits": "Credits",
-        "creditsDescription": "You have {credits} credits",
-        "creditsExpired": "Credits expired"
+        "balance": {
+          "title": "Credit Balance",
+          "credits": "Credits",
+          "creditsDescription": "You have {credits} credits",
+          "creditsExpired": "Credits expired"
+        },
+        "packages": {
+          "balance": "Credit Balance",
+          "title": "Credit Packages",
+          "description": "Purchase additional credits to use our services",
+          "purchase": "Purchase",
+          "processing": "Processing...",
+          "popular": "Popular",
+          "completePurchase": "Complete Your Purchase",
+          "failedToFetchCredits": "Failed to fetch credits",
+          "failedToCreatePaymentIntent": "Failed to create payment intent",
+          "failedToInitiatePayment": "Failed to initiate payment",
+          "creditsAdded": "Credits have been added to your account",
+          "cancel": "Cancel",
+          "purchaseFailed": "Purchase credits failed",
+          "pay": "Pay"
+        },
+        "tabs": {
+          "balance": "Balance",
+          "transactions": "Transactions"
+        },
+        "transactions": {
+          "title": "Credit Transactions",
+          "error": "Failed to get credit transactions",
+          "search": "Search credit transactions...",
+          "columns": {
+            "columns": "Columns",
+            "id": "ID",
+            "type": "Type",
+            "description": "Description",
+            "amount": "Amount",
+            "remainingAmount": "Remaining Amount",
+            "paymentId": "Payment ID",
+            "expirationDate": "Expiration Date",
+            "expirationDateProcessedAt": "Expiration Date Processed At",
+            "createdAt": "Created At",
+            "updatedAt": "Updated At"
+          },
+          "paymentIdCopied": "Payment ID copied to clipboard",
+          "types": {
+            "MONTHLY_REFRESH": "Monthly Refresh",
+            "REGISTER_GIFT": "Register Gift",
+            "PURCHASE": "Purchase",
+            "USAGE": "Usage",
+            "EXPIRE": "Expire"
+          },
+          "expired": "Expired",
+          "never": "Never"
+        }
       },
       "notification": {
         "title": "Notification",

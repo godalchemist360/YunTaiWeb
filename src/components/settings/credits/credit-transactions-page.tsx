@@ -10,9 +10,9 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export function CreditTransactionsPageClient() {
-  const t = useTranslations('Dashboard.admin.creditTransactions');
+  const t = useTranslations('Dashboard.settings.credits.transactions');
   const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(3);
+  const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [data, setData] = useState<CreditTransaction[]>([]);
   const [total, setTotal] = useState(0);
@@ -54,21 +54,17 @@ export function CreditTransactionsPageClient() {
   }, [pageIndex, pageSize, search, sorting, refreshTrigger]);
 
   return (
-    <div className="w-full space-y-4">
-      <h1 className="text-lg font-semibold">{t('title')}</h1>
-
-      <CreditTransactionsTable
-        data={data}
-        total={total}
-        pageIndex={pageIndex}
-        pageSize={pageSize}
-        search={search}
-        loading={loading}
-        onSearch={setSearch}
-        onPageChange={setPageIndex}
-        onPageSizeChange={setPageSize}
-        onSortingChange={setSorting}
-      />
-    </div>
+    <CreditTransactionsTable
+      data={data}
+      total={total}
+      pageIndex={pageIndex}
+      pageSize={pageSize}
+      search={search}
+      loading={loading}
+      onSearch={setSearch}
+      onPageChange={setPageIndex}
+      onPageSizeChange={setPageSize}
+      onSortingChange={setSorting}
+    />
   );
 }

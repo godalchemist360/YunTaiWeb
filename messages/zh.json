@@ -11,9 +11,9 @@
     "language": "切换语言",
     "mode": {
       "label": "切换模式",
-      "light": "浅色模式",
-      "dark": "深色模式",
-      "system": "跟随系统"
+      "light": "浅色",
+      "dark": "深色",
+      "system": "系统"
     },
     "theme": {
       "label": "切换主题",
@@ -28,7 +28,19 @@
     "saving": "保存中...",
     "loading": "加载中...",
     "cancel": "取消",
-    "logoutFailed": "退出失败"
+    "logoutFailed": "退出失败",
+    "table": {
+      "totalRecords": "总共 {count} 条记录",
+      "noResults": "无结果",
+      "loading": "加载中...",
+      "columns": "列",
+      "rowsPerPage": "每页行数",
+      "page": "页",
+      "firstPage": "第一页",
+      "lastPage": "最后一页",
+      "nextPage": "下一页",
+      "previousPage": "上一页"
+    }
   },
   "PricingPage": {
     "title": "价格",
@@ -495,42 +507,6 @@
           "error": "解除封禁失败"
         },
         "close": "关闭"
-      },
-      "creditTransactions": {
-        "title": "积分交易记录",
-        "error": "获取积分交易记录失败",
-        "search": "搜索积分交易记录...",
-        "columns": {
-          "columns": "列",
-          "id": "ID",
-          "type": "类型",
-          "description": "描述",
-          "amount": "金额",
-          "remainingAmount": "剩余金额",
-          "paymentId": "支付ID",
-          "expirationDate": "过期时间",
-          "expirationDateProcessedAt": "过期时间处理时间",
-          "createdAt": "创建时间",
-          "updatedAt": "更新时间"
-        },
-        "noResults": "无结果",
-        "firstPage": "首页",
-        "lastPage": "末页",
-        "nextPage": "下一页",
-        "previousPage": "上一页",
-        "rowsPerPage": "每页行数",
-        "page": "页",
-        "loading": "加载中...",
-        "paymentIdCopied": "支付ID已复制到剪贴板",
-        "types": {
-          "MONTHLY_REFRESH": "月度刷新",
-          "REGISTER_GIFT": "注册礼品",
-          "PURCHASE": "购买",
-          "USAGE": "使用",
-          "EXPIRE": "过期"
-        },
-        "expired": "已过期",
-        "never": "永不"
       }
     },
     "settings": {
@@ -593,6 +569,64 @@
         "upgradePlan": "升级方案",
         "retry": "重试",
         "errorMessage": "获取数据失败"
+      },
+      "credits": {
+        "title": "积分",
+        "description": "管理您的积分",
+        "balance": {
+          "title": "积分余额",
+          "credits": "积分",
+          "creditsDescription": "您有 {credits} 积分",
+          "creditsExpired": "积分已过期"
+        },
+        "packages": {
+          "balance": "积分余额",
+          "title": "积分套餐",
+          "description": "购买积分以使用我们的更多服务",
+          "purchase": "购买",
+          "processing": "处理中...",
+          "popular": "热门",
+          "completePurchase": "请支付订单",
+          "failedToFetchCredits": "获取积分失败",
+          "failedToCreatePaymentIntent": "创建付款意向失败",
+          "failedToInitiatePayment": "发起付款失败",
+          "creditsAdded": "积分已添加到您的账户",
+          "cancel": "取消",
+          "purchaseFailed": "购买积分失败",
+          "pay": "支付"
+        },
+        "tabs": {
+          "balance": "积分余额",
+          "transactions": "积分记录"
+        },
+        "transactions": {
+          "title": "积分记录",
+          "error": "获取积分交易记录失败",
+          "search": "搜索积分交易记录...",
+          "columns": {
+            "columns": "列",
+            "id": "ID",
+            "type": "类型",
+            "description": "描述",
+            "amount": "金额",
+            "remainingAmount": "剩余金额",
+            "paymentId": "支付编号",
+            "expirationDate": "过期日期",
+            "expirationDateProcessedAt": "过期日期处理时间",
+            "createdAt": "创建时间",
+            "updatedAt": "更新时间"
+          },
+          "paymentIdCopied": "支付ID已复制到剪贴板",
+          "types": {
+            "MONTHLY_REFRESH": "每月刷新",
+            "REGISTER_GIFT": "注册礼品",
+            "PURCHASE": "购买",
+            "USAGE": "使用",
+            "EXPIRE": "过期"
+          },
+          "expired": "已过期",
+          "never": "永不"
+        }
       },
       "notification": {
         "title": "通知",
