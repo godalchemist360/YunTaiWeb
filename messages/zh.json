@@ -112,6 +112,24 @@
       }
     }
   },
+  "CreditPackages": {
+    "basic": {
+      "name": "基础版",
+      "description": "基础版功能介绍放这里"
+    },
+    "standard": {
+      "name": "标准版",
+      "description": "标准版功能介绍放这里"
+    },
+    "premium": {
+      "name": "高级版",
+      "description": "高级版功能介绍放这里"
+    },
+    "enterprise": {
+      "name": "企业版",
+      "description": "企业版功能介绍放这里"
+    }
+  },
   "NotFoundPage": {
     "title": "404",
     "message": "抱歉，您正在寻找的页面不存在",

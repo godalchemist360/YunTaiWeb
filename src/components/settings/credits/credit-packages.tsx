@@ -19,7 +19,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { getCreditPackageById, getCreditPackages } from '@/credits';
+import {
+  getCreditPackageByIdInClient,
+  getCreditPackagesInClient,
+} from '@/credits/client';
+import type { CreditPackage } from '@/credits/types';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { useTransactionStore } from '@/stores/transaction-store';
@@ -117,6 +121,10 @@ export function CreditPackages() {
     });
   };
 
+  const getPackageInfo = (packageId: string): CreditPackage | undefined => {
+    return getCreditPackageByIdInClient(packageId);
+  };
+
   return (
     <div className="space-y-6">
       <Card className="w-full">
@@ -150,7 +158,7 @@ export function CreditPackages() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {getCreditPackages().map((pkg) => (
+            {getCreditPackagesInClient().map((pkg) => (
               <Card
                 key={pkg.id}
                 className={cn(
@@ -224,15 +232,17 @@ export function CreditPackages() {
             <DialogTitle>{t('completePurchase')}</DialogTitle>
           </DialogHeader>
 
-          {paymentDialog.clientSecret && paymentDialog.packageId && (
-            <StripePaymentForm
-              clientSecret={paymentDialog.clientSecret}
-              packageId={paymentDialog.packageId}
-              packageInfo={getCreditPackageById(paymentDialog.packageId)!}
-              onPaymentSuccess={handlePaymentSuccess}
-              onPaymentCancel={handlePaymentCancel}
-            />
-          )}
+          {paymentDialog.clientSecret &&
+            paymentDialog.packageId &&
+            getPackageInfo(paymentDialog.packageId) && (
+              <StripePaymentForm
+                clientSecret={paymentDialog.clientSecret}
+                packageId={paymentDialog.packageId}
+                packageInfo={getPackageInfo(paymentDialog.packageId)!}
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentCancel={handlePaymentCancel}
+              />
+            )}
         </DialogContent>
       </Dialog>
     </div>

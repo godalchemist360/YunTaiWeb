@@ -111,6 +111,24 @@
       }
     }
   },
+  "CreditPackages": {
+    "basic": {
+      "name": "Basic",
+      "description": "Basic features for personal use"
+    },
+    "standard": {
+      "name": "Standard",
+      "description": "Standard features for personal use"
+    },
+    "premium": {
+      "name": "Premium",
+      "description": "Premium features for personal use"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "Enterprise features for personal use"
+    }
+  },
   "NotFoundPage": {
     "title": "404",
     "message": "Sorry, the page you are looking for does not exist.",
@@ -498,8 +516,8 @@
           "error": "Failed to unban user"
         },
         "close": "Close"
-        }
-      },
+      }
+    },
     "settings": {
       "title": "Settings",
       "profile": {

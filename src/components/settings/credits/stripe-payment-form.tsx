@@ -77,9 +77,9 @@ function PaymentForm({
   onPaymentSuccess,
   onPaymentCancel,
 }: PaymentFormProps) {
+  const t = useTranslations('Dashboard.settings.credits.packages');
   const stripe = useStripe();
   const elements = useElements();
-  const t = useTranslations('Dashboard.settings.credits.packages');
   const [processing, setProcessing] = useState(false);
   const { triggerRefresh } = useTransactionStore();
 
@@ -103,31 +103,31 @@ function PaymentForm({
       if (error) {
         console.error('PaymentForm, payment error:', error);
         throw new Error(error.message || 'Payment failed');
-      } else {
-        // The payment was successful
-        const paymentIntent = await stripe.retrievePaymentIntent(clientSecret);
-        if (paymentIntent.paymentIntent) {
-          const result = await confirmCreditPayment({
-            packageId,
-            paymentIntentId: paymentIntent.paymentIntent.id,
-          });
+      }
 
-          if (result?.data?.success) {
-            console.log('PaymentForm, payment success');
-            // Trigger refresh for transaction-dependent UI components
-            triggerRefresh();
+      // The payment was successful
+      const paymentIntent = await stripe.retrievePaymentIntent(clientSecret);
+      if (paymentIntent.paymentIntent) {
+        const result = await confirmCreditPayment({
+          packageId,
+          paymentIntentId: paymentIntent.paymentIntent.id,
+        });
 
-            // Show success toast
-            onPaymentSuccess();
-            // toast.success(`${packageInfo.credits} credits have been added to your account.`);
-          } else {
-            console.error('PaymentForm, payment error:', result?.data?.error);
-            throw new Error(result?.data?.error || 'Failed to confirm payment');
-          }
+        if (result?.data?.success) {
+          console.log('PaymentForm, payment success');
+          // Trigger refresh for transaction-dependent UI components
+          triggerRefresh();
+
+          // Show success toast
+          onPaymentSuccess();
+          // toast.success(`${packageInfo.credits} credits have been added to your account.`);
         } else {
-          console.error('PaymentForm, no payment intent found');
-          throw new Error('No payment intent found');
+          console.error('PaymentForm, payment error:', result?.data?.error);
+          throw new Error(result?.data?.error || 'Failed to confirm payment');
         }
+      } else {
+        console.error('PaymentForm, no payment intent found');
+        throw new Error('No payment intent found');
       }
     } catch (error) {
       console.error('PaymentForm, payment error:', error);

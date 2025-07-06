@@ -1,12 +1,12 @@
 'use server';
 
-import { getCreditPackageById } from '@/credits';
 import {
   addMonthlyFreeCredits,
   addRegisterGiftCredits,
   consumeCredits,
   getUserCredits,
 } from '@/credits/credits';
+import { getCreditPackageByIdInServer } from '@/credits/server';
 import { getSession } from '@/lib/server';
 import { confirmPaymentIntent, createPaymentIntent } from '@/payment';
 import { createSafeActionClient } from 'next-safe-action';
@@ -77,7 +77,7 @@ export const createCreditPaymentIntent = actionClient
     const { packageId } = parsedInput;
 
     // Find the credit package
-    const creditPackage = getCreditPackageById(packageId);
+    const creditPackage = getCreditPackageByIdInServer(packageId);
     if (!creditPackage) {
       return { success: false, error: 'Invalid credit package' };
     }
@@ -127,7 +127,7 @@ export const confirmCreditPayment = actionClient
     const { packageId, paymentIntentId } = parsedInput;
 
     // Find the credit package
-    const creditPackage = getCreditPackageById(packageId);
+    const creditPackage = getCreditPackageByIdInServer(packageId);
     if (!creditPackage) {
       return { success: false, error: 'Invalid credit package' };
     }
