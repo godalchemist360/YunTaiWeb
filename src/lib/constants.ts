@@ -42,11 +42,4 @@ export const REGISTER_GIFT_CREDITS = 100;
 // default credit expiration days
 export const CREDIT_EXPIRE_DAYS = 30;
 
-// credit transaction type
-export const CREDIT_TRANSACTION_TYPE = {
-  MONTHLY_REFRESH: 'MONTHLY_REFRESH', // credits earned by monthly refresh
-  REGISTER_GIFT: 'REGISTER_GIFT', // credits earned by register gift
-  PURCHASE: 'PURCHASE', // credits earned by purchase
-  USAGE: 'USAGE', // credits spent by usage
-  EXPIRE: 'EXPIRE', // credits expired
-};
+

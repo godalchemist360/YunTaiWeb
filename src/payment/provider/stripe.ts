@@ -8,7 +8,7 @@ import {
 } from '@/lib/price-plan';
 import { sendNotification } from '@/notification/notification';
 import { addCredits } from '@/credits/credits';
-import { CREDIT_TRANSACTION_TYPE } from '@/lib/constants';
+import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 import { desc, eq } from 'drizzle-orm';
 import { Stripe } from 'stripe';
 import {

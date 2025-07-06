@@ -5,10 +5,10 @@ import { addDays, isAfter } from 'date-fns';
 import { and, asc, eq, or } from 'drizzle-orm';
 import {
   CREDIT_EXPIRE_DAYS,
-  CREDIT_TRANSACTION_TYPE,
   FREE_MONTHLY_CREDITS,
   REGISTER_GIFT_CREDITS,
 } from '../lib/constants';
+import { CREDIT_TRANSACTION_TYPE } from './types';
 
 /**
  * Get user's current credit balance

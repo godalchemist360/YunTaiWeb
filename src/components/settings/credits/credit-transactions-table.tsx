@@ -54,7 +54,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '../../ui/badge';
 import { Label } from '../../ui/label';
-import { CREDIT_TRANSACTION_TYPE } from '@/lib/constants';
+import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 
 // Define the credit transaction interface
 interface CreditTransaction {
