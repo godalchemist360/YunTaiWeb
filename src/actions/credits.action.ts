@@ -82,10 +82,18 @@ export const createCreditPaymentIntent = actionClient
       return { success: false, error: 'Invalid credit package' };
     }
 
+    const customMetadata: Record<string, string> = {
+      packageId,
+      price: creditPackage.price.toString(),
+      credits: creditPackage.credits.toString(),
+      userId: session.user.id,
+      userName: session.user.name,
+    };
+
     try {
       // Create payment intent
       const paymentIntent = await createPaymentIntent({
-        amount: creditPackage.price * 100, // Convert to cents
+        amount: creditPackage.price,
         currency: 'usd',
         metadata: {
           packageId,

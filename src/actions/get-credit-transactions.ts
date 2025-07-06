@@ -1,0 +1,114 @@
+'use server';
+
+import { getDb } from '@/db';
+import { creditTransaction, user } from '@/db/schema';
+import { asc, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { createSafeActionClient } from 'next-safe-action';
+import { z } from 'zod';
+
+// Create a safe action client
+const actionClient = createSafeActionClient();
+
+// Define the schema for getCreditTransactions parameters
+const getCreditTransactionsSchema = z.object({
+  pageIndex: z.number().min(0).default(0),
+  pageSize: z.number().min(1).max(100).default(10),
+  search: z.string().optional().default(''),
+  sorting: z
+    .array(
+      z.object({
+        id: z.string(),
+        desc: z.boolean(),
+      })
+    )
+    .optional()
+    .default([]),
+});
+
+// Define sort field mapping
+const sortFieldMap = {
+  type: creditTransaction.type,
+  amount: creditTransaction.amount,
+  remainingAmount: creditTransaction.remainingAmount,
+  description: creditTransaction.description,
+  createdAt: creditTransaction.createdAt,
+  updatedAt: creditTransaction.updatedAt,
+  expirationDate: creditTransaction.expirationDate,
+  expirationDateProcessedAt: creditTransaction.expirationDateProcessedAt,
+  paymentId: creditTransaction.paymentId,
+} as const;
+
+// Create a safe action for getting credit transactions
+export const getCreditTransactionsAction = actionClient
+  .schema(getCreditTransactionsSchema)
+  .action(async ({ parsedInput }) => {
+    try {
+      const { pageIndex, pageSize, search, sorting } = parsedInput;
+
+      const where = search
+        ? or(
+            ilike(creditTransaction.description, `%${search}%`),
+            ilike(creditTransaction.type, `%${search}%`),
+            ilike(creditTransaction.paymentId, `%${search}%`)
+          )
+        : undefined;
+
+      const offset = pageIndex * pageSize;
+
+      // Get the sort configuration
+      const sortConfig = sorting[0];
+      const sortField = sortConfig?.id
+        ? sortFieldMap[sortConfig.id as keyof typeof sortFieldMap]
+        : creditTransaction.createdAt;
+      const sortDirection = sortConfig?.desc ? desc : asc;
+
+      const db = await getDb();
+      let [items, [{ count }]] = await Promise.all([
+        db
+          .select({
+            id: creditTransaction.id,
+            userId: creditTransaction.userId,
+            type: creditTransaction.type,
+            description: creditTransaction.description,
+            amount: creditTransaction.amount,
+            remainingAmount: creditTransaction.remainingAmount,
+            paymentId: creditTransaction.paymentId,
+            expirationDate: creditTransaction.expirationDate,
+            expirationDateProcessedAt: creditTransaction.expirationDateProcessedAt,
+            createdAt: creditTransaction.createdAt,
+            updatedAt: creditTransaction.updatedAt,
+          })
+          .from(creditTransaction)
+          .where(where)
+          .orderBy(sortDirection(sortField))
+          .limit(pageSize)
+          .offset(offset),
+        db
+          .select({ count: sql`count(*)` })
+          .from(creditTransaction)
+          .where(where),
+      ]);
+
+      // hide user data in demo website
+      if (process.env.NEXT_PUBLIC_DEMO_WEBSITE === 'true') {
+        items = items.map((item) => ({
+          ...item,
+          paymentId: item.paymentId ? 'pi_demo123456' : null,
+        }));
+      }
+
+      return {
+        success: true,
+        data: {
+          items,
+          total: Number(count),
+        },
+      };
+    } catch (error) {
+      console.error('get credit transactions error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch credit transactions',
+      };
+    }
+  });

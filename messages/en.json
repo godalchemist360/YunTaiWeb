@@ -494,6 +494,42 @@
           "error": "Failed to unban user"
         },
         "close": "Close"
+      },
+      "creditTransactions": {
+        "title": "Credit Transactions",
+        "error": "Failed to get credit transactions",
+        "search": "Search credit transactions...",
+        "columns": {
+          "columns": "Columns",
+          "id": "ID",
+          "type": "Type",
+          "description": "Description",
+          "amount": "Amount",
+          "remainingAmount": "Remaining Amount",
+          "paymentId": "Payment ID",
+          "expirationDate": "Expiration Date",
+          "expirationDateProcessedAt": "Expiration Date Processed At",
+          "createdAt": "Created At",
+          "updatedAt": "Updated At"
+        },
+        "noResults": "No results",
+        "firstPage": "First Page",
+        "lastPage": "Last Page",
+        "nextPage": "Next Page",
+        "previousPage": "Previous Page",
+        "rowsPerPage": "Rows per page",
+        "page": "Page",
+        "loading": "Loading...",
+        "paymentIdCopied": "Payment ID copied to clipboard",
+        "types": {
+          "MONTHLY_REFRESH": "Monthly Refresh",
+          "REGISTER_GIFT": "Register Gift",
+          "PURCHASE": "Purchase",
+          "USAGE": "Usage",
+          "EXPIRE": "Expire"
+        },
+        "expired": "Expired",
+        "never": "Never"
       }
     },
     "settings": {

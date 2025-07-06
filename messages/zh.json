@@ -495,6 +495,42 @@
           "error": "解除封禁失败"
         },
         "close": "关闭"
+      },
+      "creditTransactions": {
+        "title": "积分交易记录",
+        "error": "获取积分交易记录失败",
+        "search": "搜索积分交易记录...",
+        "columns": {
+          "columns": "列",
+          "id": "ID",
+          "type": "类型",
+          "description": "描述",
+          "amount": "金额",
+          "remainingAmount": "剩余金额",
+          "paymentId": "支付ID",
+          "expirationDate": "过期时间",
+          "expirationDateProcessedAt": "过期时间处理时间",
+          "createdAt": "创建时间",
+          "updatedAt": "更新时间"
+        },
+        "noResults": "无结果",
+        "firstPage": "首页",
+        "lastPage": "末页",
+        "nextPage": "下一页",
+        "previousPage": "上一页",
+        "rowsPerPage": "每页行数",
+        "page": "页",
+        "loading": "加载中...",
+        "paymentIdCopied": "支付ID已复制到剪贴板",
+        "types": {
+          "MONTHLY_REFRESH": "月度刷新",
+          "REGISTER_GIFT": "注册礼品",
+          "PURCHASE": "购买",
+          "USAGE": "使用",
+          "EXPIRE": "过期"
+        },
+        "expired": "已过期",
+        "never": "永不"
       }
     },
     "settings": {
