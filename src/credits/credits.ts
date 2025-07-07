@@ -96,7 +96,7 @@ export async function addCredits({
   type,
   description,
   paymentId,
-  expireDays = websiteConfig.credits.creditExpireDays.days,
+  expireDays = websiteConfig.credits.creditExpireDays,
 }: {
   userId: string;
   amount: number;
