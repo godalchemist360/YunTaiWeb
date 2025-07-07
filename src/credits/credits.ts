@@ -1,13 +1,9 @@
 import { randomUUID } from 'crypto';
+import { websiteConfig } from '@/config/website';
 import { getDb } from '@/db';
 import { creditTransaction, userCredit } from '@/db/schema';
 import { addDays, isAfter } from 'date-fns';
 import { and, asc, eq, or } from 'drizzle-orm';
-import {
-  CREDIT_EXPIRE_DAYS,
-  FREE_MONTHLY_CREDITS,
-  REGISTER_GIFT_CREDITS,
-} from '../lib/constants';
 import { CREDIT_TRANSACTION_TYPE } from './types';
 
 /**
@@ -45,7 +41,7 @@ export async function updateUserLastRefreshAt(userId: string, date: Date) {
  * Write a credit transaction record
  * @param params - Credit transaction parameters
  */
-export async function logCreditTransaction({
+export async function saveCreditTransaction({
   userId,
   type,
   amount,
@@ -61,11 +57,16 @@ export async function logCreditTransaction({
   expirationDate?: Date;
 }) {
   if (!userId || !type || !description) {
-    console.error('Invalid params', userId, type, description);
+    console.error(
+      'saveCreditTransaction, invalid params',
+      userId,
+      type,
+      description
+    );
     throw new Error('Invalid params');
   }
   if (!Number.isFinite(amount) || amount === 0) {
-    console.error('Invalid amount', userId, amount);
+    console.error('saveCreditTransaction, invalid amount', userId, amount);
     throw new Error('Invalid amount');
   }
   const db = await getDb();
@@ -95,7 +96,7 @@ export async function addCredits({
   type,
   description,
   paymentId,
-  expireDays = CREDIT_EXPIRE_DAYS,
+  expireDays = websiteConfig.credits.creditExpireDays.days,
 }: {
   userId: string;
   amount: number;
@@ -105,15 +106,15 @@ export async function addCredits({
   expireDays?: number;
 }) {
   if (!userId || !type || !description) {
-    console.error('Invalid params', userId, type, description);
+    console.error('addCredits, invalid params', userId, type, description);
     throw new Error('Invalid params');
   }
   if (!Number.isFinite(amount) || amount <= 0) {
-    console.error('Invalid amount', userId, amount);
+    console.error('addCredits, invalid amount', userId, amount);
     throw new Error('Invalid amount');
   }
   if (!Number.isFinite(expireDays) || expireDays <= 0) {
-    console.error('Invalid expire days', userId, expireDays);
+    console.error('addCredits, invalid expire days', userId, expireDays);
     throw new Error('Invalid expire days');
   }
   // Process expired credits first
@@ -150,7 +151,7 @@ export async function addCredits({
     });
   }
   // Write credit transaction record
-  await logCreditTransaction({
+  await saveCreditTransaction({
     userId,
     type,
     amount,
@@ -189,18 +190,20 @@ export async function consumeCredits({
   description: string;
 }) {
   if (!userId || !description) {
-    console.error('Invalid params', userId, description);
+    console.error('consumeCredits, invalid params', userId, description);
     throw new Error('Invalid params');
   }
   if (!Number.isFinite(amount) || amount <= 0) {
-    console.error('Invalid amount', userId, amount);
+    console.error('consumeCredits, invalid amount', userId, amount);
     throw new Error('Invalid amount');
   }
   // Process expired credits first
   await processExpiredCredits(userId);
   // Check balance
   if (!(await hasEnoughCredits({ userId, requiredCredits: amount }))) {
-    console.error( `Insufficient credits for user ${userId}, required: ${amount}` );
+    console.error(
+      `Insufficient credits for user ${userId}, required: ${amount}`
+    );
     throw new Error('Insufficient credits');
   }
   // FIFO consumption: consume from the earliest unexpired credits first
@@ -251,7 +254,7 @@ export async function consumeCredits({
     .set({ currentCredits: newBalance, updatedAt: new Date() })
     .where(eq(userCredit.userId, userId));
   // Write usage record
-  await logCreditTransaction({
+  await saveCreditTransaction({
     userId,
     type: CREDIT_TRANSACTION_TYPE.USAGE,
     amount: -amount,
@@ -319,7 +322,7 @@ export async function processExpiredCredits(userId: string) {
       .set({ currentCredits: newBalance, updatedAt: now })
       .where(eq(userCredit.userId, userId));
     // Write expire record
-    await logCreditTransaction({
+    await saveCreditTransaction({
       userId,
       type: CREDIT_TRANSACTION_TYPE.EXPIRE,
       amount: -expiredTotal,
@@ -333,6 +336,10 @@ export async function processExpiredCredits(userId: string) {
  * @param userId - User ID
  */
 export async function addRegisterGiftCredits(userId: string) {
+  if (!websiteConfig.credits.registerGiftCredits.enable) {
+    console.log('addRegisterGiftCredits, disabled');
+    return;
+  }
   // Check if user has already received register gift credits
   const db = await getDb();
   const record = await db
@@ -347,11 +354,12 @@ export async function addRegisterGiftCredits(userId: string) {
     .limit(1);
   // add register gift credits if user has not received them yet
   if (record.length === 0) {
+    const credits = websiteConfig.credits.registerGiftCredits.credits;
     await addCredits({
       userId,
-      amount: REGISTER_GIFT_CREDITS,
+      amount: credits,
       type: CREDIT_TRANSACTION_TYPE.REGISTER_GIFT,
-      description: `Register gift credits: ${REGISTER_GIFT_CREDITS}`,
+      description: `Register gift credits: ${credits}`,
     });
   }
 }
@@ -361,6 +369,10 @@ export async function addRegisterGiftCredits(userId: string) {
  * @param userId - User ID
  */
 export async function addMonthlyFreeCredits(userId: string) {
+  if (!websiteConfig.credits.freeMonthlyCredits.enable) {
+    console.log('addMonthlyFreeCredits, disabled');
+    return;
+  }
   // Check last refresh time
   const db = await getDb();
   const record = await db
@@ -381,11 +393,12 @@ export async function addMonthlyFreeCredits(userId: string) {
   }
   // add credits if it's a new month
   if (canAdd) {
+    const credits = websiteConfig.credits.freeMonthlyCredits.credits;
     await addCredits({
       userId,
-      amount: FREE_MONTHLY_CREDITS,
+      amount: credits,
       type: CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH,
-      description: `Free monthly credits: ${FREE_MONTHLY_CREDITS} for ${now.getFullYear()}-${now.getMonth() + 1}`,
+      description: `Free monthly credits: ${credits} for ${now.getFullYear()}-${now.getMonth() + 1}`,
     });
   }
 }

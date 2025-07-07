@@ -155,6 +155,15 @@ export interface PriceConfig {
  */
 export interface CreditsConfig {
   enableCredits: boolean;            // Whether to enable credits
+  creditExpireDays: number;          // The number of days to expire the credits
+  registerGiftCredits: {
+    enable: boolean;                 // Whether to enable register gift credits
+    credits: number;                 // The number of credits to give to the user
+  };
+  freeMonthlyCredits: {
+    enable: boolean;                 // Whether to enable free monthly credits
+    credits: number;                 // The number of credits to give to the user
+  };
   packages: Record<string, CreditPackage>;  // Packages indexed by ID
 }
 
