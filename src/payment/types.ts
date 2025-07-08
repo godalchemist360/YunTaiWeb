@@ -129,6 +129,19 @@ export interface CreateCheckoutParams {
 }
 
 /**
+ * Parameters for creating a credit checkout session
+ */
+export interface CreateCreditCheckoutParams {
+  packageId: string;
+  priceId: string;
+  customerEmail: string;
+  successUrl?: string;
+  cancelUrl?: string;
+  metadata?: Record<string, string>;
+  locale?: Locale;
+}
+
+/**
  * Result of creating a checkout session
  */
 export interface CheckoutResult {
@@ -160,30 +173,6 @@ export interface getSubscriptionsParams {
 }
 
 /**
- * Parameters for creating a payment intent
- */
-export interface CreatePaymentIntentParams {
-  amount: number;
-  currency: string;
-  metadata?: Record<string, string>;
-}
-
-/**
- * Result of creating a payment intent
- */
-export interface PaymentIntentResult {
-  id: string;
-  clientSecret: string;
-}
-
-/**
- * Parameters for confirming a payment intent
- */
-export interface ConfirmPaymentIntentParams {
-  paymentIntentId: string;
-}
-
-/**
  * Payment provider interface
  */
 export interface PaymentProvider {
@@ -191,6 +180,11 @@ export interface PaymentProvider {
    * Create a checkout session
    */
   createCheckout(params: CreateCheckoutParams): Promise<CheckoutResult>;
+
+  /**
+   * Create a credit checkout session
+   */
+  createCreditCheckout(params: CreateCreditCheckoutParams): Promise<CheckoutResult>;
 
   /**
    * Create a customer portal session
@@ -201,16 +195,6 @@ export interface PaymentProvider {
    * Get customer subscriptions
    */
   getSubscriptions(params: getSubscriptionsParams): Promise<Subscription[]>;
-
-  /**
-   * Create a payment intent
-   */
-  createPaymentIntent(params: CreatePaymentIntentParams): Promise<PaymentIntentResult>;
-
-  /**
-   * Confirm a payment intent
-   */
-  confirmPaymentIntent(params: ConfirmPaymentIntentParams): Promise<boolean>;
 
   /**
    * Handle webhook events

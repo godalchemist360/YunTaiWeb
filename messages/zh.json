@@ -603,7 +603,10 @@
           "creditsAdded": "积分已添加到您的账户",
           "cancel": "取消",
           "purchaseFailed": "购买积分失败",
-          "pay": "支付"
+          "checkoutFailed": "创建支付会话失败",
+          "loading": "加载中...",
+          "pay": "支付",
+          "notConfigured": "未配置"
         },
         "tabs": {
           "balance": "积分余额",

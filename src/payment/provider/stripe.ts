@@ -1,23 +1,18 @@
 import { randomUUID } from 'crypto';
-import { getDb } from '@/db';
-import { payment, session, user } from '@/db/schema';
-import {
-  findPlanByPlanId,
-  findPlanByPriceId,
-  findPriceInPlan,
-} from '@/lib/price-plan';
-import { sendNotification } from '@/notification/notification';
 import { addCredits } from '@/credits/credits';
+import { getCreditPackageByIdInServer } from '@/credits/server';
 import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
+import { getDb } from '@/db';
+import { payment, user } from '@/db/schema';
+import { findPlanByPlanId, findPriceInPlan } from '@/lib/price-plan';
+import { sendNotification } from '@/notification/notification';
 import { desc, eq } from 'drizzle-orm';
 import { Stripe } from 'stripe';
 import {
   type CheckoutResult,
-  type ConfirmPaymentIntentParams,
   type CreateCheckoutParams,
-  type CreatePaymentIntentParams,
+  type CreateCreditCheckoutParams,
   type CreatePortalParams,
-  type PaymentIntentResult,
   type PaymentProvider,
   type PaymentStatus,
   PaymentTypes,
@@ -285,6 +280,104 @@ export class StripeProvider implements PaymentProvider {
   }
 
   /**
+   * Create a checkout session for a plan
+   * @param params Parameters for creating the checkout session
+   * @returns Checkout result
+   */
+  public async createCreditCheckout(
+    params: CreateCreditCheckoutParams
+  ): Promise<CheckoutResult> {
+    const {
+      packageId,
+      priceId,
+      customerEmail,
+      successUrl,
+      cancelUrl,
+      metadata,
+      locale,
+    } = params;
+
+    try {
+      // Get credit package
+      const creditPackage = getCreditPackageByIdInServer(packageId);
+      if (!creditPackage) {
+        throw new Error(`Credit package with ID ${packageId} not found`);
+      }
+
+      // Get priceId from credit package
+      const priceId = creditPackage.price.priceId;
+      if (!priceId) {
+        throw new Error(`Price ID not found for credit package ${packageId}`);
+      }
+
+      // Get userName from metadata if available
+      const userName = metadata?.userName;
+
+      // Create or get customer
+      const customerId = await this.createOrGetCustomer(
+        customerEmail,
+        userName
+      );
+
+      // Add planId and priceId to metadata, so we can get it in the webhook event
+      const customMetadata = {
+        ...metadata,
+        packageId,
+        priceId,
+      };
+
+      // Set up the line items
+      const lineItems = [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ];
+
+      // Create checkout session parameters
+      const checkoutParams: Stripe.Checkout.SessionCreateParams = {
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: successUrl ?? '',
+        cancel_url: cancelUrl ?? '',
+        metadata: customMetadata,
+        allow_promotion_codes: creditPackage.price.allowPromotionCode ?? false,
+      };
+
+      // Add customer to checkout session
+      checkoutParams.customer = customerId;
+
+      // Add locale if provided
+      if (locale) {
+        checkoutParams.locale = this.mapLocaleToStripeLocale(
+          locale
+        ) as Stripe.Checkout.SessionCreateParams.Locale;
+      }
+
+      // Add payment intent data for one-time payments
+      checkoutParams.payment_intent_data = {
+        metadata: customMetadata,
+      };
+      // Automatically create an invoice for the one-time payment
+      checkoutParams.invoice_creation = {
+        enabled: true,
+      };
+
+      // Create the checkout session
+      const session =
+        await this.stripe.checkout.sessions.create(checkoutParams);
+
+      return {
+        url: session.url!,
+        id: session.id,
+      };
+    } catch (error) {
+      console.error('Create credit checkout session error:', error);
+      throw new Error('Failed to create credit checkout session');
+    }
+  }
+
+  /**
    * Create a customer portal session
    * @param params Parameters for creating the portal
    * @returns Portal result
@@ -399,7 +492,11 @@ export class StripeProvider implements PaymentProvider {
 
           // Only process one-time payments (likely for lifetime plan)
           if (session.mode === 'payment') {
-            await this.onOnetimePayment(session);
+            if (session.metadata?.type === 'credit_purchase') {
+              await this.onCreditPurchase(session);
+            } else {
+              await this.onOnetimePayment(session);
+            }
           }
         }
       } else if (eventType.startsWith('payment_intent.')) {
@@ -610,37 +707,107 @@ export class StripeProvider implements PaymentProvider {
       return;
     }
 
-    // Create a one-time payment record
-    const now = new Date();
-    const db = await getDb();
-    const result = await db
-      .insert(payment)
-      .values({
-        id: randomUUID(),
-        priceId: priceId,
-        type: PaymentTypes.ONE_TIME,
-        userId: userId,
-        customerId: customerId,
-        status: 'completed', // One-time payments are always completed
-        periodStart: now,
-        createdAt: now,
-        updatedAt: now,
-      })
-      .returning({ id: payment.id });
+    try {
+      // Create a one-time payment record
+      const now = new Date();
+      const db = await getDb();
+      const result = await db
+        .insert(payment)
+        .values({
+          id: randomUUID(),
+          priceId: priceId,
+          type: PaymentTypes.ONE_TIME,
+          userId: userId,
+          customerId: customerId,
+          status: 'completed', // One-time payments are always completed
+          periodStart: now,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning({ id: payment.id });
 
-    if (result.length === 0) {
-      console.warn(
-        `<< Failed to create one-time payment record for user ${userId}`
+      if (result.length === 0) {
+        console.warn(
+          `<< Failed to create one-time payment record for user ${userId}`
+        );
+        return;
+      }
+      console.log(
+        `<< Created one-time payment record for user ${userId}, price: ${priceId}`
       );
+
+      // Send notification
+      const amount = session.amount_total ? session.amount_total / 100 : 0;
+      await sendNotification(session.id, customerId, userId, amount);
+    } catch (error) {
+      console.error(
+        `<< onOnetimePayment error for session ${session.id}:`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Handle credit purchase
+   * @param session Stripe checkout session
+   */
+  private async onCreditPurchase(
+    session: Stripe.Checkout.Session
+  ): Promise<void> {
+    const customerId = session.customer as string;
+    console.log(`>> Handle credit purchase for customer ${customerId}`);
+
+    // get userId from session metadata, we add it in the createCheckout session
+    const userId = session.metadata?.userId;
+    if (!userId) {
+      console.warn(`<< No userId found for checkout session ${session.id}`);
       return;
     }
-    console.log(
-      `<< Created one-time payment record for user ${userId}, price: ${priceId}`
-    );
 
-    // Send notification
-    const amount = session.amount_total ? session.amount_total / 100 : 0;
-    await sendNotification(session.id, customerId, userId, amount);
+    // get packageId from session metadata
+    const packageId = session.metadata?.packageId;
+    if (!packageId) {
+      console.warn(`<< No packageId found for checkout session ${session.id}`);
+      return;
+    }
+
+    // get priceId from session metadata, not from line items
+    // const priceId = session.line_items?.data[0]?.price?.id;
+    const priceId = session.metadata?.priceId;
+    if (!priceId) {
+      console.warn(`<< No priceId found for checkout session ${session.id}`);
+      return;
+    }
+
+    // get credits from session metadata
+    const credits = session.metadata?.credits;
+    if (!credits) {
+      console.warn(`<< No credits found for checkout session ${session.id}`);
+      return;
+    }
+
+    try {
+      // Add credits to user account using existing addCredits method
+      const amount = session.amount_total ? session.amount_total / 100 : 0;
+      await addCredits({
+        userId,
+        amount: Number.parseInt(credits),
+        type: CREDIT_TRANSACTION_TYPE.PURCHASE,
+        description: `Credit package purchase: ${packageId} - ${credits} credits for $${amount}`,
+        paymentId: session.id,
+      });
+
+      console.log(
+        `<< Added ${credits} credits to user ${userId} for $${amount}`
+      );
+    } catch (error) {
+      console.error(
+        `<< onCreditPurchase error for session ${session.id}:`,
+        error
+      );
+      throw error;
+    }
   }
 
   /**
@@ -666,7 +833,7 @@ export class StripeProvider implements PaymentProvider {
       // Add credits to user account using existing addCredits method
       await addCredits({
         userId,
-        amount: parseInt(credits),
+        amount: Number.parseInt(credits),
         type: CREDIT_TRANSACTION_TYPE.PURCHASE,
         description: `Credit package purchase: ${packageId} - ${credits} credits for $${paymentIntent.amount / 100}`,
         paymentId: paymentIntent.id,
@@ -681,56 +848,6 @@ export class StripeProvider implements PaymentProvider {
         error
       );
       throw error;
-    }
-  }
-
-  /**
-   * Create a payment intent
-   * @param params Parameters for creating the payment intent
-   * @returns Payment intent result
-   */
-  public async createPaymentIntent(
-    params: CreatePaymentIntentParams
-  ): Promise<PaymentIntentResult> {
-    const { amount, currency, metadata } = params;
-
-    try {
-      const paymentIntent = await this.stripe.paymentIntents.create({
-        amount,
-        currency,
-        metadata,
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
-
-      return {
-        id: paymentIntent.id,
-        clientSecret: paymentIntent.client_secret!,
-      };
-    } catch (error) {
-      console.error('Create payment intent error:', error);
-      throw new Error('Failed to create payment intent');
-    }
-  }
-
-  /**
-   * Confirm a payment intent
-   * @param params Parameters for confirming the payment intent
-   * @returns True if successful
-   */
-  public async confirmPaymentIntent(
-    params: ConfirmPaymentIntentParams
-  ): Promise<boolean> {
-    const { paymentIntentId } = params;
-
-    try {
-      const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
-
-      return paymentIntent.status === 'succeeded';
-    } catch (error) {
-      console.error('Confirm payment intent error:', error);
-      throw new Error('Failed to confirm payment intent');
     }
   }
 

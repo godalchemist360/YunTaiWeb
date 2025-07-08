@@ -2,11 +2,9 @@ import { websiteConfig } from '@/config/website';
 import { StripeProvider } from './provider/stripe';
 import type {
   CheckoutResult,
-  ConfirmPaymentIntentParams,
   CreateCheckoutParams,
-  CreatePaymentIntentParams,
+  CreateCreditCheckoutParams,
   CreatePortalParams,
-  PaymentIntentResult,
   PaymentProvider,
   PortalResult,
   Subscription,
@@ -60,6 +58,18 @@ export const createCheckout = async (
 };
 
 /**
+ * Create a checkout session for a credit package
+ * @param params Parameters for creating the checkout session
+ * @returns Checkout result
+ */
+export const createCreditCheckout = async (
+  params: CreateCreditCheckoutParams
+): Promise<CheckoutResult> => {
+  const provider = getPaymentProvider();
+  return provider.createCreditCheckout(params);
+};
+
+/**
  * Create a customer portal session
  * @param params Parameters for creating the portal
  * @returns Portal result
@@ -94,28 +104,4 @@ export const getSubscriptions = async (
 ): Promise<Subscription[]> => {
   const provider = getPaymentProvider();
   return provider.getSubscriptions(params);
-};
-
-/**
- * Create a payment intent
- * @param params Parameters for creating the payment intent
- * @returns Payment intent result
- */
-export const createPaymentIntent = async (
-  params: CreatePaymentIntentParams
-): Promise<PaymentIntentResult> => {
-  const provider = getPaymentProvider();
-  return provider.createPaymentIntent(params);
-};
-
-/**
- * Confirm a payment intent
- * @param params Parameters for confirming the payment intent
- * @returns True if successful
- */
-export const confirmPaymentIntent = async (
-  params: ConfirmPaymentIntentParams
-): Promise<boolean> => {
-  const provider = getPaymentProvider();
-  return provider.confirmPaymentIntent(params);
 };

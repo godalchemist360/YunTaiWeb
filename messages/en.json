@@ -602,7 +602,10 @@
           "creditsAdded": "Credits have been added to your account",
           "cancel": "Cancel",
           "purchaseFailed": "Purchase credits failed",
-          "pay": "Pay"
+          "checkoutFailed": "Failed to create checkout session",
+          "loading": "Loading...",
+          "pay": "Pay",
+          "notConfigured": "Not configured"
         },
         "tabs": {
           "balance": "Balance",

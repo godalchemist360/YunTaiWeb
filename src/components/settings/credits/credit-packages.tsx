@@ -1,11 +1,7 @@
 'use client';
 
-import {
-  createCreditPaymentIntent,
-  getCreditsAction,
-} from '@/actions/credits.action';
+import { getCreditsAction } from '@/actions/credits.action';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -13,22 +9,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { getCreditPackages } from '@/config/credits-config';
-import type { CreditPackage } from '@/credits/types';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import { useLocaleRouter } from '@/i18n/navigation';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { useTransactionStore } from '@/stores/transaction-store';
-import { CircleCheckBigIcon, CoinsIcon, Loader2Icon } from 'lucide-react';
+import { CircleCheckBigIcon, CoinsIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { StripePaymentForm } from './stripe-payment-form';
+import { CreditCheckoutButton } from './credit-checkout-button';
 
 /**
  * Credit packages component
@@ -37,19 +29,11 @@ import { StripePaymentForm } from './stripe-payment-form';
 export function CreditPackages() {
   const t = useTranslations('Dashboard.settings.credits.packages');
   const [loadingCredits, setLoadingCredits] = useState(true);
-  const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
   const { refreshTrigger } = useTransactionStore();
-
-  const [paymentDialog, setPaymentDialog] = useState<{
-    isOpen: boolean;
-    packageId: string | null;
-    clientSecret: string | null;
-  }>({
-    isOpen: false,
-    packageId: null,
-    clientSecret: null,
-  });
+  const currentUser = useCurrentUser();
+  const searchParams = useSearchParams();
+  const router = useLocaleRouter();
 
   const creditPackages = Object.values(getCreditPackages());
 
@@ -73,60 +57,27 @@ export function CreditPackages() {
     }
   };
 
+  // Check for payment success and show success message
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+    if (sessionId) {
+      // Show success toast
+      toast.success(t('creditsAdded'));
+
+      // Refresh credits data to show updated balance
+      fetchCredits();
+
+      // Clean up URL parameters
+      const url = new URL(window.location.href);
+      url.searchParams.delete('session_id');
+      router.replace(url.pathname + url.search);
+    }
+  }, [searchParams, router]);
+
   // Initial fetch and listen for transaction updates
   useEffect(() => {
     fetchCredits();
   }, [refreshTrigger]);
-
-  const handlePurchase = async (packageId: string) => {
-    try {
-      setLoadingPackage(packageId);
-      const result = await createCreditPaymentIntent({ packageId });
-      if (result?.data?.success && result?.data?.clientSecret) {
-        setPaymentDialog({
-          isOpen: true,
-          packageId,
-          clientSecret: result.data.clientSecret,
-        });
-      } else {
-        const errorMessage =
-          result?.data?.error || t('failedToCreatePaymentIntent');
-        console.error(
-          'CreditPackages, failed to create payment intent:',
-          errorMessage
-        );
-        toast.error(errorMessage);
-      }
-    } catch (error) {
-      console.error('CreditPackages, failed to initiate payment:', error);
-      toast.error(t('failedToInitiatePayment'));
-    } finally {
-      setLoadingPackage(null);
-    }
-  };
-
-  const handlePaymentSuccess = () => {
-    console.log('CreditPackages, payment success');
-    setPaymentDialog({
-      isOpen: false,
-      packageId: null,
-      clientSecret: null,
-    });
-    toast.success(t('creditsAdded'));
-  };
-
-  const handlePaymentCancel = () => {
-    console.log('CreditPackages, payment cancelled');
-    setPaymentDialog({
-      isOpen: false,
-      packageId: null,
-      clientSecret: null,
-    });
-  };
-
-  const getPackageInfo = (packageId: string): CreditPackage | undefined => {
-    return creditPackages.find((pkg) => pkg.id === packageId);
-  };
 
   return (
     <div className="space-y-6">
@@ -161,15 +112,15 @@ export function CreditPackages() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {creditPackages.map((pkg) => (
+            {creditPackages.map((creditPackage) => (
               <Card
-                key={pkg.id}
+                key={creditPackage.id}
                 className={cn(
-                  `relative ${pkg.popular ? 'border-primary' : ''}`,
+                  `relative ${creditPackage.popular ? 'border-primary' : ''}`,
                   'shadow-none border-1 border-border'
                 )}
               >
-                {pkg.popular && (
+                {creditPackage.popular && (
                   <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2">
                     <Badge
                       variant="default"
@@ -186,64 +137,43 @@ export function CreditPackages() {
                     <div className="text-left">
                       <div className="text-2xl font-semibold flex items-center gap-2">
                         <CoinsIcon className="h-4 w-4 text-muted-foreground" />
-                        {pkg.credits.toLocaleString()}
+                        {creditPackage.credits.toLocaleString()}
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-3xl font-bold text-primary">
-                        {formatPrice(pkg.price, 'USD')}
+                        {formatPrice(
+                          creditPackage.price.amount,
+                          creditPackage.price.currency
+                        )}
                       </div>
                     </div>
                   </div>
 
                   <div className="text-sm text-muted-foreground text-left py-2 flex items-center gap-2">
                     <CircleCheckBigIcon className="h-4 w-4 text-green-500" />
-                    {pkg.description}
+                    {creditPackage.description}
                   </div>
 
-                  {/* purchase button */}
-                  <Button
-                    onClick={() => handlePurchase(pkg.id)}
-                    disabled={loadingPackage === pkg.id}
+                  {/* purchase button using checkout */}
+                  <CreditCheckoutButton
+                    userId={currentUser?.id ?? ''}
+                    packageId={creditPackage.id}
+                    priceId={creditPackage.price.priceId}
                     className="w-full cursor-pointer"
-                    variant={pkg.popular ? 'default' : 'outline'}
+                    variant={creditPackage.popular ? 'default' : 'outline'}
+                    disabled={!creditPackage.price.priceId}
                   >
-                    {loadingPackage === pkg.id ? (
-                      <>
-                        <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                        {t('processing')}
-                      </>
-                    ) : (
-                      t('purchase')
-                    )}
-                  </Button>
+                    {!creditPackage.price.priceId
+                      ? t('notConfigured')
+                      : t('purchase')}
+                  </CreditCheckoutButton>
                 </CardContent>
               </Card>
             ))}
           </div>
         </CardContent>
       </Card>
-
-      {/* Payment Dialog */}
-      <Dialog open={paymentDialog.isOpen} onOpenChange={handlePaymentCancel}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('completePurchase')}</DialogTitle>
-          </DialogHeader>
-
-          {paymentDialog.clientSecret &&
-            paymentDialog.packageId &&
-            getPackageInfo(paymentDialog.packageId) && (
-              <StripePaymentForm
-                clientSecret={paymentDialog.clientSecret}
-                packageId={paymentDialog.packageId}
-                packageInfo={getPackageInfo(paymentDialog.packageId)!}
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentCancel={handlePaymentCancel}
-              />
-            )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
