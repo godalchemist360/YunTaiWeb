@@ -96,7 +96,7 @@ export async function addCredits({
   type,
   description,
   paymentId,
-  expireDays = websiteConfig.credits.creditExpireDays,
+  expireDays,
 }: {
   userId: string;
   amount: number;
@@ -113,7 +113,10 @@ export async function addCredits({
     console.error('addCredits, invalid amount', userId, amount);
     throw new Error('Invalid amount');
   }
-  if (!Number.isFinite(expireDays) || expireDays <= 0) {
+  if (
+    expireDays !== undefined &&
+    (!Number.isFinite(expireDays) || expireDays <= 0)
+  ) {
     console.error('addCredits, invalid expire days', userId, expireDays);
     throw new Error('Invalid expire days');
   }
@@ -159,7 +162,7 @@ export async function addCredits({
     paymentId,
     // NOTE: there is no expiration date for PURCHASE type
     expirationDate:
-      type === CREDIT_TRANSACTION_TYPE.PURCHASE
+      type === CREDIT_TRANSACTION_TYPE.PURCHASE || expireDays === undefined
         ? undefined
         : addDays(new Date(), expireDays),
   });
@@ -355,11 +358,13 @@ export async function addRegisterGiftCredits(userId: string) {
   // add register gift credits if user has not received them yet
   if (record.length === 0) {
     const credits = websiteConfig.credits.registerGiftCredits.credits;
+    const expireDays = websiteConfig.credits.registerGiftCredits.expireDays;
     await addCredits({
       userId,
       amount: credits,
       type: CREDIT_TRANSACTION_TYPE.REGISTER_GIFT,
       description: `Register gift credits: ${credits}`,
+      expireDays,
     });
   }
 }
@@ -394,11 +399,13 @@ export async function addMonthlyFreeCredits(userId: string) {
   // add credits if it's a new month
   if (canAdd) {
     const credits = websiteConfig.credits.freeMonthlyCredits.credits;
+    const expireDays = websiteConfig.credits.freeMonthlyCredits.expireDays;
     await addCredits({
       userId,
       amount: credits,
       type: CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH,
       description: `Free monthly credits: ${credits} for ${now.getFullYear()}-${now.getMonth() + 1}`,
+      expireDays,
     });
   }
 }

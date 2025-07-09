@@ -26,4 +26,5 @@ export interface CreditPackage {
   popular: boolean;                    // Whether the package is popular
   name?: string;                       // Display name of the package
   description?: string;                // Description of the package
+  expireDays?: number;                 // Number of days to expire the credits, undefined means no expire
 }
