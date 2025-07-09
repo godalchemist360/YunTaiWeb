@@ -30,7 +30,7 @@ export function CreditPackages() {
   const t = useTranslations('Dashboard.settings.credits.packages');
   const [loadingCredits, setLoadingCredits] = useState(true);
   const [credits, setCredits] = useState<number | null>(null);
-  const { refreshTrigger } = useTransactionStore();
+  const { refreshTrigger, triggerRefresh } = useTransactionStore();
   const currentUser = useCurrentUser();
   const searchParams = useSearchParams();
   const router = useLocaleRouter();
@@ -61,11 +61,13 @@ export function CreditPackages() {
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
     if (sessionId) {
-      // Show success toast
-      toast.success(t('creditsAdded'));
+      // Show success toast (delayed to avoid React lifecycle conflicts)
+      setTimeout(() => {
+        toast.success(t('creditsAdded'));
+      }, 0);
 
       // Refresh credits data to show updated balance
-      fetchCredits();
+      triggerRefresh();
 
       // Clean up URL parameters
       const url = new URL(window.location.href);
