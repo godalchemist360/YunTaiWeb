@@ -604,8 +604,7 @@
           "purchaseFailed": "Purchase credits failed",
           "checkoutFailed": "Failed to create checkout session",
           "loading": "Loading...",
-          "pay": "Pay",
-          "notConfigured": "Not configured"
+          "pay": "Pay"
         },
         "tabs": {
           "balance": "Balance",

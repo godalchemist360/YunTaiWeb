@@ -35,7 +35,10 @@ export function CreditPackages() {
   const searchParams = useSearchParams();
   const router = useLocaleRouter();
 
-  const creditPackages = Object.values(getCreditPackages());
+  // show only enabled packages
+  const creditPackages = Object.values(getCreditPackages()).filter(
+    (pkg) => !pkg.disabled && pkg.price.priceId
+  );
 
   const fetchCredits = async () => {
     try {
@@ -168,9 +171,7 @@ export function CreditPackages() {
                     variant={creditPackage.popular ? 'default' : 'outline'}
                     disabled={!creditPackage.price.priceId}
                   >
-                    {!creditPackage.price.priceId
-                      ? t('notConfigured')
-                      : t('purchase')}
+                    {t('purchase')}
                   </CreditCheckoutButton>
                 </CardContent>
               </Card>

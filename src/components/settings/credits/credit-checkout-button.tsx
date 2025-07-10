@@ -53,20 +53,6 @@ export function CreditCheckoutButton({
     try {
       setIsLoading(true);
 
-      // Get the credit package to find the priceId
-      // const creditPackages = getCreditPackages();
-      // const creditPackage = creditPackages[packageId];
-
-      // if (!creditPackage) {
-      //   toast.error('Invalid credit package');
-      //   return;
-      // }
-
-      // if (!creditPackage.price.priceId) {
-      //   toast.error(t('notConfigured'));
-      //   return;
-      // }
-
       const mergedMetadata = metadata ? { ...metadata } : {};
 
       // add promotekit_referral to metadata if enabled promotekit affiliate

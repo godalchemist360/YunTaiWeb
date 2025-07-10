@@ -32,4 +32,5 @@ export interface CreditPackage {
   name?: string;                       // Display name of the package
   description?: string;                // Description of the package
   expireDays?: number;                 // Number of days to expire the credits, undefined means no expire
+  disabled?: boolean;                  // Whether the package is disabled in the UI
 }

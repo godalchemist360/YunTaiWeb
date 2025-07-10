@@ -605,8 +605,7 @@
           "purchaseFailed": "购买积分失败",
           "checkoutFailed": "创建支付会话失败",
           "loading": "加载中...",
-          "pay": "支付",
-          "notConfigured": "未配置"
+          "pay": "支付"
         },
         "tabs": {
           "balance": "积分余额",
