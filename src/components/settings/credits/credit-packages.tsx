@@ -14,6 +14,7 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { useLocaleRouter } from '@/i18n/navigation';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
+import { Routes } from '@/routes';
 import { useTransactionStore } from '@/stores/transaction-store';
 import { CircleCheckBigIcon, CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -33,7 +34,7 @@ export function CreditPackages() {
   const { refreshTrigger, triggerRefresh } = useTransactionStore();
   const currentUser = useCurrentUser();
   const searchParams = useSearchParams();
-  const router = useLocaleRouter();
+  const localeRouter = useLocaleRouter();
 
   // show only enabled packages
   const creditPackages = Object.values(getCreditPackages()).filter(
@@ -74,10 +75,9 @@ export function CreditPackages() {
 
       // Clean up URL parameters
       const url = new URL(window.location.href);
-      url.searchParams.delete('session_id');
-      router.replace(url.pathname + url.search);
+      localeRouter.replace(Routes.SettingsCredits + url.search);
     }
-  }, [searchParams, router]);
+  }, [searchParams, localeRouter]);
 
   // Initial fetch and listen for transaction updates
   useEffect(() => {
