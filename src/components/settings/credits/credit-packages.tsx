@@ -75,6 +75,8 @@ export function CreditPackages() {
 
       // Clean up URL parameters
       const url = new URL(window.location.href);
+      url.searchParams.delete('session_id');
+      // Use Routes.SettingsCredits + url.search to properly handle locale routing
       localeRouter.replace(Routes.SettingsCredits + url.search);
     }
   }, [searchParams, localeRouter]);
