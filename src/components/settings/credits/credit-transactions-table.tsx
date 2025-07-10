@@ -46,15 +46,17 @@ import {
 } from '@tanstack/react-table';
 import {
   ArrowUpDownIcon,
+  BanknoteIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
   ClockIcon,
+  CoinsIcon,
+  GemIcon,
   GiftIcon,
-  MinusCircleIcon,
-  RefreshCwIcon,
+  HandCoinsIcon,
   ShoppingCartIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -156,19 +158,19 @@ export function CreditTransactionsTable({
   const getTransactionTypeIcon = (type: string) => {
     switch (type) {
       case CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH:
-        return <RefreshCwIcon className="h-4 w-4" />;
+        return <HandCoinsIcon className="h-5 w-5" />;
       case CREDIT_TRANSACTION_TYPE.REGISTER_GIFT:
-        return <GiftIcon className="h-4 w-4" />;
-      case CREDIT_TRANSACTION_TYPE.PURCHASE:
-        return <ShoppingCartIcon className="h-4 w-4" />;
+        return <GiftIcon className="h-5 w-5" />;
+      case CREDIT_TRANSACTION_TYPE.PURCHASE_PACKAGE:
+        return <ShoppingCartIcon className="h-5 w-5" />;
       case CREDIT_TRANSACTION_TYPE.USAGE:
-        return <MinusCircleIcon className="h-4 w-4" />;
+        return <CoinsIcon className="h-5 w-5" />;
       case CREDIT_TRANSACTION_TYPE.EXPIRE:
-        return <ClockIcon className="h-4 w-4" />;
+        return <ClockIcon className="h-5 w-5" />;
       case CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL:
-        return <RefreshCwIcon className="h-4 w-4" />;
+        return <BanknoteIcon className="h-5 w-5" />;
       case CREDIT_TRANSACTION_TYPE.LIFETIME_MONTHLY:
-        return <GiftIcon className="h-4 w-4" />;
+        return <GemIcon className="h-5 w-5" />;
       default:
         return null;
     }
@@ -177,12 +179,6 @@ export function CreditTransactionsTable({
   // Get transaction type badge variant
   const getTransactionTypeBadgeVariant = (type: string) => {
     switch (type) {
-      case CREDIT_TRANSACTION_TYPE.REGISTER_GIFT:
-      case CREDIT_TRANSACTION_TYPE.PURCHASE:
-      case CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH:
-      case CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL:
-      case CREDIT_TRANSACTION_TYPE.LIFETIME_MONTHLY:
-        return 'outline' as const;
       case CREDIT_TRANSACTION_TYPE.USAGE:
       case CREDIT_TRANSACTION_TYPE.EXPIRE:
         return 'destructive' as const;
@@ -198,7 +194,7 @@ export function CreditTransactionsTable({
         return t('types.MONTHLY_REFRESH');
       case CREDIT_TRANSACTION_TYPE.REGISTER_GIFT:
         return t('types.REGISTER_GIFT');
-      case CREDIT_TRANSACTION_TYPE.PURCHASE:
+      case CREDIT_TRANSACTION_TYPE.PURCHASE_PACKAGE:
         return t('types.PURCHASE');
       case CREDIT_TRANSACTION_TYPE.USAGE:
         return t('types.USAGE');

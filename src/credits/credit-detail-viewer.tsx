@@ -4,7 +4,6 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
@@ -14,10 +13,12 @@ import { Separator } from '@/components/ui/separator';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatDate } from '@/lib/formatter';
 import {
+  BanknoteIcon,
   ClockIcon,
+  CoinsIcon,
+  GemIcon,
   GiftIcon,
-  MinusCircleIcon,
-  RefreshCwIcon,
+  HandCoinsIcon,
   ShoppingCartIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -51,19 +52,19 @@ export function CreditDetailViewer({ transaction }: CreditDetailViewerProps) {
   const getTransactionTypeIcon = (type: string) => {
     switch (type) {
       case CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH:
-        return <RefreshCwIcon className="h-5 w-5" />;
+        return <HandCoinsIcon className="h-5 w-5" />;
       case CREDIT_TRANSACTION_TYPE.REGISTER_GIFT:
         return <GiftIcon className="h-5 w-5" />;
-      case CREDIT_TRANSACTION_TYPE.PURCHASE:
+      case CREDIT_TRANSACTION_TYPE.PURCHASE_PACKAGE:
         return <ShoppingCartIcon className="h-5 w-5" />;
       case CREDIT_TRANSACTION_TYPE.USAGE:
-        return <MinusCircleIcon className="h-5 w-5" />;
+        return <CoinsIcon className="h-5 w-5" />;
       case CREDIT_TRANSACTION_TYPE.EXPIRE:
         return <ClockIcon className="h-5 w-5" />;
       case CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL:
-        return <RefreshCwIcon className="h-5 w-5" />;
+        return <BanknoteIcon className="h-5 w-5" />;
       case CREDIT_TRANSACTION_TYPE.LIFETIME_MONTHLY:
-        return <GiftIcon className="h-5 w-5" />;
+        return <GemIcon className="h-5 w-5" />;
       default:
         return null;
     }
@@ -72,12 +73,6 @@ export function CreditDetailViewer({ transaction }: CreditDetailViewerProps) {
   // Get transaction type badge variant
   const getTransactionTypeBadgeVariant = (type: string) => {
     switch (type) {
-      case CREDIT_TRANSACTION_TYPE.REGISTER_GIFT:
-      case CREDIT_TRANSACTION_TYPE.PURCHASE:
-      case CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH:
-      case CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL:
-      case CREDIT_TRANSACTION_TYPE.LIFETIME_MONTHLY:
-        return 'outline' as const;
       case CREDIT_TRANSACTION_TYPE.USAGE:
       case CREDIT_TRANSACTION_TYPE.EXPIRE:
         return 'destructive' as const;
@@ -93,7 +88,7 @@ export function CreditDetailViewer({ transaction }: CreditDetailViewerProps) {
         return t('types.MONTHLY_REFRESH');
       case CREDIT_TRANSACTION_TYPE.REGISTER_GIFT:
         return t('types.REGISTER_GIFT');
-      case CREDIT_TRANSACTION_TYPE.PURCHASE:
+      case CREDIT_TRANSACTION_TYPE.PURCHASE_PACKAGE:
         return t('types.PURCHASE');
       case CREDIT_TRANSACTION_TYPE.USAGE:
         return t('types.USAGE');
