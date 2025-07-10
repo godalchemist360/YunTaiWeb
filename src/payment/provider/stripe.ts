@@ -828,7 +828,7 @@ export class StripeProvider implements PaymentProvider {
         userId,
         amount: Number.parseInt(credits),
         type: CREDIT_TRANSACTION_TYPE.PURCHASE,
-        description: `Credit package purchase: ${packageId} - ${credits} credits for $${amount}`,
+        description: `+${credits} credits for package ${packageId} (${amount})`,
         paymentId: session.id,
         expireDays: creditPackage.expireDays,
       });

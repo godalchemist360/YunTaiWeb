@@ -637,6 +637,10 @@
             "SUBSCRIPTION_RENEWAL": "Subscription Renewal",
             "LIFETIME_MONTHLY": "Lifetime Monthly"
           },
+          "detailViewer": {
+            "title": "Credit Transaction Detail",
+            "close": "Close"
+          },
           "expired": "Expired",
           "never": "Never"
         }

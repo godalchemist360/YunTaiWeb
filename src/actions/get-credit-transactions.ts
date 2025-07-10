@@ -74,7 +74,8 @@ export const getCreditTransactionsAction = actionClient
             remainingAmount: creditTransaction.remainingAmount,
             paymentId: creditTransaction.paymentId,
             expirationDate: creditTransaction.expirationDate,
-            expirationDateProcessedAt: creditTransaction.expirationDateProcessedAt,
+            expirationDateProcessedAt:
+              creditTransaction.expirationDateProcessedAt,
             createdAt: creditTransaction.createdAt,
             updatedAt: creditTransaction.updatedAt,
           })
@@ -108,7 +109,10 @@ export const getCreditTransactionsAction = actionClient
       console.error('get credit transactions error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch credit transactions',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch credit transactions',
       };
     }
   });

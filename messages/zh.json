@@ -638,6 +638,10 @@
             "SUBSCRIPTION_RENEWAL": "订阅续费",
             "LIFETIME_MONTHLY": "终身月度"
           },
+          "detailViewer": {
+            "title": "积分交易详情",
+            "close": "关闭"
+          },
           "expired": "已过期",
           "never": "永不"
         }

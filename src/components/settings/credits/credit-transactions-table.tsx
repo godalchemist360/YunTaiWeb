@@ -29,6 +29,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { CreditDetailViewer } from '@/credits/credit-detail-viewer';
 import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 import { formatDate } from '@/lib/formatter';
 import {
@@ -223,7 +224,10 @@ export function CreditTransactionsTable({
         const transaction = row.original;
         return (
           <div className="flex items-center gap-2 pl-3">
-            <Badge variant={getTransactionTypeBadgeVariant(transaction.type)}>
+            <Badge
+              variant={getTransactionTypeBadgeVariant(transaction.type)}
+              className="cursor-pointer hover:bg-accent transition-colors"
+            >
               {getTransactionTypeIcon(transaction.type)}
               {getTransactionTypeDisplayName(transaction.type)}
             </Badge>
@@ -238,18 +242,7 @@ export function CreditTransactionsTable({
       ),
       cell: ({ row }) => {
         const transaction = row.original;
-        return (
-          <div className="flex items-center gap-2 pl-3">
-            <span
-              className={`font-medium ${
-                transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-              }`}
-            >
-              {transaction.amount > 0 ? '+' : ''}
-              {transaction.amount.toLocaleString()}
-            </span>
-          </div>
-        );
+        return <CreditDetailViewer transaction={transaction} />;
       },
     },
     {
@@ -543,7 +536,7 @@ export function CreditTransactionsTable({
         </Table>
       </div>
 
-      <div className="flex items-center justify-between px-4">
+      <div className="flex items-center justify-between">
         <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
           {total > 0 && <span>{tTable('totalRecords', { count: total })}</span>}
         </div>
