@@ -499,12 +499,6 @@ export class StripeProvider implements PaymentProvider {
             }
           }
         }
-      } else if (eventType.startsWith('payment_intent.')) {
-        // Handle payment intent events
-        if (eventType === 'payment_intent.succeeded') {
-          const paymentIntent = event.data.object as Stripe.PaymentIntent;
-          await this.onPaymentIntentSucceeded(paymentIntent);
-        }
       }
     } catch (error) {
       console.error('handle webhook event error:', error);
@@ -845,55 +839,6 @@ export class StripeProvider implements PaymentProvider {
     } catch (error) {
       console.error(
         `<< onCreditPurchase error for session ${session.id}:`,
-        error
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Handle payment intent succeeded event
-   * @param paymentIntent Stripe payment intent
-   */
-  private async onPaymentIntentSucceeded(
-    paymentIntent: Stripe.PaymentIntent
-  ): Promise<void> {
-    console.log(`>> Handle payment intent succeeded: ${paymentIntent.id}`);
-
-    // Get metadata from payment intent
-    const { packageId, userId, credits } = paymentIntent.metadata;
-
-    if (!packageId || !userId || !credits) {
-      console.warn(
-        `<< Missing metadata for payment intent ${paymentIntent.id}: packageId=${packageId}, userId=${userId}, credits=${credits}`
-      );
-      return;
-    }
-
-    try {
-      // Get credit package to get expiration info
-      const creditPackage = getCreditPackageById(packageId);
-      if (!creditPackage) {
-        console.warn(`<< Credit package ${packageId} not found`);
-        return;
-      }
-
-      // Add credits to user account using existing addCredits method
-      await addCredits({
-        userId,
-        amount: Number.parseInt(credits),
-        type: CREDIT_TRANSACTION_TYPE.PURCHASE,
-        description: `Credit package purchase: ${packageId} - ${credits} credits for $${paymentIntent.amount / 100}`,
-        paymentId: paymentIntent.id,
-        expireDays: creditPackage.expireDays,
-      });
-
-      console.log(
-        `<< Successfully processed payment intent ${paymentIntent.id}: Added ${credits} credits to user ${userId}${creditPackage.expireDays ? ` (expires in ${creditPackage.expireDays} days)` : ' (no expiration)'}`
-      );
-    } catch (error) {
-      console.error(
-        `<< Error processing payment intent ${paymentIntent.id}:`,
         error
       );
       throw error;
