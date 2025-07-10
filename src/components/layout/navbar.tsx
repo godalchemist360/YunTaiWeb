@@ -6,8 +6,7 @@ import { Logo } from '@/components/layout/logo';
 import { ModeSwitcher } from '@/components/layout/mode-switcher';
 import { NavbarMobile } from '@/components/layout/navbar-mobile';
 import { UserButton } from '@/components/layout/user-button';
-import { Button } from '@/components/ui/button';
-import { buttonVariants } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -25,11 +24,9 @@ import { cn } from '@/lib/utils';
 import { Routes } from '@/routes';
 import { ArrowUpRightIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import LocaleSwitcher from './locale-switcher';
-import { CreditsBalance } from './credits-balance';
 
 interface NavBarProps {
   scroll?: boolean;
@@ -224,7 +221,7 @@ export function Navbar({ scroll }: NavBarProps) {
               <Skeleton className="size-8 border rounded-full" />
             ) : currentUser ? (
               <>
-                <CreditsBalance />
+                {/* <CreditsBalanceButton /> */}
                 <UserButton user={currentUser} />
               </>
             ) : (

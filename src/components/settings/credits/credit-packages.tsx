@@ -15,7 +15,7 @@ import { useLocaleRouter } from '@/i18n/navigation';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { useTransactionStore } from '@/stores/transaction-store';
-import { CircleCheckBigIcon, CoinsIcon, RefreshCwIcon } from 'lucide-react';
+import { CircleCheckBigIcon, CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -95,7 +95,7 @@ export function CreditPackages() {
               {/* <CoinsIcon className="h-4 w-4 text-muted-foreground" /> */}
               <div>
                 {loadingCredits ? (
-                  <RefreshCwIcon className="h-8 w-8 animate-spin" />
+                  <Loader2Icon className="h-8 w-8 animate-spin" />
                 ) : (
                   <div className="text-2xl font-bold">
                     {credits?.toLocaleString() || 0}

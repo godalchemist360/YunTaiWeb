@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { useLocaleRouter } from '@/i18n/navigation';
 import { Routes } from '@/routes';
 import { useTransactionStore } from '@/stores/transaction-store';
-import { CoinsIcon } from 'lucide-react';
+import { CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export function CreditsBalance() {
+export function CreditsBalanceButton() {
   const router = useLocaleRouter();
   const { refreshTrigger } = useTransactionStore();
   const [credits, setCredits] = useState<number>(0);
@@ -22,7 +22,7 @@ export function CreditsBalance() {
           setCredits(result.data.credits);
         }
       } catch (error) {
-        console.error('CreditsBalance, fetch credits error:', error);
+        console.error('CreditsBalanceButton, fetch credits error:', error);
       } finally {
         setLoading(false);
       }
@@ -37,14 +37,18 @@ export function CreditsBalance() {
 
   return (
     <Button
-      variant="ghost"
+      variant="outline"
       size="sm"
       className="h-8 gap-2 px-2 text-sm font-medium cursor-pointer"
       onClick={handleClick}
     >
-      <CoinsIcon className="h-4 w-4 text-primary" />
-      <span className="text-foreground">
-        {loading ? '...' : credits.toLocaleString()}
+      <CoinsIcon className="h-4 w-4" />
+      <span className="">
+        {loading ? (
+          <Loader2Icon className="h-4 w-4 animate-spin" />
+        ) : (
+          credits.toLocaleString()
+        )}
       </span>
     </Button>
   );

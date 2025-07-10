@@ -8,10 +8,10 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import React, { type ReactNode } from 'react';
+import { CreditsBalanceButton } from '../layout/credits-balance-button';
 import LocaleSwitcher from '../layout/locale-switcher';
 import { ModeSwitcher } from '../layout/mode-switcher';
 import { ThemeSelector } from '../layout/theme-selector';
-import { CreditsBalance } from '../layout/credits-balance';
 
 interface DashboardBreadcrumbItem {
   label: string;
@@ -73,7 +73,7 @@ export function DashboardHeader({
         <div className="ml-auto flex items-center gap-3 px-4">
           {actions}
 
-          <CreditsBalance />
+          <CreditsBalanceButton />
           {isDemo && <ThemeSelector />}
           <ModeSwitcher />
           <LocaleSwitcher />
