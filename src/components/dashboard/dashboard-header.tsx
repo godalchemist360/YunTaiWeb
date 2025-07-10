@@ -70,7 +70,7 @@ export function DashboardHeader({
         </Breadcrumb>
 
         {/* dashboard header actions on the right side */}
-        <div className="ml-auto flex items-center gap-3 px-4">
+        <div className="ml-auto flex items-center gap-3 pl-4">
           {actions}
 
           <CreditsBalanceButton />
