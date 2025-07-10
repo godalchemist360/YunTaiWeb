@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { addCredits, addSubscriptionRenewalCredits } from '@/credits/credits';
-import { getCreditPackageByIdInServer } from '@/credits/server';
+import { getCreditPackageById } from '@/credits/server';
 import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 import { getDb } from '@/db';
 import { payment, user } from '@/db/schema';
@@ -299,7 +299,7 @@ export class StripeProvider implements PaymentProvider {
 
     try {
       // Get credit package
-      const creditPackage = getCreditPackageByIdInServer(packageId);
+      const creditPackage = getCreditPackageById(packageId);
       if (!creditPackage) {
         throw new Error(`Credit package with ID ${packageId} not found`);
       }
@@ -821,7 +821,7 @@ export class StripeProvider implements PaymentProvider {
     }
 
     // get credit package
-    const creditPackage = getCreditPackageByIdInServer(packageId);
+    const creditPackage = getCreditPackageById(packageId);
     if (!creditPackage) {
       console.warn(`<< Credit package ${packageId} not found`);
       return;
@@ -872,7 +872,7 @@ export class StripeProvider implements PaymentProvider {
 
     try {
       // Get credit package to get expiration info
-      const creditPackage = getCreditPackageByIdInServer(packageId);
+      const creditPackage = getCreditPackageById(packageId);
       if (!creditPackage) {
         console.warn(`<< Credit package ${packageId} not found`);
         return;

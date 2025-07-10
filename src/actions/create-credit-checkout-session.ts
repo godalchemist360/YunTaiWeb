@@ -1,7 +1,7 @@
 'use server';
 
 import { websiteConfig } from '@/config/website';
-import { getCreditPackageByIdInServer } from '@/credits/server';
+import { getCreditPackageById } from '@/credits/server';
 import { getSession } from '@/lib/server';
 import { getUrlWithLocale } from '@/lib/urls/urls';
 import { createCreditCheckout } from '@/payment';
@@ -60,7 +60,7 @@ export const createCreditCheckoutSession = actionClient
       const locale = await getLocale();
 
       // Find the credit package
-      const creditPackage = getCreditPackageByIdInServer(packageId);
+      const creditPackage = getCreditPackageById(packageId);
       if (!creditPackage) {
         return {
           success: false,
