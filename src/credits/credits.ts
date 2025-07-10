@@ -4,7 +4,7 @@ import { getDb } from '@/db';
 import { creditTransaction, payment, user, userCredit } from '@/db/schema';
 import { findPlanByPriceId } from '@/lib/price-plan';
 import { addDays, isAfter } from 'date-fns';
-import { and, asc, desc, eq, or } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, isNull, not, or } from 'drizzle-orm';
 import { CREDIT_TRANSACTION_TYPE } from './types';
 
 /**
@@ -143,7 +143,7 @@ export async function addCredits({
   // const newBalance = (current[0]?.currentCredits || 0) + amount;
   if (current.length > 0) {
     const newBalance = (current[0]?.currentCredits || 0) + amount;
-    console.log('update user credit', userId, newBalance);
+    console.log('addCredits, update user credit', userId, newBalance);
     await db
       .update(userCredit)
       .set({
@@ -154,7 +154,7 @@ export async function addCredits({
       .where(eq(userCredit.userId, userId));
   } else {
     const newBalance = amount;
-    console.log('insert user credit', userId, newBalance);
+    console.log('addCredits, insert user credit', userId, newBalance);
     await db.insert(userCredit).values({
       id: randomUUID(),
       userId,
@@ -171,11 +171,7 @@ export async function addCredits({
     amount,
     description,
     paymentId,
-    // NOTE: there is no expiration date for PURCHASE type
-    expirationDate:
-      type === CREDIT_TRANSACTION_TYPE.PURCHASE || expireDays === undefined
-        ? undefined
-        : addDays(new Date(), expireDays),
+    expirationDate: expireDays ? addDays(new Date(), expireDays) : undefined,
   });
 }
 
@@ -216,22 +212,28 @@ export async function consumeCredits({
   // Check balance
   if (!(await hasEnoughCredits({ userId, requiredCredits: amount }))) {
     console.error(
-      `Insufficient credits for user ${userId}, required: ${amount}`
+      `consumeCredits, insufficient credits for user ${userId}, required: ${amount}`
     );
     throw new Error('Insufficient credits');
   }
   // FIFO consumption: consume from the earliest unexpired credits first
   const db = await getDb();
+  const now = new Date();
   const transactions = await db
     .select()
     .from(creditTransaction)
     .where(
       and(
         eq(creditTransaction.userId, userId),
+        // Exclude usage and expire records (these are consumption/expiration logs)
+        not(eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.USAGE)),
+        not(eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.EXPIRE)),
+        // Only include transactions with remaining amount > 0
+        gt(creditTransaction.remainingAmount, 0),
+        // Only include unexpired credits (either no expiration date or not yet expired)
         or(
-          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.PURCHASE),
-          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH),
-          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.REGISTER_GIFT)
+          isNull(creditTransaction.expirationDate),
+          gt(creditTransaction.expirationDate, now)
         )
       )
     )
@@ -282,7 +284,7 @@ export async function consumeCredits({
  */
 export async function processExpiredCredits(userId: string) {
   const now = new Date();
-  // Get all credit transactions without type EXPIRE
+  // Get all credit transactions that can expire (have expirationDate and not yet processed)
   const db = await getDb();
   const transactions = await db
     .select()
@@ -290,12 +292,15 @@ export async function processExpiredCredits(userId: string) {
     .where(
       and(
         eq(creditTransaction.userId, userId),
-        or(
-          // NOTE: credits with PURCHASE type can not be expired
-          // eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.PURCHASE),
-          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH),
-          eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.REGISTER_GIFT)
-        )
+        // Exclude usage and expire records (these are consumption/expiration logs)
+        not(eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.USAGE)),
+        not(eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.EXPIRE)),
+        // Only include transactions with expirationDate set
+        not(isNull(creditTransaction.expirationDate)),
+        // Only include transactions not yet processed for expiration
+        isNull(creditTransaction.expirationDateProcessedAt),
+        // Only include transactions with remaining amount > 0
+        gt(creditTransaction.remainingAmount, 0)
       )
     );
   let expiredTotal = 0;
