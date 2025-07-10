@@ -1,36 +1,27 @@
 'use client';
 
-import { getCreditBalanceAction } from '@/actions/get-credit-balance';
+import { useCredits } from '@/hooks/use-credits';
 import { useLocaleRouter } from '@/i18n/navigation';
 import { Routes } from '@/routes';
 import { useCreditTransactionStore } from '@/stores/transaction-store';
 import { CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 export function CreditsBalanceMenu() {
   const t = useTranslations('Marketing.avatar');
   const router = useLocaleRouter();
   const { refreshTrigger } = useCreditTransactionStore();
-  const [credits, setCredits] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
+
+  // Use the new useCredits hook
+  const { balance, isLoading, refresh } = useCredits();
 
   useEffect(() => {
-    const fetchCredits = async () => {
-      try {
-        const result = await getCreditBalanceAction();
-        if (result?.data?.success && result.data.credits !== undefined) {
-          setCredits(result.data.credits);
-        }
-      } catch (error) {
-        console.error('CreditsBalanceMenu, fetch credits error:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCredits();
-  }, [refreshTrigger]);
+    // Refresh credits when transaction refresh is triggered
+    if (refreshTrigger) {
+      refresh();
+    }
+  }, [refreshTrigger, refresh]);
 
   const handleClick = () => {
     router.push(Routes.SettingsCredits);
@@ -47,10 +38,10 @@ export function CreditsBalanceMenu() {
       </div>
       <div className="flex items-center">
         <p className="text-sm font-medium">
-          {loading ? (
+          {isLoading ? (
             <Loader2Icon className="h-4 w-4 animate-spin" />
           ) : (
-            credits.toLocaleString()
+            balance.toLocaleString()
           )}
         </p>
       </div>

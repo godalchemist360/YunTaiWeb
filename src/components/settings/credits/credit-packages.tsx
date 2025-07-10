@@ -1,6 +1,5 @@
 'use client';
 
-import { getCreditBalanceAction } from '@/actions/get-credit-balance';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -10,6 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { getCreditPackages } from '@/config/credits-config';
+import { useCredits } from '@/hooks/use-credits';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useLocaleRouter } from '@/i18n/navigation';
 import { formatPrice } from '@/lib/formatter';
@@ -19,7 +19,7 @@ import { useCreditTransactionStore } from '@/stores/transaction-store';
 import { CircleCheckBigIcon, CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { CreditCheckoutButton } from './credit-checkout-button';
 
@@ -29,37 +29,20 @@ import { CreditCheckoutButton } from './credit-checkout-button';
  */
 export function CreditPackages() {
   const t = useTranslations('Dashboard.settings.credits.packages');
-  const [loadingCredits, setLoadingCredits] = useState(true);
-  const [credits, setCredits] = useState<number | null>(null);
-  const { refreshTrigger, triggerRefresh } = useCreditTransactionStore();
-  const currentUser = useCurrentUser();
   const searchParams = useSearchParams();
   const localeRouter = useLocaleRouter();
+
+  // Use the new useCredits hook
+  const { balance, isLoading, refresh } = useCredits();
+  const { refreshTrigger, triggerRefresh } = useCreditTransactionStore();
+
+  // Get current user
+  const currentUser = useCurrentUser();
 
   // show only enabled packages
   const creditPackages = Object.values(getCreditPackages()).filter(
     (pkg) => !pkg.disabled && pkg.price.priceId
   );
-
-  const fetchCredits = async () => {
-    try {
-      setLoadingCredits(true);
-      const result = await getCreditBalanceAction();
-      if (result?.data?.success) {
-        console.log('CreditPackages, fetched credits:', result.data.credits);
-        setCredits(result.data.credits || 0);
-      } else {
-        const errorMessage = result?.data?.error || t('failedToFetchCredits');
-        console.error('CreditPackages, failed to fetch credits:', errorMessage);
-        toast.error(errorMessage);
-      }
-    } catch (error) {
-      console.error('CreditPackages, failed to fetch credits:', error);
-      toast.error(t('failedToFetchCredits'));
-    } finally {
-      setLoadingCredits(false);
-    }
-  };
 
   // Check for payment success and show success message
   useEffect(() => {
@@ -72,6 +55,8 @@ export function CreditPackages() {
 
       // Refresh credits data to show updated balance
       triggerRefresh();
+      // Also refresh the credits store
+      refresh();
 
       // Clean up URL parameters
       const url = new URL(window.location.href);
@@ -79,12 +64,14 @@ export function CreditPackages() {
       // Use Routes.SettingsCredits + url.search to properly handle locale routing
       localeRouter.replace(Routes.SettingsCredits + url.search);
     }
-  }, [searchParams, localeRouter]);
+  }, [searchParams, localeRouter, refresh, triggerRefresh, t]);
 
-  // Initial fetch and listen for transaction updates
+  // Listen for transaction updates and refresh credits
   useEffect(() => {
-    fetchCredits();
-  }, [refreshTrigger]);
+    if (refreshTrigger) {
+      refresh();
+    }
+  }, [refreshTrigger, refresh]);
 
   return (
     <div className="space-y-6">
@@ -99,11 +86,11 @@ export function CreditPackages() {
             <div className="flex items-center space-x-2">
               {/* <CoinsIcon className="h-4 w-4 text-muted-foreground" /> */}
               <div>
-                {loadingCredits ? (
+                {isLoading ? (
                   <Loader2Icon className="h-8 w-8 animate-spin" />
                 ) : (
                   <div className="text-2xl font-bold">
-                    {credits?.toLocaleString() || 0}
+                    {balance.toLocaleString()}
                   </div>
                 )}
               </div>
