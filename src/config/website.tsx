@@ -90,6 +90,11 @@ export const websiteConfig: WebsiteConfig = {
         prices: [],
         isFree: true,
         isLifetime: false,
+        credits: {
+          enable: true,
+          amount: 50,
+          expireDays: 30,
+        },
       },
       pro: {
         id: 'pro',
@@ -112,6 +117,11 @@ export const websiteConfig: WebsiteConfig = {
         isFree: false,
         isLifetime: false,
         recommended: true,
+        credits: {
+          enable: true,
+          amount: 1000,
+          expireDays: 90,
+        },
       },
       lifetime: {
         id: 'lifetime',
@@ -126,6 +136,11 @@ export const websiteConfig: WebsiteConfig = {
         ],
         isFree: false,
         isLifetime: true,
+        credits: {
+          enable: true,
+          amount: 2000,
+          expireDays: 120,
+        },
       },
     },
   },
@@ -136,11 +151,7 @@ export const websiteConfig: WebsiteConfig = {
       credits: 100,
       expireDays: 30,
     },
-    freeMonthlyCredits: {
-      enable: true,
-      credits: 50,
-      expireDays: 30,
-    },
+
     packages: {
       basic: {
         id: 'basic',
@@ -182,7 +193,7 @@ export const websiteConfig: WebsiteConfig = {
         id: 'enterprise',
         popular: false,
         credits: 1000,
-        expireDays: 180,
+        expireDays: 120,
         price: {
           priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_ENTERPRISE!,
           amount: 6990,

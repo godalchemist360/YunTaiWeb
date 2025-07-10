@@ -160,11 +160,6 @@ export interface CreditsConfig {
     credits: number;                 // The number of credits to give to the user
     expireDays?: number;             // The number of days to expire the credits, undefined means no expire
   };
-  freeMonthlyCredits: {
-    enable: boolean;                 // Whether to enable free monthly credits
-    credits: number;                 // The number of credits to give to the user
-    expireDays?: number;             // The number of days to expire the credits, undefined means no expire
-  };
   packages: Record<string, CreditPackage>;  // Packages indexed by ID
 }
 

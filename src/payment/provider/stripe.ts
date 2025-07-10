@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { addCredits } from '@/credits/credits';
+import { addCredits, addSubscriptionRenewalCredits } from '@/credits/credits';
 import { getCreditPackageByIdInServer } from '@/credits/server';
 import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 import { getDb } from '@/db';
@@ -608,6 +608,34 @@ export class StripeProvider implements PaymentProvider {
       return;
     }
 
+    // Get current payment record to check for period changes (indicating renewal)
+    const db = await getDb();
+    const currentPayment = await db
+      .select({
+        userId: payment.userId,
+        periodStart: payment.periodStart,
+        periodEnd: payment.periodEnd,
+      })
+      .from(payment)
+      .where(eq(payment.subscriptionId, stripeSubscription.id))
+      .limit(1);
+
+    // get new period start and end
+    const newPeriodStart = stripeSubscription.current_period_start
+      ? new Date(stripeSubscription.current_period_start * 1000)
+      : undefined;
+    const newPeriodEnd = stripeSubscription.current_period_end
+      ? new Date(stripeSubscription.current_period_end * 1000)
+      : undefined;
+
+    // Check if this is a renewal (period has changed and subscription is active)
+    const isRenewal =
+      currentPayment.length > 0 &&
+      stripeSubscription.status === 'active' &&
+      currentPayment[0].periodStart &&
+      newPeriodStart &&
+      currentPayment[0].periodStart.getTime() !== newPeriodStart.getTime();
+
     // update fields
     const updateFields: any = {
       priceId: priceId,
@@ -615,12 +643,8 @@ export class StripeProvider implements PaymentProvider {
       status: this.mapSubscriptionStatusToPaymentStatus(
         stripeSubscription.status
       ),
-      periodStart: stripeSubscription.current_period_start
-        ? new Date(stripeSubscription.current_period_start * 1000)
-        : undefined,
-      periodEnd: stripeSubscription.current_period_end
-        ? new Date(stripeSubscription.current_period_end * 1000)
-        : undefined,
+      periodStart: newPeriodStart,
+      periodEnd: newPeriodEnd,
       cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
       trialStart: stripeSubscription.trial_start
         ? new Date(stripeSubscription.trial_start * 1000)
@@ -631,7 +655,6 @@ export class StripeProvider implements PaymentProvider {
       updatedAt: new Date(),
     };
 
-    const db = await getDb();
     const result = await db
       .update(payment)
       .set(updateFields)
@@ -642,6 +665,24 @@ export class StripeProvider implements PaymentProvider {
       console.log(
         `<< Updated payment record ${result[0].id} for Stripe subscription ${stripeSubscription.id}`
       );
+
+      // Add credits for subscription renewal
+      if (isRenewal && currentPayment[0].userId) {
+        try {
+          await addSubscriptionRenewalCredits(
+            currentPayment[0].userId,
+            priceId
+          );
+          console.log(
+            `<< Added renewal credits for user ${currentPayment[0].userId}, priceId: ${priceId}`
+          );
+        } catch (error) {
+          console.error(
+            `<< Failed to add renewal credits for user ${currentPayment[0].userId}:`,
+            error
+          );
+        }
+      }
     } else {
       console.warn(
         `<< No payment record found for Stripe subscription ${stripeSubscription.id}`

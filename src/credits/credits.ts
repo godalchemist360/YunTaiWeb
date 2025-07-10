@@ -1,9 +1,10 @@
 import { randomUUID } from 'crypto';
 import { websiteConfig } from '@/config/website';
 import { getDb } from '@/db';
-import { creditTransaction, userCredit } from '@/db/schema';
+import { creditTransaction, payment, user, userCredit } from '@/db/schema';
+import { findPlanByPriceId } from '@/lib/price-plan';
 import { addDays, isAfter } from 'date-fns';
-import { and, asc, eq, or } from 'drizzle-orm';
+import { and, asc, desc, eq, or } from 'drizzle-orm';
 import { CREDIT_TRANSACTION_TYPE } from './types';
 
 /**
@@ -384,8 +385,18 @@ export async function addRegisterGiftCredits(userId: string) {
  * @param userId - User ID
  */
 export async function addMonthlyFreeCredits(userId: string) {
-  if (!websiteConfig.credits.freeMonthlyCredits.enable) {
-    console.log('addMonthlyFreeCredits, disabled');
+  const freePlan = Object.values(websiteConfig.price.plans).find(
+    (plan) => plan.isFree
+  );
+  if (!freePlan) {
+    console.log('addMonthlyFreeCredits, no free plan found');
+    return;
+  }
+  if (freePlan.disabled || !freePlan.credits?.enable) {
+    console.log(
+      'addMonthlyFreeCredits, plan disabled or credits disabled',
+      freePlan.id
+    );
     return;
   }
   // Check last refresh time
@@ -402,14 +413,15 @@ export async function addMonthlyFreeCredits(userId: string) {
     canAdd = true;
   } else {
     const last = new Date(record[0].lastRefreshAt);
+    // different month or year means new month
     canAdd =
       now.getMonth() !== last.getMonth() ||
       now.getFullYear() !== last.getFullYear();
   }
   // add credits if it's a new month
   if (canAdd) {
-    const credits = websiteConfig.credits.freeMonthlyCredits.credits;
-    const expireDays = websiteConfig.credits.freeMonthlyCredits.expireDays;
+    const credits = freePlan.credits.amount;
+    const expireDays = freePlan.credits.expireDays;
     await addCredits({
       userId,
       amount: credits,
@@ -417,5 +429,106 @@ export async function addMonthlyFreeCredits(userId: string) {
       description: `Free monthly credits: ${credits} for ${now.getFullYear()}-${now.getMonth() + 1}`,
       expireDays,
     });
+  }
+}
+
+/**
+ * Add subscription renewal credits
+ * @param userId - User ID
+ * @param priceId - Price ID
+ */
+export async function addSubscriptionRenewalCredits(
+  userId: string,
+  priceId: string
+) {
+  const pricePlan = findPlanByPriceId(priceId);
+  if (
+    !pricePlan ||
+    pricePlan.isFree ||
+    !pricePlan.credits ||
+    !pricePlan.credits.enable
+  ) {
+    console.log(
+      `addSubscriptionRenewalCredits, no credits configured for plan ${priceId}`
+    );
+    return;
+  }
+
+  const credits = pricePlan.credits.amount;
+  const expireDays = pricePlan.credits.expireDays;
+
+  await addCredits({
+    userId,
+    amount: credits,
+    type: CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL,
+    description: `Subscription renewal credits for ${priceId}: ${credits}`,
+    expireDays,
+  });
+
+  console.log(
+    `Added ${credits} subscription renewal credits for user ${userId}, priceId: ${priceId}`
+  );
+}
+
+/**
+ * Add lifetime monthly credits
+ * @param userId - User ID
+ */
+export async function addLifetimeMonthlyCredits(userId: string) {
+  const lifetimePlan = Object.values(websiteConfig.price.plans).find(
+    (plan) => plan.isLifetime
+  );
+  if (
+    !lifetimePlan ||
+    lifetimePlan.disabled ||
+    !lifetimePlan.credits ||
+    !lifetimePlan.credits.enable
+  ) {
+    console.log(
+      'addLifetimeMonthlyCredits, plan disabled or credits disabled',
+      lifetimePlan?.id
+    );
+    return;
+  }
+
+  // Check last refresh time to avoid duplicate monthly credits
+  const db = await getDb();
+  const record = await db
+    .select()
+    .from(userCredit)
+    .where(eq(userCredit.userId, userId))
+    .limit(1);
+
+  const now = new Date();
+  let canAdd = false;
+
+  // Check if user has never received lifetime credits or it's a new month
+  if (!record[0]?.lastRefreshAt) {
+    canAdd = true;
+  } else {
+    const last = new Date(record[0].lastRefreshAt);
+    // different month or year means new month
+    canAdd =
+      now.getMonth() !== last.getMonth() ||
+      now.getFullYear() !== last.getFullYear();
+  }
+
+  // Add credits if it's a new month
+  if (canAdd) {
+    const credits = lifetimePlan.credits.amount;
+    const expireDays = lifetimePlan.credits.expireDays;
+
+    await addCredits({
+      userId,
+      amount: credits,
+      type: CREDIT_TRANSACTION_TYPE.LIFETIME_MONTHLY,
+      description: `Lifetime monthly credits: ${credits} for ${now.getFullYear()}-${now.getMonth() + 1}`,
+      expireDays,
+    });
+
+    // Update last refresh time for lifetime credits
+    await updateUserLastRefreshAt(userId, now);
+
+    console.log(`Added ${credits} lifetime monthly credits for user ${userId}`);
   }
 }

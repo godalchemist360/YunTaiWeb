@@ -86,7 +86,7 @@ export const creditTransaction = pgTable("credit_transaction", {
 	description: text("description"),
 	amount: integer("amount").notNull(),
 	remainingAmount: integer("remaining_amount"),
-	paymentId: text("payment_id"), // payment_intent_id
+	paymentId: text("payment_id"),
 	expirationDate: timestamp("expiration_date"),
 	expirationDateProcessedAt: timestamp("expiration_date_processed_at"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),

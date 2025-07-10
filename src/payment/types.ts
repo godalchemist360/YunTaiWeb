@@ -51,6 +51,15 @@ export interface Price {
 }
 
 /**
+ * Credits configuration for a plan
+ */
+export interface Credits {
+  enable: boolean;                   // Whether to enable credits for this plan
+  amount: number;                    // Number of credits provided
+  expireDays?: number;               // Number of days until credits expire, undefined means no expiration
+}
+
+/**
  * Price plan definition
  *
  * 1. When to set the plan disabled?
@@ -72,6 +81,7 @@ export interface PricePlan {
   isLifetime: boolean;               // Whether this is a lifetime plan
   recommended?: boolean;             // Whether to mark this plan as recommended in UI
   disabled?: boolean;                // Whether to disable this plan in UI
+  credits?: Credits;                 // Credits configuration for this plan
 }
 
 /**

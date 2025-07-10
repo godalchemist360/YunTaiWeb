@@ -2,11 +2,13 @@
  * Credit transaction type enum
  */
 export enum CREDIT_TRANSACTION_TYPE {
-  MONTHLY_REFRESH = 'MONTHLY_REFRESH',  // Credits earned by monthly refresh
-  REGISTER_GIFT = 'REGISTER_GIFT',      // Credits earned by register gift
-  PURCHASE = 'PURCHASE',                // Credits earned by purchase
-  USAGE = 'USAGE',                      // Credits spent by usage
-  EXPIRE = 'EXPIRE',                    // Credits expired
+  MONTHLY_REFRESH = 'MONTHLY_REFRESH',        // Credits earned by monthly refresh (free users)
+  REGISTER_GIFT = 'REGISTER_GIFT',            // Credits earned by register gift
+  PURCHASE = 'PURCHASE',                      // Credits earned by purchase
+  SUBSCRIPTION_RENEWAL = 'SUBSCRIPTION_RENEWAL', // Credits earned by subscription renewal
+  LIFETIME_MONTHLY = 'LIFETIME_MONTHLY',      // Credits earned by lifetime plan monthly distribution
+  USAGE = 'USAGE',                            // Credits spent by usage
+  EXPIRE = 'EXPIRE',                          // Credits expired
 }
 
 /**
