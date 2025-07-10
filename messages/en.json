@@ -633,7 +633,9 @@
             "REGISTER_GIFT": "Register Gift",
             "PURCHASE": "Purchase",
             "USAGE": "Usage",
-            "EXPIRE": "Expire"
+            "EXPIRE": "Expire",
+            "SUBSCRIPTION_RENEWAL": "Subscription Renewal",
+            "LIFETIME_MONTHLY": "Lifetime Monthly"
           },
           "expired": "Expired",
           "never": "Never"

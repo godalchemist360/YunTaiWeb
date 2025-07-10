@@ -23,6 +23,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 import { formatDate } from '@/lib/formatter';
 import {
   type ColumnDef,
@@ -43,18 +50,17 @@ import {
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
-  RefreshCwIcon,
-  GiftIcon,
-  ShoppingCartIcon,
-  MinusCircleIcon,
   ClockIcon,
+  GiftIcon,
+  MinusCircleIcon,
+  RefreshCwIcon,
+  ShoppingCartIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '../../ui/badge';
 import { Label } from '../../ui/label';
-import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 
 // Define the credit transaction interface
 interface CreditTransaction {
@@ -109,8 +115,6 @@ interface CreditTransactionsTableProps {
   onSortingChange?: (sorting: SortingState) => void;
 }
 
-export { type CreditTransaction };
-
 export function CreditTransactionsTable({
   data,
   total,
@@ -126,7 +130,7 @@ export function CreditTransactionsTable({
   const t = useTranslations('Dashboard.settings.credits.transactions');
   const tTable = useTranslations('Common.table');
   const [sorting, setSorting] = useState<SortingState>([
-    { id: 'createdAt', desc: true }
+    { id: 'createdAt', desc: true },
   ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -147,39 +151,42 @@ export function CreditTransactionsTable({
     updatedAt: 'columns.updatedAt' as const,
   } as const;
 
-  // Get transaction type icon and color
+  // Get transaction type icon
   const getTransactionTypeIcon = (type: string) => {
     switch (type) {
       case CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH:
-        return <RefreshCwIcon className="h-4 w-4 text-blue-500" />;
+        return <RefreshCwIcon className="h-4 w-4" />;
       case CREDIT_TRANSACTION_TYPE.REGISTER_GIFT:
-        return <GiftIcon className="h-4 w-4 text-green-500" />;
+        return <GiftIcon className="h-4 w-4" />;
       case CREDIT_TRANSACTION_TYPE.PURCHASE:
-        return <ShoppingCartIcon className="h-4 w-4 text-purple-500" />;
+        return <ShoppingCartIcon className="h-4 w-4" />;
       case CREDIT_TRANSACTION_TYPE.USAGE:
-        return <MinusCircleIcon className="h-4 w-4 text-red-500" />;
+        return <MinusCircleIcon className="h-4 w-4" />;
       case CREDIT_TRANSACTION_TYPE.EXPIRE:
-        return <ClockIcon className="h-4 w-4 text-gray-500" />;
+        return <ClockIcon className="h-4 w-4" />;
+      case CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL:
+        return <RefreshCwIcon className="h-4 w-4" />;
+      case CREDIT_TRANSACTION_TYPE.LIFETIME_MONTHLY:
+        return <GiftIcon className="h-4 w-4" />;
       default:
         return null;
     }
   };
 
-  // Get transaction type color
-  const getTransactionTypeColor = (type: string) => {
+  // Get transaction type badge variant
+  const getTransactionTypeBadgeVariant = (type: string) => {
     switch (type) {
-      case CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
       case CREDIT_TRANSACTION_TYPE.REGISTER_GIFT:
-        return 'bg-green-100 text-green-800 border-green-200';
       case CREDIT_TRANSACTION_TYPE.PURCHASE:
-        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case CREDIT_TRANSACTION_TYPE.MONTHLY_REFRESH:
+      case CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL:
+      case CREDIT_TRANSACTION_TYPE.LIFETIME_MONTHLY:
+        return 'outline' as const;
       case CREDIT_TRANSACTION_TYPE.USAGE:
-        return 'bg-red-100 text-red-800 border-red-200';
       case CREDIT_TRANSACTION_TYPE.EXPIRE:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'destructive' as const;
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'outline' as const;
     }
   };
 
@@ -196,6 +203,10 @@ export function CreditTransactionsTable({
         return t('types.USAGE');
       case CREDIT_TRANSACTION_TYPE.EXPIRE:
         return t('types.EXPIRE');
+      case CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL:
+        return t('types.SUBSCRIPTION_RENEWAL');
+      case CREDIT_TRANSACTION_TYPE.LIFETIME_MONTHLY:
+        return t('types.LIFETIME_MONTHLY');
       default:
         return type;
     }
@@ -212,10 +223,7 @@ export function CreditTransactionsTable({
         const transaction = row.original;
         return (
           <div className="flex items-center gap-2 pl-3">
-            <Badge
-              variant="outline"
-              className={`px-2 py-1 flex items-center gap-1 ${getTransactionTypeColor(transaction.type)}`}
-            >
+            <Badge variant={getTransactionTypeBadgeVariant(transaction.type)}>
               {getTransactionTypeIcon(transaction.type)}
               {getTransactionTypeDisplayName(transaction.type)}
             </Badge>
@@ -247,7 +255,10 @@ export function CreditTransactionsTable({
     {
       accessorKey: 'remainingAmount',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('columns.remainingAmount')} />
+        <DataTableColumnHeader
+          column={column}
+          title={t('columns.remainingAmount')}
+        />
       ),
       cell: ({ row }) => {
         const transaction = row.original;
@@ -267,15 +278,33 @@ export function CreditTransactionsTable({
     {
       accessorKey: 'description',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('columns.description')} />
+        <DataTableColumnHeader
+          column={column}
+          title={t('columns.description')}
+        />
       ),
       cell: ({ row }) => {
         const transaction = row.original;
         return (
           <div className="flex items-center gap-2 pl-3">
-            <span className="max-w-[200px] truncate" title={transaction.description || undefined}>
-              {transaction.description || '-'}
-            </span>
+            {transaction.description ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="max-w-[200px] truncate cursor-help">
+                      {transaction.description}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs whitespace-pre-wrap">
+                      {transaction.description}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <span className="text-gray-400">-</span>
+            )}
           </div>
         );
       },
@@ -310,7 +339,10 @@ export function CreditTransactionsTable({
     {
       accessorKey: 'expirationDate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('columns.expirationDate')} />
+        <DataTableColumnHeader
+          column={column}
+          title={t('columns.expirationDate')}
+        />
       ),
       cell: ({ row }) => {
         const transaction = row.original;
@@ -330,7 +362,10 @@ export function CreditTransactionsTable({
     {
       accessorKey: 'expirationDateProcessedAt',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('columns.expirationDateProcessedAt')} />
+        <DataTableColumnHeader
+          column={column}
+          title={t('columns.expirationDateProcessedAt')}
+        />
       ),
       cell: ({ row }) => {
         const transaction = row.original;
@@ -356,9 +391,7 @@ export function CreditTransactionsTable({
         const transaction = row.original;
         return (
           <div className="flex items-center gap-2 pl-3">
-            <span className="text-sm">
-              {formatDate(transaction.createdAt)}
-            </span>
+            <span className="text-sm">{formatDate(transaction.createdAt)}</span>
           </div>
         );
       },
@@ -372,9 +405,7 @@ export function CreditTransactionsTable({
         const transaction = row.original;
         return (
           <div className="flex items-center gap-2 pl-3">
-            <span className="text-sm">
-              {formatDate(transaction.updatedAt)}
-            </span>
+            <span className="text-sm">{formatDate(transaction.updatedAt)}</span>
           </div>
         );
       },
@@ -514,11 +545,7 @@ export function CreditTransactionsTable({
 
       <div className="flex items-center justify-between px-4">
         <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-          {total > 0 && (
-            <span>
-              {tTable('totalRecords', { count: total })}
-            </span>
-          )}
+          {total > 0 && <span>{tTable('totalRecords', { count: total })}</span>}
         </div>
         <div className="flex w-full items-center gap-8 lg:w-fit">
           <div className="hidden items-center gap-2 lg:flex">

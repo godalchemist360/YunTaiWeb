@@ -634,7 +634,9 @@
             "REGISTER_GIFT": "注册礼品",
             "PURCHASE": "购买",
             "USAGE": "使用",
-            "EXPIRE": "过期"
+            "EXPIRE": "过期",
+            "SUBSCRIPTION_RENEWAL": "订阅续费",
+            "LIFETIME_MONTHLY": "终身月度"
           },
           "expired": "已过期",
           "never": "永不"
