@@ -4,23 +4,13 @@ import { Button } from '@/components/ui/button';
 import { useCredits } from '@/hooks/use-credits';
 import { useLocaleRouter } from '@/i18n/navigation';
 import { Routes } from '@/routes';
-import { useCreditTransactionStore } from '@/stores/transaction-store';
 import { CoinsIcon, Loader2Icon } from 'lucide-react';
-import { useEffect } from 'react';
 
 export function CreditsBalanceButton() {
   const router = useLocaleRouter();
-  const { refreshTrigger } = useCreditTransactionStore();
 
   // Use the new useCredits hook
-  const { balance, isLoading, refresh } = useCredits();
-
-  useEffect(() => {
-    // Refresh credits when transaction refresh is triggered
-    if (refreshTrigger) {
-      refresh();
-    }
-  }, [refreshTrigger, refresh]);
+  const { balance, isLoading } = useCredits();
 
   const handleClick = () => {
     router.push(Routes.SettingsCredits);

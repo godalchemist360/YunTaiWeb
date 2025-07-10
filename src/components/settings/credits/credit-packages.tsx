@@ -15,7 +15,6 @@ import { useLocaleRouter } from '@/i18n/navigation';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes';
-import { useCreditTransactionStore } from '@/stores/transaction-store';
 import { CircleCheckBigIcon, CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
@@ -34,7 +33,6 @@ export function CreditPackages() {
 
   // Use the new useCredits hook
   const { balance, isLoading, refresh } = useCredits();
-  const { refreshTrigger, triggerRefresh } = useCreditTransactionStore();
 
   // Get current user
   const currentUser = useCurrentUser();
@@ -54,8 +52,6 @@ export function CreditPackages() {
       }, 0);
 
       // Refresh credits data to show updated balance
-      triggerRefresh();
-      // Also refresh the credits store
       refresh();
 
       // Clean up URL parameters
@@ -64,14 +60,7 @@ export function CreditPackages() {
       // Use Routes.SettingsCredits + url.search to properly handle locale routing
       localeRouter.replace(Routes.SettingsCredits + url.search);
     }
-  }, [searchParams, localeRouter, refresh, triggerRefresh, t]);
-
-  // Listen for transaction updates and refresh credits
-  useEffect(() => {
-    if (refreshTrigger) {
-      refresh();
-    }
-  }, [refreshTrigger, refresh]);
+  }, [searchParams, localeRouter, refresh]);
 
   return (
     <div className="space-y-6">

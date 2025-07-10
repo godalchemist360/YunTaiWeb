@@ -1,6 +1,6 @@
 import { authClient } from '@/lib/auth-client';
 import { useCreditsStore } from '@/stores/credits-store';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 /**
  * Hook for accessing and managing credits state
@@ -21,6 +21,24 @@ export function useCredits() {
 
   const { data: session } = authClient.useSession();
 
+  // Stable refetch function using useCallback
+  const refetch = useCallback(() => {
+    const currentUser = session?.user;
+    if (currentUser) {
+      console.log('refetching credits info for user', currentUser.id);
+      fetchCredits(currentUser);
+    }
+  }, [session?.user, fetchCredits]);
+
+  // Stable refresh function using useCallback
+  const refresh = useCallback(() => {
+    const currentUser = session?.user;
+    if (currentUser) {
+      console.log('refreshing credits info for user', currentUser.id);
+      refreshCredits(currentUser);
+    }
+  }, [session?.user, refreshCredits]);
+
   useEffect(() => {
     const currentUser = session?.user;
     // Fetch credits data whenever the user session changes
@@ -28,7 +46,7 @@ export function useCredits() {
       console.log('fetching credits info for user', currentUser.id);
       fetchCredits(currentUser);
     }
-  }, [session, fetchCredits]);
+  }, [session?.user, fetchCredits]);
 
   return {
     // State
@@ -41,20 +59,8 @@ export function useCredits() {
     updateBalanceOptimistically,
 
     // Utility methods
-    refetch: () => {
-      const currentUser = session?.user;
-      if (currentUser) {
-        console.log('refetching credits info for user', currentUser.id);
-        fetchCredits(currentUser);
-      }
-    },
-    refresh: () => {
-      const currentUser = session?.user;
-      if (currentUser) {
-        console.log('refreshing credits info for user', currentUser.id);
-        refreshCredits(currentUser);
-      }
-    },
+    refetch,
+    refresh,
 
     // Helper methods
     hasEnoughCredits: (amount: number) => balance >= amount,

@@ -3,10 +3,9 @@
 import { getCreditTransactionsAction } from '@/actions/get-credit-transactions';
 import type { CreditTransaction } from '@/components/settings/credits/credit-transactions-table';
 import { CreditTransactionsTable } from '@/components/settings/credits/credit-transactions-table';
-import { useCreditTransactionStore } from '@/stores/transaction-store';
 import type { SortingState } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export function CreditTransactionsPageClient() {
@@ -20,9 +19,8 @@ export function CreditTransactionsPageClient() {
     { id: 'createdAt', desc: true },
   ]);
   const [loading, setLoading] = useState(false);
-  const { refreshTrigger } = useCreditTransactionStore();
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const result = await getCreditTransactionsAction({
@@ -52,11 +50,11 @@ export function CreditTransactionsPageClient() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageIndex, pageSize, search, sorting]);
 
   useEffect(() => {
     fetchData();
-  }, [pageIndex, pageSize, search, sorting, refreshTrigger]);
+  }, [fetchData]);
 
   return (
     <CreditTransactionsTable
