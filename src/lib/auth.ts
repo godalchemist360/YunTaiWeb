@@ -1,4 +1,6 @@
 import { websiteConfig } from '@/config/website';
+import { addCredits } from '@/credits/credits';
+import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 import { getDb } from '@/db/index';
 import { defaultMessages } from '@/i18n/messages';
 import { LOCALE_COOKIE_NAME, routing } from '@/i18n/routing';
@@ -128,6 +130,19 @@ export const auth = betterAuth({
             } catch (error) {
               console.error('Newsletter subscription error:', error);
             }
+          }
+          // Add register gift credits to the user if enabled in website config
+          if (
+            websiteConfig.credits.registerGiftCredits.enable &&
+            websiteConfig.credits.registerGiftCredits.credits > 0
+          ) {
+            await addCredits({
+              userId: user.id,
+              amount: websiteConfig.credits.registerGiftCredits.credits,
+              type: CREDIT_TRANSACTION_TYPE.REGISTER_GIFT,
+              description: 'Register gift credits',
+              expireDays: websiteConfig.credits.registerGiftCredits.expireDays,
+            });
           }
         },
       },
