@@ -9,6 +9,9 @@ export enum CREDIT_TRANSACTION_TYPE {
   EXPIRE = 'EXPIRE',                    // Credits expired
 }
 
+/**
+ * Credit package price
+ */
 export interface CreditPackagePrice {
   priceId: string;                   // Stripe price ID (not product id)
   amount: number;                    // Price amount in currency units (dollars, euros, etc.)

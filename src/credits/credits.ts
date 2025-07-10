@@ -21,6 +21,11 @@ export async function getUserCredits(userId: string): Promise<number> {
   return record[0]?.currentCredits || 0;
 }
 
+/**
+ * Update user's current credit balance
+ * @param userId - User ID
+ * @param credits - New credit balance
+ */
 export async function updateUserCredits(userId: string, credits: number) {
   const db = await getDb();
   await db
@@ -29,6 +34,11 @@ export async function updateUserCredits(userId: string, credits: number) {
     .where(eq(userCredit.userId, userId));
 }
 
+/**
+ * Update user's last refresh time
+ * @param userId - User ID
+ * @param date - Last refresh time
+ */
 export async function updateUserLastRefreshAt(userId: string, date: Date) {
   const db = await getDb();
   await db
@@ -63,11 +73,11 @@ export async function saveCreditTransaction({
       type,
       description
     );
-    throw new Error('Invalid params');
+    throw new Error('saveCreditTransaction, invalid params');
   }
   if (!Number.isFinite(amount) || amount === 0) {
     console.error('saveCreditTransaction, invalid amount', userId, amount);
-    throw new Error('Invalid amount');
+    throw new Error('saveCreditTransaction, invalid amount');
   }
   const db = await getDb();
   await db.insert(creditTransaction).values({
@@ -107,18 +117,18 @@ export async function addCredits({
 }) {
   if (!userId || !type || !description) {
     console.error('addCredits, invalid params', userId, type, description);
-    throw new Error('Invalid params');
+    throw new Error('addCredits, invalid params');
   }
   if (!Number.isFinite(amount) || amount <= 0) {
     console.error('addCredits, invalid amount', userId, amount);
-    throw new Error('Invalid amount');
+    throw new Error('addCredits, invalid amount');
   }
   if (
     expireDays !== undefined &&
     (!Number.isFinite(expireDays) || expireDays <= 0)
   ) {
     console.error('addCredits, invalid expire days', userId, expireDays);
-    throw new Error('Invalid expire days');
+    throw new Error('addCredits, invalid expire days');
   }
   // Process expired credits first
   await processExpiredCredits(userId);
@@ -194,11 +204,11 @@ export async function consumeCredits({
 }) {
   if (!userId || !description) {
     console.error('consumeCredits, invalid params', userId, description);
-    throw new Error('Invalid params');
+    throw new Error('consumeCredits, invalid params');
   }
   if (!Number.isFinite(amount) || amount <= 0) {
     console.error('consumeCredits, invalid amount', userId, amount);
-    throw new Error('Invalid amount');
+    throw new Error('consumeCredits, invalid amount');
   }
   // Process expired credits first
   await processExpiredCredits(userId);

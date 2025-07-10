@@ -772,14 +772,6 @@ export class StripeProvider implements PaymentProvider {
       return;
     }
 
-    // get priceId from session metadata, not from line items
-    // const priceId = session.line_items?.data[0]?.price?.id;
-    const priceId = session.metadata?.priceId;
-    if (!priceId) {
-      console.warn(`<< No priceId found for checkout session ${session.id}`);
-      return;
-    }
-
     // get credits from session metadata
     const credits = session.metadata?.credits;
     if (!credits) {
@@ -787,8 +779,15 @@ export class StripeProvider implements PaymentProvider {
       return;
     }
 
+    // get credit package
+    const creditPackage = getCreditPackageByIdInServer(packageId);
+    if (!creditPackage) {
+      console.warn(`<< Credit package ${packageId} not found`);
+      return;
+    }
+
     try {
-      // Add credits to user account using existing addCredits method
+      // add credits to user account
       const amount = session.amount_total ? session.amount_total / 100 : 0;
       await addCredits({
         userId,
@@ -796,10 +795,11 @@ export class StripeProvider implements PaymentProvider {
         type: CREDIT_TRANSACTION_TYPE.PURCHASE,
         description: `Credit package purchase: ${packageId} - ${credits} credits for $${amount}`,
         paymentId: session.id,
+        expireDays: creditPackage.expireDays,
       });
 
       console.log(
-        `<< Added ${credits} credits to user ${userId} for $${amount}`
+        `<< Added ${credits} credits to user ${userId} for $${amount}${creditPackage.expireDays ? ` (expires in ${creditPackage.expireDays} days)` : ' (no expiration)'}`
       );
     } catch (error) {
       console.error(
@@ -830,6 +830,13 @@ export class StripeProvider implements PaymentProvider {
     }
 
     try {
+      // Get credit package to get expiration info
+      const creditPackage = getCreditPackageByIdInServer(packageId);
+      if (!creditPackage) {
+        console.warn(`<< Credit package ${packageId} not found`);
+        return;
+      }
+
       // Add credits to user account using existing addCredits method
       await addCredits({
         userId,
@@ -837,10 +844,11 @@ export class StripeProvider implements PaymentProvider {
         type: CREDIT_TRANSACTION_TYPE.PURCHASE,
         description: `Credit package purchase: ${packageId} - ${credits} credits for $${paymentIntent.amount / 100}`,
         paymentId: paymentIntent.id,
+        expireDays: creditPackage.expireDays,
       });
 
       console.log(
-        `<< Successfully processed payment intent ${paymentIntent.id}: Added ${credits} credits to user ${userId}`
+        `<< Successfully processed payment intent ${paymentIntent.id}: Added ${credits} credits to user ${userId}${creditPackage.expireDays ? ` (expires in ${creditPackage.expireDays} days)` : ' (no expiration)'}`
       );
     } catch (error) {
       console.error(
