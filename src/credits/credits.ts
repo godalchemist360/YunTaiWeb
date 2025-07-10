@@ -532,3 +532,70 @@ export async function addLifetimeMonthlyCredits(userId: string) {
     console.log(`Added ${credits} lifetime monthly credits for user ${userId}`);
   }
 }
+
+/**
+ * Distribute credits to all users based on their plan type
+ * This function is designed to be called by a cron job
+ */
+export async function distributeCreditsToAllUsers() {
+  console.log('Starting credit distribution to all users...');
+
+  const db = await getDb();
+
+  // Get all users with their current active payments/subscriptions
+  const users = await db
+    .select({
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+    })
+    .from(user)
+    .where(eq(user.banned, false)); // Only active users
+
+  let processedCount = 0;
+  let errorCount = 0;
+
+  for (const userRecord of users) {
+    try {
+      // Get user's current active subscription/payment
+      const activePayments = await db
+        .select()
+        .from(payment)
+        .where(
+          and(
+            eq(payment.userId, userRecord.userId),
+            eq(payment.status, 'active')
+          )
+        )
+        .orderBy(desc(payment.createdAt));
+
+      if (activePayments.length > 0) {
+        // User has active subscription - check what type
+        const activePayment = activePayments[0];
+        const pricePlan = findPlanByPriceId(activePayment.priceId);
+
+        if (pricePlan?.isLifetime) {
+          // Lifetime user - add monthly credits
+          await addLifetimeMonthlyCredits(userRecord.userId);
+        }
+        // Note: Subscription renewals are handled by Stripe webhooks, not here
+      } else {
+        // User has no active subscription - add free monthly credits if enabled
+        await addMonthlyFreeCredits(userRecord.userId);
+      }
+
+      processedCount++;
+    } catch (error) {
+      console.error(
+        `Error processing credits for user ${userRecord.userId}:`,
+        error
+      );
+      errorCount++;
+    }
+  }
+
+  console.log(
+    `Credit distribution completed. Processed: ${processedCount}, Errors: ${errorCount}`
+  );
+  return { processedCount, errorCount };
+}
