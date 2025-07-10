@@ -15,7 +15,7 @@ import { useLocaleRouter } from '@/i18n/navigation';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { useTransactionStore } from '@/stores/transaction-store';
-import { CircleCheckBigIcon, CoinsIcon } from 'lucide-react';
+import { CircleCheckBigIcon, CoinsIcon, RefreshCwIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -84,7 +84,7 @@ export function CreditPackages() {
   return (
     <div className="space-y-6">
       <Card className="w-full">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-lg font-semibold">
             {t('balance')}
           </CardTitle>
@@ -92,12 +92,14 @@ export function CreditPackages() {
         <CardContent>
           <div className="flex flex-col gap-4">
             <div className="flex items-center space-x-2">
-              <CoinsIcon className="h-4 w-4 text-muted-foreground" />
-              <div className="text-2xl font-bold">
+              {/* <CoinsIcon className="h-4 w-4 text-muted-foreground" /> */}
+              <div>
                 {loadingCredits ? (
-                  <span className="animate-pulse">...</span>
+                  <RefreshCwIcon className="h-8 w-8 animate-spin" />
                 ) : (
-                  credits?.toLocaleString() || 0
+                  <div className="text-2xl font-bold">
+                    {credits?.toLocaleString() || 0}
+                  </div>
                 )}
               </div>
             </div>
