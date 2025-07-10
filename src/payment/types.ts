@@ -79,7 +79,7 @@ export interface PricePlan {
   prices: Price[];                   // Available prices for this plan
   isFree: boolean;                   // Whether this is a free plan
   isLifetime: boolean;               // Whether this is a lifetime plan
-  recommended?: boolean;             // Whether to mark this plan as recommended in UI
+  popular?: boolean;                 // Whether to mark this plan as popular in UI
   disabled?: boolean;                // Whether to disable this plan in UI
   credits?: Credits;                 // Credits configuration for this plan
 }

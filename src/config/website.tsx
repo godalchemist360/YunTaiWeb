@@ -116,7 +116,7 @@ export const websiteConfig: WebsiteConfig = {
         ],
         isFree: false,
         isLifetime: false,
-        recommended: true,
+        popular: true,
         credits: {
           enable: true,
           amount: 1000,
