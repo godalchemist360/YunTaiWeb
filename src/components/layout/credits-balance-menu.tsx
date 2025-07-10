@@ -5,9 +5,11 @@ import { useLocaleRouter } from '@/i18n/navigation';
 import { Routes } from '@/routes';
 import { useTransactionStore } from '@/stores/transaction-store';
 import { CoinsIcon, Loader2Icon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 export function CreditsBalanceMenu() {
+  const t = useTranslations('Marketing.avatar');
   const router = useLocaleRouter();
   const { refreshTrigger } = useTransactionStore();
   const [credits, setCredits] = useState<number>(0);
@@ -41,7 +43,7 @@ export function CreditsBalanceMenu() {
     >
       <div className="flex items-center space-x-2.5">
         <CoinsIcon className="h-4 w-4" />
-        <p className="text-sm">Credits</p>
+        <p className="text-sm">{t('credits')}</p>
       </div>
       <div className="flex items-center">
         <p className="text-sm font-medium">

@@ -74,9 +74,9 @@ export function DashboardHeader({
           {actions}
 
           <CreditsBalanceButton />
-          {isDemo && <ThemeSelector />}
           <ModeSwitcher />
           <LocaleSwitcher />
+          {isDemo && <ThemeSelector />}
         </div>
       </div>
     </header>
