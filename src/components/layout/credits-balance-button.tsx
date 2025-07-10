@@ -4,13 +4,13 @@ import { getCreditBalanceAction } from '@/actions/get-credit-balance';
 import { Button } from '@/components/ui/button';
 import { useLocaleRouter } from '@/i18n/navigation';
 import { Routes } from '@/routes';
-import { useTransactionStore } from '@/stores/transaction-store';
+import { useCreditTransactionStore } from '@/stores/transaction-store';
 import { CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export function CreditsBalanceButton() {
   const router = useLocaleRouter();
-  const { refreshTrigger } = useTransactionStore();
+  const { refreshTrigger } = useCreditTransactionStore();
   const [credits, setCredits] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 

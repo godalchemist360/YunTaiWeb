@@ -1,11 +1,14 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
-interface TransactionStore {
+interface CreditTransactionStore {
   refreshTrigger: number;
   triggerRefresh: () => void;
 }
 
-export const useTransactionStore = create<TransactionStore>((set) => ({
-  refreshTrigger: 0,
-  triggerRefresh: () => set((state) => ({ refreshTrigger: state.refreshTrigger + 1 })),
-}));
+export const useCreditTransactionStore = create<CreditTransactionStore>(
+  (set) => ({
+    refreshTrigger: 0,
+    triggerRefresh: () =>
+      set((state) => ({ refreshTrigger: state.refreshTrigger + 1 })),
+  })
+);

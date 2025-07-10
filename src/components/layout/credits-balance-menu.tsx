@@ -3,7 +3,7 @@
 import { getCreditBalanceAction } from '@/actions/get-credit-balance';
 import { useLocaleRouter } from '@/i18n/navigation';
 import { Routes } from '@/routes';
-import { useTransactionStore } from '@/stores/transaction-store';
+import { useCreditTransactionStore } from '@/stores/transaction-store';
 import { CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 export function CreditsBalanceMenu() {
   const t = useTranslations('Marketing.avatar');
   const router = useLocaleRouter();
-  const { refreshTrigger } = useTransactionStore();
+  const { refreshTrigger } = useCreditTransactionStore();
   const [credits, setCredits] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 

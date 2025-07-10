@@ -3,7 +3,7 @@
 import { getCreditTransactionsAction } from '@/actions/get-credit-transactions';
 import type { CreditTransaction } from '@/components/settings/credits/credit-transactions-table';
 import { CreditTransactionsTable } from '@/components/settings/credits/credit-transactions-table';
-import { useTransactionStore } from '@/stores/transaction-store';
+import { useCreditTransactionStore } from '@/stores/transaction-store';
 import type { SortingState } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -20,7 +20,7 @@ export function CreditTransactionsPageClient() {
     { id: 'createdAt', desc: true },
   ]);
   const [loading, setLoading] = useState(false);
-  const { refreshTrigger } = useTransactionStore();
+  const { refreshTrigger } = useCreditTransactionStore();
 
   const fetchData = async () => {
     setLoading(true);

@@ -15,7 +15,7 @@ import { useLocaleRouter } from '@/i18n/navigation';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes';
-import { useTransactionStore } from '@/stores/transaction-store';
+import { useCreditTransactionStore } from '@/stores/transaction-store';
 import { CircleCheckBigIcon, CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
@@ -31,7 +31,7 @@ export function CreditPackages() {
   const t = useTranslations('Dashboard.settings.credits.packages');
   const [loadingCredits, setLoadingCredits] = useState(true);
   const [credits, setCredits] = useState<number | null>(null);
-  const { refreshTrigger, triggerRefresh } = useTransactionStore();
+  const { refreshTrigger, triggerRefresh } = useCreditTransactionStore();
   const currentUser = useCurrentUser();
   const searchParams = useSearchParams();
   const localeRouter = useLocaleRouter();
