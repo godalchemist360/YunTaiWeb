@@ -16,7 +16,9 @@ export function CreditTransactionsPageClient() {
   const [search, setSearch] = useState('');
   const [data, setData] = useState<CreditTransaction[]>([]);
   const [total, setTotal] = useState(0);
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'createdAt', desc: true },
+  ]);
   const [loading, setLoading] = useState(false);
   const { refreshTrigger } = useTransactionStore();
 
@@ -40,7 +42,10 @@ export function CreditTransactionsPageClient() {
         setTotal(0);
       }
     } catch (error) {
-      console.error('CreditTransactions, fetch credit transactions error:', error);
+      console.error(
+        'CreditTransactions, fetch credit transactions error:',
+        error
+      );
       toast.error(t('error'));
       setData([]);
       setTotal(0);

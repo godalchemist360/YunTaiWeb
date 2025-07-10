@@ -63,7 +63,7 @@ import { Badge } from '../../ui/badge';
 import { Label } from '../../ui/label';
 
 // Define the credit transaction interface
-interface CreditTransaction {
+export interface CreditTransaction {
   id: string;
   userId: string;
   type: string;
@@ -265,7 +265,7 @@ export function CreditTransactionsTable({
         return (
           <div className="flex items-center gap-2 pl-3">
             {transaction.remainingAmount !== null ? (
-              <span className="font-medium text-gray-600">
+              <span className="font-medium">
                 {transaction.remainingAmount.toLocaleString()}
               </span>
             ) : (

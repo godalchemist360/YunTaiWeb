@@ -17,7 +17,9 @@ export function UsersPageClient() {
   const [data, setData] = useState<User[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'createdAt', desc: true },
+  ]);
   const refreshTrigger = useUsersStore((state) => state.refreshTrigger);
 
   useEffect(() => {
