@@ -1,6 +1,6 @@
 'use client';
 
-import { getCreditsAction } from '@/actions/credits.action';
+import { getCreditBalanceAction } from '@/actions/get-credit-balance';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -44,7 +44,7 @@ export function CreditPackages() {
   const fetchCredits = async () => {
     try {
       setLoadingCredits(true);
-      const result = await getCreditsAction();
+      const result = await getCreditBalanceAction();
       if (result?.data?.success) {
         console.log('CreditPackages, fetched credits:', result.data.credits);
         setCredits(result.data.credits || 0);

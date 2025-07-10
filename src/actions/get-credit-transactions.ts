@@ -45,11 +45,13 @@ export const getCreditTransactionsAction = actionClient
     try {
       const { pageIndex, pageSize, search, sorting } = parsedInput;
 
+      // search by type, amount, paymentId, description
       const where = search
         ? or(
-            ilike(creditTransaction.description, `%${search}%`),
             ilike(creditTransaction.type, `%${search}%`),
-            ilike(creditTransaction.paymentId, `%${search}%`)
+            ilike(creditTransaction.amount, `%${search}%`),
+            ilike(creditTransaction.paymentId, `%${search}%`),
+            ilike(creditTransaction.description, `%${search}%`)
           )
         : undefined;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { getCreditsAction } from '@/actions/credits.action';
+import { getCreditBalanceAction } from '@/actions/get-credit-balance';
 import { Button } from '@/components/ui/button';
 import { useLocaleRouter } from '@/i18n/navigation';
 import { Routes } from '@/routes';
@@ -17,7 +17,7 @@ export function CreditsBalanceButton() {
   useEffect(() => {
     const fetchCredits = async () => {
       try {
-        const result = await getCreditsAction();
+        const result = await getCreditBalanceAction();
         if (result?.data?.success && result.data.credits !== undefined) {
           setCredits(result.data.credits);
         }

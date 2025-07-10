@@ -624,7 +624,7 @@
             "remainingAmount": "剩余金额",
             "paymentId": "支付编号",
             "expirationDate": "过期日期",
-            "expirationDateProcessedAt": "过期日期处理时间",
+            "expirationDateProcessedAt": "过期处理时间",
             "createdAt": "创建时间",
             "updatedAt": "更新时间"
           },
