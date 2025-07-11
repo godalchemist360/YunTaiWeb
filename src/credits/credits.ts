@@ -347,7 +347,50 @@ export async function processExpiredCredits(userId: string) {
       amount: -expiredTotal,
       description: `Expire credits: ${expiredTotal}`,
     });
+
+    console.log(
+      `processExpiredCredits, ${expiredTotal} credits expired for user ${userId}`
+    );
   }
+}
+
+/**
+ * Add subscription renewal credits
+ * @param userId - User ID
+ * @param priceId - Price ID
+ */
+export async function addSubscriptionRenewalCredits(
+  userId: string,
+  priceId: string
+) {
+  const pricePlan = findPlanByPriceId(priceId);
+  if (
+    !pricePlan ||
+    pricePlan.isFree ||
+    !pricePlan.credits ||
+    !pricePlan.credits.enable
+  ) {
+    console.log(
+      `addSubscriptionRenewalCredits, no credits configured for plan ${priceId}`
+    );
+    return;
+  }
+
+  const credits = pricePlan.credits.amount;
+  const expireDays = pricePlan.credits.expireDays;
+  const now = new Date();
+
+  await addCredits({
+    userId,
+    amount: credits,
+    type: CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL,
+    description: `Subscription renewal credits: ${credits} for ${now.getFullYear()}-${now.getMonth() + 1}`,
+    expireDays,
+  });
+
+  console.log(
+    `addSubscriptionRenewalCredits, ${credits} credits for user ${userId}, priceId: ${priceId}`
+  );
 }
 
 /**
@@ -382,6 +425,10 @@ export async function addRegisterGiftCredits(userId: string) {
       description: `Register gift credits: ${credits}`,
       expireDays,
     });
+
+    console.log(
+      `addRegisterGiftCredits, ${credits} credits for user ${userId}`
+    );
   }
 }
 
@@ -389,17 +436,21 @@ export async function addRegisterGiftCredits(userId: string) {
  * Add free monthly credits
  * @param userId - User ID
  */
-export async function addMonthlyFreeCredits(userId: string) {
+export async function addMonthlyFreeCreditsIfNeed(userId: string) {
   const freePlan = Object.values(websiteConfig.price.plans).find(
     (plan) => plan.isFree
   );
   if (!freePlan) {
-    console.log('addMonthlyFreeCredits, no free plan found');
+    console.log('addMonthlyFreeCreditsIfNeed, no free plan found');
     return;
   }
-  if (freePlan.disabled || !freePlan.credits?.enable) {
+  if (
+    freePlan.disabled ||
+    !freePlan.credits?.enable ||
+    !freePlan.credits?.amount
+  ) {
     console.log(
-      'addMonthlyFreeCredits, plan disabled or credits disabled',
+      'addMonthlyFreeCreditsIfNeed, plan disabled or credits disabled',
       freePlan.id
     );
     return;
@@ -434,52 +485,18 @@ export async function addMonthlyFreeCredits(userId: string) {
       description: `Free monthly credits: ${credits} for ${now.getFullYear()}-${now.getMonth() + 1}`,
       expireDays,
     });
-  }
-}
 
-/**
- * Add subscription renewal credits
- * @param userId - User ID
- * @param priceId - Price ID
- */
-export async function addSubscriptionRenewalCredits(
-  userId: string,
-  priceId: string
-) {
-  const pricePlan = findPlanByPriceId(priceId);
-  if (
-    !pricePlan ||
-    pricePlan.isFree ||
-    !pricePlan.credits ||
-    !pricePlan.credits.enable
-  ) {
     console.log(
-      `addSubscriptionRenewalCredits, no credits configured for plan ${priceId}`
+      `addMonthlyFreeCreditsIfNeed, ${credits} credits for user ${userId}, date: ${now.getFullYear()}-${now.getMonth() + 1}`
     );
-    return;
   }
-
-  const credits = pricePlan.credits.amount;
-  const expireDays = pricePlan.credits.expireDays;
-
-  await addCredits({
-    userId,
-    amount: credits,
-    type: CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL,
-    description: `Subscription renewal credits for ${priceId}: ${credits}`,
-    expireDays,
-  });
-
-  console.log(
-    `Added ${credits} subscription renewal credits for user ${userId}, priceId: ${priceId}`
-  );
 }
 
 /**
  * Add lifetime monthly credits
  * @param userId - User ID
  */
-export async function addLifetimeMonthlyCredits(userId: string) {
+export async function addLifetimeMonthlyCreditsIfNeed(userId: string) {
   const lifetimePlan = Object.values(websiteConfig.price.plans).find(
     (plan) => plan.isLifetime
   );
@@ -534,7 +551,9 @@ export async function addLifetimeMonthlyCredits(userId: string) {
     // Update last refresh time for lifetime credits
     await updateUserLastRefreshAt(userId, now);
 
-    console.log(`Added ${credits} lifetime monthly credits for user ${userId}`);
+    console.log(
+      `addLifetimeMonthlyCredits, ${credits} credits for user ${userId}, date: ${now.getFullYear()}-${now.getMonth() + 1}`
+    );
   }
 }
 
@@ -543,7 +562,7 @@ export async function addLifetimeMonthlyCredits(userId: string) {
  * This function is designed to be called by a cron job
  */
 export async function distributeCreditsToAllUsers() {
-  console.log('Starting credit distribution to all users...');
+  console.log('distributing credits to all users start');
 
   const db = await getDb();
 
@@ -569,7 +588,7 @@ export async function distributeCreditsToAllUsers() {
         .where(
           and(
             eq(payment.userId, userRecord.userId),
-            eq(payment.status, 'active')
+            or(eq(payment.status, 'active'), eq(payment.status, 'trialing'))
           )
         )
         .orderBy(desc(payment.createdAt));
@@ -581,18 +600,18 @@ export async function distributeCreditsToAllUsers() {
 
         if (pricePlan?.isLifetime) {
           // Lifetime user - add monthly credits
-          await addLifetimeMonthlyCredits(userRecord.userId);
+          await addLifetimeMonthlyCreditsIfNeed(userRecord.userId);
         }
         // Note: Subscription renewals are handled by Stripe webhooks, not here
       } else {
         // User has no active subscription - add free monthly credits if enabled
-        await addMonthlyFreeCredits(userRecord.userId);
+        await addMonthlyFreeCreditsIfNeed(userRecord.userId);
       }
 
       processedCount++;
     } catch (error) {
       console.error(
-        `Error processing credits for user ${userRecord.userId}:`,
+        `distributing credits to all users error, user: ${userRecord.userId}, error:`,
         error
       );
       errorCount++;
@@ -600,7 +619,7 @@ export async function distributeCreditsToAllUsers() {
   }
 
   console.log(
-    `Credit distribution completed. Processed: ${processedCount}, Errors: ${errorCount}`
+    `distributing credits to all users end, processed: ${processedCount}, errors: ${errorCount}`
   );
   return { processedCount, errorCount };
 }
