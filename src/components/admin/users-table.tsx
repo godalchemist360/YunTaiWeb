@@ -177,6 +177,8 @@ export function UsersTable({
         const user = row.original;
         return <UserDetailViewer user={user} />;
       },
+      minSize: 120,
+      size: 140,
     },
     {
       accessorKey: 'email',
@@ -205,6 +207,8 @@ export function UsersTable({
           </div>
         );
       },
+      minSize: 180,
+      size: 200,
     },
     {
       accessorKey: 'role',
@@ -225,6 +229,8 @@ export function UsersTable({
           </div>
         );
       },
+      minSize: 100,
+      size: 120,
     },
     {
       accessorKey: 'createdAt',
@@ -239,6 +245,8 @@ export function UsersTable({
           </div>
         );
       },
+      minSize: 140,
+      size: 160,
     },
     {
       accessorKey: 'customerId',
@@ -267,6 +275,8 @@ export function UsersTable({
           </div>
         );
       },
+      minSize: 120,
+      size: 140,
     },
     {
       accessorKey: 'banned',
@@ -288,6 +298,8 @@ export function UsersTable({
           </div>
         );
       },
+      minSize: 100,
+      size: 120,
     },
     {
       accessorKey: 'banReason',
@@ -302,6 +314,8 @@ export function UsersTable({
           </div>
         );
       },
+      minSize: 120,
+      size: 140,
     },
     {
       accessorKey: 'banExpires',
@@ -319,6 +333,8 @@ export function UsersTable({
           </div>
         );
       },
+      minSize: 140,
+      size: 160,
     },
   ];
 
@@ -427,16 +443,7 @@ export function UsersTable({
               ))}
             </TableHeader>
             <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    {tTable('loading')}
-                  </TableCell>
-                </TableRow>
-              ) : table.getRowModel().rows?.length ? (
+              {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
@@ -458,7 +465,7 @@ export function UsersTable({
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    {tTable('noResults')}
+                    {loading ? tTable('loading') : tTable('noResults')}
                   </TableCell>
                 </TableRow>
               )}
