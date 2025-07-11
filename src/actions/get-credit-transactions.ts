@@ -2,7 +2,8 @@
 
 import { getDb } from '@/db';
 import { creditTransaction, user } from '@/db/schema';
-import { asc, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { getSession } from '@/lib/server';
+import { and, asc, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { createSafeActionClient } from 'next-safe-action';
 import { z } from 'zod';
 
@@ -43,17 +44,27 @@ export const getCreditTransactionsAction = actionClient
   .schema(getCreditTransactionsSchema)
   .action(async ({ parsedInput }) => {
     try {
+      const session = await getSession();
+      if (!session) {
+        return {
+          success: false,
+          error: 'Unauthorized',
+        };
+      }
       const { pageIndex, pageSize, search, sorting } = parsedInput;
 
-      // search by type, amount, paymentId, description
+      // search by type, amount, paymentId, description, and restrict to current user
       const where = search
-        ? or(
-            ilike(creditTransaction.type, `%${search}%`),
-            ilike(creditTransaction.amount, `%${search}%`),
-            ilike(creditTransaction.paymentId, `%${search}%`),
-            ilike(creditTransaction.description, `%${search}%`)
+        ? and(
+            eq(creditTransaction.userId, session.user.id),
+            or(
+              ilike(creditTransaction.type, `%${search}%`),
+              ilike(creditTransaction.amount, `%${search}%`),
+              ilike(creditTransaction.paymentId, `%${search}%`),
+              ilike(creditTransaction.description, `%${search}%`)
+            )
           )
-        : undefined;
+        : eq(creditTransaction.userId, session.user.id);
 
       const offset = pageIndex * pageSize;
 
