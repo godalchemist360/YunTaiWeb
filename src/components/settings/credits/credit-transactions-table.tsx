@@ -5,6 +5,8 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -32,6 +34,12 @@ import {
 import { CreditDetailViewer } from '@/credits/credit-detail-viewer';
 import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 import { formatDate } from '@/lib/formatter';
+import { CaretDownIcon, CaretUpIcon } from '@radix-ui/react-icons';
+import {
+  IconCaretDownFilled,
+  IconCaretUpFilled,
+  IconSortAscending2,
+} from '@tabler/icons-react';
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -45,13 +53,17 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import {
+  ArrowDownIcon,
   ArrowUpDownIcon,
+  ArrowUpIcon,
   BanknoteIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
+  ChevronsUpDownIcon,
   ClockIcon,
   CoinsIcon,
   GemIcon,
@@ -91,16 +103,51 @@ function DataTableColumnHeader<TData, TValue>({
   title,
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
+  const tTable = useTranslations('Common.table');
+
+  // Only show dropdown for sortable columns
+  if (!column.getCanSort()) {
+    return <div className={className}>{title}</div>;
+  }
+
+  // Determine current sort state
+  const isSorted = column.getIsSorted(); // 'asc' | 'desc' | false
+
   return (
     <div className={className}>
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="h-8 data-[state=open]:bg-accent"
-      >
-        <span>{title}</span>
-        <ArrowUpDownIcon className="h-4 w-4" />
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="h-8 data-[state=open]:bg-accent flex items-center gap-1"
+          >
+            <span>{title}</span>
+            {isSorted === 'asc' && <IconCaretUpFilled className="h-4 w-4" />}
+            {isSorted === 'desc' && <IconCaretDownFilled className="h-4 w-4" />}
+            {/* {!isSorted && <ChevronsUpDownIcon className="h-4 w-4" />} */}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-36">
+          <DropdownMenuRadioGroup
+            value={isSorted === false ? '' : isSorted}
+            onValueChange={(value) => {
+              if (value === 'asc') column.toggleSorting(false);
+              else if (value === 'desc') column.toggleSorting(true);
+            }}
+          >
+            <DropdownMenuRadioItem value="asc">
+              <span className="flex items-center gap-2">
+                {tTable('ascending')}
+              </span>
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="desc">
+              <span className="flex items-center gap-2">
+                {tTable('descending')}
+              </span>
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

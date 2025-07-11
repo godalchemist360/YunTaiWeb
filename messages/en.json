@@ -39,7 +39,9 @@
       "firstPage": "First Page",
       "lastPage": "Last Page",
       "nextPage": "Next Page",
-      "previousPage": "Previous Page"
+      "previousPage": "Previous Page",
+      "ascending": "Asc",
+      "descending": "Desc"
     }
   },
   "PricingPage": {

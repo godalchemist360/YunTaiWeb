@@ -6,6 +6,8 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -27,6 +29,7 @@ import {
 import type { User } from '@/lib/auth-types';
 import { formatDate } from '@/lib/formatter';
 import { getStripeDashboardCustomerUrl } from '@/lib/urls/urls';
+import { IconCaretDownFilled, IconCaretUpFilled } from '@tabler/icons-react';
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -40,7 +43,6 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import {
-  ArrowUpDownIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -68,20 +70,47 @@ function DataTableColumnHeader<TData, TValue>({
   title,
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
+  const tTable = useTranslations('Common.table');
   if (!column.getCanSort()) {
     return <div className={className}>{title}</div>;
   }
 
+  const isSorted = column.getIsSorted(); // 'asc' | 'desc' | false
+
   return (
     <div className={className}>
-      <Button
-        variant="ghost"
-        className="cursor-pointer flex items-center gap-2"
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      >
-        {title}
-        <ArrowUpDownIcon className="h-4 w-4" />
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="cursor-pointer flex items-center gap-2 h-8 data-[state=open]:bg-accent"
+          >
+            {title}
+            {isSorted === 'asc' && <IconCaretUpFilled className="h-4 w-4" />}
+            {isSorted === 'desc' && <IconCaretDownFilled className="h-4 w-4" />}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-36">
+          <DropdownMenuRadioGroup
+            value={isSorted === false ? '' : isSorted}
+            onValueChange={(value) => {
+              if (value === 'asc') column.toggleSorting(false);
+              else if (value === 'desc') column.toggleSorting(true);
+            }}
+          >
+            <DropdownMenuRadioItem value="asc">
+              <span className="flex items-center gap-2">
+                {tTable('ascending')}
+              </span>
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="desc">
+              <span className="flex items-center gap-2">
+                {tTable('descending')}
+              </span>
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
@@ -117,7 +146,7 @@ export function UsersTable({
   const t = useTranslations('Dashboard.admin.users');
   const tTable = useTranslations('Common.table');
   const [sorting, setSorting] = useState<SortingState>([
-    { id: 'createdAt', desc: true }
+    { id: 'createdAt', desc: true },
   ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
