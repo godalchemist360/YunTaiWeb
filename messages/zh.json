@@ -108,9 +108,8 @@
         "feature-3": "专属支持",
         "feature-4": "企业级安全",
         "feature-5": "高级集成",
-        "feature-6": "自定义域名",
-        "feature-7": "自定义品牌",
-        "feature-8": "终身更新"
+        "feature-6": "自定义品牌",
+        "feature-7": "终身更新"
       }
     }
   },
@@ -408,13 +407,13 @@
           "comparator": {
             "title": "Comparator 组件"
           },
-          "faqs": {
-            "title": "FAQs 组件"
+          "faq": {
+            "title": "FAQ 组件"
           },
           "login": {
             "title": "Login 组件"
           },
-          "sign-up": {
+          "signup": {
             "title": "Signup 组件"
           },
           "forgot-password": {
