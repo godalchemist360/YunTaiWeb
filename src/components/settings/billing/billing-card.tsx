@@ -90,11 +90,7 @@ export default function BillingCard() {
   // Render loading skeleton
   if (isPageLoading) {
     return (
-      <Card
-        className={cn(
-          'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
-        )}
-      >
+      <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
           <CardTitle>{t('currentPlan.title')}</CardTitle>
           <CardDescription>{t('currentPlan.description')}</CardDescription>
@@ -116,11 +112,7 @@ export default function BillingCard() {
   // Render error state
   if (loadPaymentError) {
     return (
-      <Card
-        className={cn(
-          'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
-        )}
-      >
+      <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
           <CardTitle>{t('currentPlan.title')}</CardTitle>
           <CardDescription>{t('currentPlan.description')}</CardDescription>
@@ -145,11 +137,7 @@ export default function BillingCard() {
   // currentPlanFromStore maybe null, so we need to check if it is null
   if (!currentPlanFromStore) {
     return (
-      <Card
-        className={cn(
-          'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
-        )}
-      >
+      <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
           <CardTitle>{t('currentPlan.title')}</CardTitle>
           <CardDescription>{t('currentPlan.description')}</CardDescription>
@@ -173,11 +161,7 @@ export default function BillingCard() {
   // console.log('billing card, currentUser', currentUser);
 
   return (
-    <Card
-      className={cn(
-        'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
-      )}
-    >
+    <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
       <CardHeader>
         <CardTitle className="text-lg font-semibold">
           {t('currentPlan.title')}

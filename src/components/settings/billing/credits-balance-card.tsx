@@ -58,11 +58,7 @@ export default function CreditsBalanceCard() {
   // Render loading skeleton
   if (isLoading) {
     return (
-      <Card
-        className={cn(
-          'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
-        )}
-      >
+      <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
           <CardTitle>{t('title')}</CardTitle>
           <CardDescription>{t('description')}</CardDescription>
@@ -83,11 +79,7 @@ export default function CreditsBalanceCard() {
   // Render error state
   if (error) {
     return (
-      <Card
-        className={cn(
-          'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
-        )}
-      >
+      <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
           <CardTitle>{t('title')}</CardTitle>
           <CardDescription>{t('description')}</CardDescription>
@@ -107,11 +99,7 @@ export default function CreditsBalanceCard() {
   }
 
   return (
-    <Card
-      className={cn(
-        'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
-      )}
-    >
+    <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
       <CardHeader>
         <CardTitle className="text-lg font-semibold">{t('title')}</CardTitle>
         <CardDescription>{t('description')}</CardDescription>
