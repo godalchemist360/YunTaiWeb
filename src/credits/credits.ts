@@ -397,12 +397,12 @@ export async function addRegisterGiftCredits(userId: string) {
  * Add free monthly credits
  * @param userId - User ID
  */
-export async function addMonthlyFreeCreditsIfNeed(userId: string) {
+export async function addMonthlyFreeCredits(userId: string) {
   const freePlan = Object.values(websiteConfig.price.plans).find(
     (plan) => plan.isFree
   );
   if (!freePlan) {
-    console.log('addMonthlyFreeCreditsIfNeed, no free plan found');
+    console.log('addMonthlyFreeCredits, no free plan found');
     return;
   }
   if (
@@ -411,7 +411,7 @@ export async function addMonthlyFreeCreditsIfNeed(userId: string) {
     !freePlan.credits?.amount
   ) {
     console.log(
-      'addMonthlyFreeCreditsIfNeed, plan disabled or credits disabled',
+      'addMonthlyFreeCredits, plan disabled or credits disabled',
       freePlan.id
     );
     return;
@@ -448,7 +448,7 @@ export async function addMonthlyFreeCreditsIfNeed(userId: string) {
     });
 
     console.log(
-      `addMonthlyFreeCreditsIfNeed, ${credits} credits for user ${userId}, date: ${now.getFullYear()}-${now.getMonth() + 1}`
+      `addMonthlyFreeCredits, ${credits} credits for user ${userId}, date: ${now.getFullYear()}-${now.getMonth() + 1}`
     );
   }
 }
@@ -496,7 +496,7 @@ export async function addSubscriptionRenewalCredits(
  * Add lifetime monthly credits
  * @param userId - User ID
  */
-export async function addLifetimeMonthlyCreditsIfNeed(userId: string) {
+export async function addLifetimeMonthlyCredits(userId: string) {
   const lifetimePlan = Object.values(websiteConfig.price.plans).find(
     (plan) => plan.isLifetime
   );
@@ -601,12 +601,12 @@ export async function distributeCreditsToAllUsers() {
 
         if (pricePlan?.isLifetime) {
           // Lifetime user - add monthly credits
-          await addLifetimeMonthlyCreditsIfNeed(userRecord.userId);
+          await addLifetimeMonthlyCredits(userRecord.userId);
         }
         // Note: Subscription renewals are handled by Stripe webhooks, not here
       } else {
         // User has no active subscription - add free monthly credits if enabled
-        await addMonthlyFreeCreditsIfNeed(userRecord.userId);
+        await addMonthlyFreeCredits(userRecord.userId);
       }
 
       processedCount++;

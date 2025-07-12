@@ -1,6 +1,6 @@
 import { websiteConfig } from '@/config/website';
 import {
-  addMonthlyFreeCreditsIfNeed,
+  addMonthlyFreeCredits,
   addRegisterGiftCredits,
 } from '@/credits/credits';
 import { getDb } from '@/db/index';
@@ -201,7 +201,7 @@ async function onCreateUser(user: User) {
     freePlan?.credits?.amount > 0
   ) {
     try {
-      await addMonthlyFreeCreditsIfNeed(user.id);
+      await addMonthlyFreeCredits(user.id);
       const credits = freePlan.credits.amount;
       console.log(
         `added free monthly credits for user ${user.id}, credits: ${credits}`

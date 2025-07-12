@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { websiteConfig } from '@/config/website';
 import {
   addCredits,
-  addLifetimeMonthlyCreditsIfNeed,
+  addLifetimeMonthlyCredits,
   addSubscriptionRenewalCredits,
 } from '@/credits/credits';
 import { getCreditPackageById } from '@/credits/server';
@@ -796,7 +796,7 @@ export class StripeProvider implements PaymentProvider {
           websiteConfig.price?.plans || {}
         ).find((plan) => plan.isLifetime && plan.credits?.enable);
         if (lifetimePlan?.prices?.some((p) => p.priceId === priceId)) {
-          await addLifetimeMonthlyCreditsIfNeed(userId);
+          await addLifetimeMonthlyCredits(userId);
         }
       }
 
