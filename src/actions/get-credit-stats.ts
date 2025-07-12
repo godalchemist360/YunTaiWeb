@@ -8,6 +8,9 @@ import { addDays } from 'date-fns';
 import { and, eq, gte, isNotNull, lte, sql, sum } from 'drizzle-orm';
 import { createSafeActionClient } from 'next-safe-action';
 
+const CREDITS_EXPIRATION_DAYS = 30;
+const CREDITS_MONTHLY_DAYS = 30;
+
 // Create a safe action client
 const actionClient = createSafeActionClient();
 
@@ -28,7 +31,7 @@ export const getCreditStatsAction = actionClient.action(async () => {
     const userId = session.user.id;
 
     // Get credits expiring in the next 30 days
-    const thirtyDaysFromNow = addDays(new Date(), 30);
+    const thirtyDaysFromNow = addDays(new Date(), CREDITS_EXPIRATION_DAYS);
     const expiringCredits = await db
       .select({
         amount: sum(creditTransaction.remainingAmount),
@@ -47,7 +50,7 @@ export const getCreditStatsAction = actionClient.action(async () => {
       );
 
     // Get credits from subscription renewals (recent 30 days)
-    const thirtyDaysAgo = addDays(new Date(), -30);
+    const thirtyDaysAgo = addDays(new Date(), -CREDITS_MONTHLY_DAYS);
     const subscriptionCredits = await db
       .select({
         amount: sum(creditTransaction.amount),

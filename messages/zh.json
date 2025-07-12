@@ -635,7 +635,7 @@
           "types": {
             "MONTHLY_REFRESH": "每月赠送",
             "REGISTER_GIFT": "注册赠送",
-            "PURCHASE_PACKAGE": "购买积分",
+            "PURCHASE": "购买积分",
             "USAGE": "使用积分",
             "EXPIRE": "过期积分",
             "SUBSCRIPTION_RENEWAL": "订阅月度积分",

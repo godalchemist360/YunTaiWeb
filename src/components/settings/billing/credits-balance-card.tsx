@@ -18,6 +18,7 @@ import { LocaleLink, useLocaleRouter } from '@/i18n/navigation';
 import { formatDate } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes';
+import { Loader2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -30,7 +31,12 @@ export default function CreditsBalanceCard() {
   const hasHandledSession = useRef(false);
 
   // Use the credits hook to get balance
-  const { balance, isLoading, error, refresh } = useCredits();
+  const {
+    balance,
+    isLoading: isLoadingBalance,
+    error,
+    refresh: refreshBalance,
+  } = useCredits();
 
   // Get payment info to check plan type
   const { currentPlan } = usePayment();
@@ -44,7 +50,7 @@ export default function CreditsBalanceCard() {
     subscriptionCredits: { amount: number };
     lifetimeCredits: { amount: number };
   } | null>(null);
-  const [statsLoading, setStatsLoading] = useState(false);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   // Don't render if credits are disabled
   if (!websiteConfig.credits.enableCredits) {
@@ -53,7 +59,7 @@ export default function CreditsBalanceCard() {
 
   // Function to fetch credit statistics
   const fetchCreditStats = async () => {
-    setStatsLoading(true);
+    setIsLoadingStats(true);
     try {
       const result = await getCreditStatsAction();
       if (result?.data?.success && result.data.data) {
@@ -64,7 +70,7 @@ export default function CreditsBalanceCard() {
     } catch (error) {
       console.error('Failed to fetch credit stats:', error);
     } finally {
-      setStatsLoading(false);
+      setIsLoadingStats(false);
     }
   };
 
@@ -84,7 +90,7 @@ export default function CreditsBalanceCard() {
       }, 0);
 
       // Refresh credits data to show updated balance
-      refresh();
+      refreshBalance();
       // Refresh credit stats
       fetchCreditStats();
 
@@ -93,24 +99,28 @@ export default function CreditsBalanceCard() {
       url.searchParams.delete('session_id');
       localeRouter.replace(Routes.SettingsBilling + url.search);
     }
-  }, [searchParams, localeRouter, refresh]);
+  }, [searchParams, localeRouter, refreshBalance, fetchCreditStats]);
 
   // Render loading skeleton
-  if (isLoading) {
+  const isPageLoading = isLoadingBalance || isLoadingStats;
+  if (isPageLoading) {
     return (
       <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
-          <CardTitle>{t('title')}</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('title')}</CardTitle>
           <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 flex-1">
-          <div className="space-y-3">
-            <Skeleton className="h-6 w-1/2" />
-            <Skeleton className="h-6 w-4/5" />
+          <div className="flex items-center justify-start space-x-4">
+            <Skeleton className="h-6 w-1/5" />
+          </div>
+          <div className="text-sm text-muted-foreground space-y-2">
+            <Skeleton className="h-6 w-2/5" />
+            <Skeleton className="h-6 w-3/5" />
           </div>
         </CardContent>
         <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
-          <Skeleton className="h-10 w-4/5" />
+          <Skeleton className="h-10 w-1/2" />
         </CardFooter>
       </Card>
     );
@@ -121,7 +131,7 @@ export default function CreditsBalanceCard() {
     return (
       <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
-          <CardTitle>{t('title')}</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('title')}</CardTitle>
           <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 flex-1">
@@ -159,7 +169,7 @@ export default function CreditsBalanceCard() {
         {/* Balance information */}
         <div className="text-sm text-muted-foreground space-y-2">
           {/* Plan-based credits info */}
-          {!statsLoading && creditStats && (
+          {!isLoadingStats && creditStats && (
             <>
               {/* Subscription credits (for paid plans) */}
               {!currentPlan?.isFree &&

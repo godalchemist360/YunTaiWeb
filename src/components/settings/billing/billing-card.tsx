@@ -92,7 +92,9 @@ export default function BillingCard() {
     return (
       <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
-          <CardTitle>{t('currentPlan.title')}</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            {t('currentPlan.title')}
+          </CardTitle>
           <CardDescription>{t('currentPlan.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 flex-1">
@@ -103,7 +105,7 @@ export default function BillingCard() {
           </div>
         </CardContent>
         <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
-          <Skeleton className="h-10 w-4/5" />
+          <Skeleton className="h-10 w-1/2" />
         </CardFooter>
       </Card>
     );
@@ -114,7 +116,9 @@ export default function BillingCard() {
     return (
       <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
-          <CardTitle>{t('currentPlan.title')}</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            {t('currentPlan.title')}
+          </CardTitle>
           <CardDescription>{t('currentPlan.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 flex-1">
@@ -139,7 +143,9 @@ export default function BillingCard() {
     return (
       <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
-          <CardTitle>{t('currentPlan.title')}</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            {t('currentPlan.title')}
+          </CardTitle>
           <CardDescription>{t('currentPlan.description')}</CardDescription>
         </CardHeader>
         <CardContent>
