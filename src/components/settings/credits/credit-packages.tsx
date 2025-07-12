@@ -118,7 +118,7 @@ export function CreditPackages() {
                   </div>
                 )}
 
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   {/* Price and Credits - Left/Right Layout */}
                   <div className="flex items-center justify-between py-2">
                     <div className="text-left">
@@ -147,7 +147,7 @@ export function CreditPackages() {
                     userId={currentUser?.id ?? ''}
                     packageId={creditPackage.id}
                     priceId={creditPackage.price.priceId}
-                    className="w-full cursor-pointer"
+                    className="w-full cursor-pointer mt-2"
                     variant={creditPackage.popular ? 'default' : 'outline'}
                     disabled={!creditPackage.price.priceId}
                   >

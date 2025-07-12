@@ -14,7 +14,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { getPricePlans } from '@/config/price-config';
 import { usePayment } from '@/hooks/use-payment';
-import { LocaleLink } from '@/i18n/navigation';
+import { LocaleLink, useLocaleRouter } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
 import { formatDate, formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
@@ -22,9 +22,15 @@ import { PlanIntervals } from '@/payment/types';
 import { Routes } from '@/routes';
 import { RefreshCwIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 
 export default function BillingCard() {
   const t = useTranslations('Dashboard.settings.billing');
+  const searchParams = useSearchParams();
+  const localeRouter = useLocaleRouter();
+  const hasHandledSession = useRef(false);
 
   const {
     isLoading: isLoadingPayment,
@@ -66,24 +72,43 @@ export default function BillingCard() {
   const isPageLoading = isLoadingPayment || isLoadingSession;
   // console.log('billing card, isLoadingPayment', isLoadingPayment, 'isLoadingSession', isLoadingSession);
 
+  // Check for payment success and show success message
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+    if (sessionId && !hasHandledSession.current) {
+      hasHandledSession.current = true;
+      setTimeout(() => {
+        toast.success(t('paymentSuccess'));
+      }, 0);
+
+      const url = new URL(window.location.href);
+      url.searchParams.delete('session_id');
+      localeRouter.replace(Routes.SettingsBilling + url.search);
+    }
+  }, [searchParams, localeRouter]);
+
   // Render loading skeleton
   if (isPageLoading) {
     return (
-      <div className="grid gap-8 md:grid-cols-2">
-        <Card>
+      <div className="grid md:grid-cols-2 gap-8">
+        <Card
+          className={cn(
+            'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
+          )}
+        >
           <CardHeader>
             <CardTitle>{t('currentPlan.title')}</CardTitle>
             <CardDescription>{t('currentPlan.description')}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 flex-1">
             <div className="space-y-3">
               <Skeleton className="h-6 w-1/2" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-4/5" />
+              <Skeleton className="h-6 w-4/5" />
             </div>
           </CardContent>
-          <CardFooter>
-            <Skeleton className="h-10 w-full" />
+          <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
+            <Skeleton className="h-10 w-4/5" />
           </CardFooter>
         </Card>
       </div>
@@ -93,19 +118,23 @@ export default function BillingCard() {
   // Render error state
   if (loadPaymentError) {
     return (
-      <div className="grid gap-8 md:grid-cols-2">
-        <Card>
+      <div className="grid md:grid-cols-2 gap-8">
+        <Card
+          className={cn(
+            'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
+          )}
+        >
           <CardHeader>
             <CardTitle>{t('currentPlan.title')}</CardTitle>
             <CardDescription>{t('currentPlan.description')}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 flex-1">
             <div className="text-destructive text-sm">{loadPaymentError}</div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
             <Button
               variant="outline"
-              className="w-full cursor-pointer"
+              className="cursor-pointer"
               onClick={() => refetch()}
             >
               <RefreshCwIcon className="size-4 mr-1" />
@@ -120,7 +149,7 @@ export default function BillingCard() {
   // currentPlanFromStore maybe null, so we need to check if it is null
   if (!currentPlanFromStore) {
     return (
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid md:grid-cols-2 gap-8">
         <Card
           className={cn(
             'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
