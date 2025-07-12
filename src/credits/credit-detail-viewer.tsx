@@ -70,17 +70,6 @@ export function CreditDetailViewer({ transaction }: CreditDetailViewerProps) {
     }
   };
 
-  // Get transaction type badge variant
-  const getTransactionTypeBadgeVariant = (type: string) => {
-    switch (type) {
-      case CREDIT_TRANSACTION_TYPE.USAGE:
-      case CREDIT_TRANSACTION_TYPE.EXPIRE:
-        return 'destructive' as const;
-      default:
-        return 'outline' as const;
-    }
-  };
-
   // Get transaction type display name
   const getTransactionTypeDisplayName = (type: string) => {
     switch (type) {
@@ -131,8 +120,8 @@ export function CreditDetailViewer({ transaction }: CreditDetailViewerProps) {
             <div className="flex items-center gap-2">
               {/* Transaction Type Badge */}
               <Badge
-                variant={getTransactionTypeBadgeVariant(transaction.type)}
-                className="px-2 py-1"
+                variant="outline"
+                className="hover:bg-accent transition-colors"
               >
                 {getTransactionTypeIcon(transaction.type)}
                 {getTransactionTypeDisplayName(transaction.type)}

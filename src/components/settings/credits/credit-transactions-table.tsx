@@ -223,17 +223,6 @@ export function CreditTransactionsTable({
     }
   };
 
-  // Get transaction type badge variant
-  const getTransactionTypeBadgeVariant = (type: string) => {
-    switch (type) {
-      case CREDIT_TRANSACTION_TYPE.USAGE:
-      case CREDIT_TRANSACTION_TYPE.EXPIRE:
-        return 'destructive' as const;
-      default:
-        return 'outline' as const;
-    }
-  };
-
   // Get transaction type display name
   const getTransactionTypeDisplayName = (type: string) => {
     switch (type) {
@@ -268,8 +257,8 @@ export function CreditTransactionsTable({
         return (
           <div className="flex items-center gap-2 pl-3">
             <Badge
-              variant={getTransactionTypeBadgeVariant(transaction.type)}
-              className="cursor-pointer hover:bg-accent transition-colors"
+              variant="outline"
+              className="hover:bg-accent transition-colors"
             >
               {getTransactionTypeIcon(transaction.type)}
               {getTransactionTypeDisplayName(transaction.type)}
