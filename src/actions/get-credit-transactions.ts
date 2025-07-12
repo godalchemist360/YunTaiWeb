@@ -1,7 +1,7 @@
 'use server';
 
 import { getDb } from '@/db';
-import { creditTransaction, user } from '@/db/schema';
+import { creditTransaction } from '@/db/schema';
 import { getSession } from '@/lib/server';
 import { and, asc, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { createSafeActionClient } from 'next-safe-action';
@@ -60,6 +60,7 @@ export const getCreditTransactionsAction = actionClient
             or(
               ilike(creditTransaction.type, `%${search}%`),
               ilike(creditTransaction.amount, `%${search}%`),
+              ilike(creditTransaction.remainingAmount, `%${search}%`),
               ilike(creditTransaction.paymentId, `%${search}%`),
               ilike(creditTransaction.description, `%${search}%`)
             )
@@ -76,7 +77,7 @@ export const getCreditTransactionsAction = actionClient
       const sortDirection = sortConfig?.desc ? desc : asc;
 
       const db = await getDb();
-      let [items, [{ count }]] = await Promise.all([
+      const [items, [{ count }]] = await Promise.all([
         db
           .select({
             id: creditTransaction.id,
@@ -102,14 +103,6 @@ export const getCreditTransactionsAction = actionClient
           .from(creditTransaction)
           .where(where),
       ]);
-
-      // hide user data in demo website
-      if (process.env.NEXT_PUBLIC_DEMO_WEBSITE === 'true') {
-        items = items.map((item) => ({
-          ...item,
-          paymentId: item.paymentId ? 'pi_demo123456' : null,
-        }));
-      }
 
       return {
         success: true,

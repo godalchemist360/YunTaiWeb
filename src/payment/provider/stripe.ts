@@ -794,7 +794,9 @@ export class StripeProvider implements PaymentProvider {
         // If the plan is lifetime and credits are enabled, add lifetime monthly credits if needed
         const lifetimePlan = Object.values(
           websiteConfig.price?.plans || {}
-        ).find((plan) => plan.isLifetime && plan.credits?.enable);
+        ).find(
+          (plan) => plan.isLifetime && !plan.disabled && plan.credits?.enable
+        );
         if (lifetimePlan?.prices?.some((p) => p.priceId === priceId)) {
           await addLifetimeMonthlyCredits(userId);
         }

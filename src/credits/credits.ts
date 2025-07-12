@@ -399,7 +399,7 @@ export async function addRegisterGiftCredits(userId: string) {
  */
 export async function addMonthlyFreeCredits(userId: string) {
   const freePlan = Object.values(websiteConfig.price.plans).find(
-    (plan) => plan.isFree
+    (plan) => plan.isFree && !plan.disabled
   );
   if (!freePlan) {
     console.log('addMonthlyFreeCredits, no free plan found');
@@ -498,7 +498,7 @@ export async function addSubscriptionRenewalCredits(
  */
 export async function addLifetimeMonthlyCredits(userId: string) {
   const lifetimePlan = Object.values(websiteConfig.price.plans).find(
-    (plan) => plan.isLifetime
+    (plan) => plan.isLifetime && !plan.disabled
   );
   if (
     !lifetimePlan ||
