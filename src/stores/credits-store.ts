@@ -153,7 +153,13 @@ export const useCreditsStore = create<CreditsState>((set, get) => ({
    * @param user Current user from auth session
    */
   refreshCredits: async (user) => {
-    if (!user) return;
+    if (!user) {
+      set({
+        error: 'No user found',
+        isLoading: false,
+      });
+      return;
+    }
 
     set({
       isLoading: true,

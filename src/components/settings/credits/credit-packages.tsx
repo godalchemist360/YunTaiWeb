@@ -18,7 +18,7 @@ import { Routes } from '@/routes';
 import { CircleCheckBigIcon, CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { CreditCheckoutButton } from './credit-checkout-button';
 
@@ -30,6 +30,7 @@ export function CreditPackages() {
   const t = useTranslations('Dashboard.settings.credits.packages');
   const searchParams = useSearchParams();
   const localeRouter = useLocaleRouter();
+  const hasHandledSession = useRef(false);
 
   // Use the new useCredits hook
   const { balance, isLoading, refresh } = useCredits();
@@ -45,7 +46,8 @@ export function CreditPackages() {
   // Check for payment success and show success message
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
-    if (sessionId) {
+    if (sessionId && !hasHandledSession.current) {
+      hasHandledSession.current = true;
       // Show success toast (delayed to avoid React lifecycle conflicts)
       setTimeout(() => {
         toast.success(t('creditsAdded'));
