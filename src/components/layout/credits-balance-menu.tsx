@@ -1,5 +1,6 @@
 'use client';
 
+import { websiteConfig } from '@/config/website';
 import { useCredits } from '@/hooks/use-credits';
 import { useLocaleRouter } from '@/i18n/navigation';
 import { Routes } from '@/routes';
@@ -7,6 +8,11 @@ import { CoinsIcon, Loader2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export function CreditsBalanceMenu() {
+  // If credits are not enabled, return null
+  if (!websiteConfig.credits.enableCredits) {
+    return null;
+  }
+
   const t = useTranslations('Marketing.avatar');
   const router = useLocaleRouter();
 

@@ -14,6 +14,7 @@ import {
   UsersRoundIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { websiteConfig } from './website';
 
 /**
  * Get sidebar config with translations
@@ -67,12 +68,16 @@ export function getSidebarLinks(): NestedMenuItem[] {
           href: Routes.SettingsBilling,
           external: false,
         },
-        {
-          title: t('settings.credits.title'),
-          icon: <CoinsIcon className="size-4 shrink-0" />,
-          href: Routes.SettingsCredits,
-          external: false,
-        },
+        ...(websiteConfig.credits.enableCredits
+          ? [
+              {
+                title: t('settings.credits.title'),
+                icon: <CoinsIcon className="size-4 shrink-0" />,
+                href: Routes.SettingsCredits,
+                external: false,
+              },
+            ]
+          : []),
         {
           title: t('settings.security.title'),
           icon: <LockKeyholeIcon className="size-4 shrink-0" />,

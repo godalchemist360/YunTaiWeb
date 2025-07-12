@@ -20,7 +20,7 @@ import { formatDate, formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { PlanIntervals } from '@/payment/types';
 import { Routes } from '@/routes';
-import { RefreshCwIcon } from 'lucide-react';
+import { CheckCircleIcon, ClockIcon, RefreshCwIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
@@ -62,6 +62,11 @@ export default function BillingCard() {
     currentPlan?.prices.find(
       (price) => price.priceId === subscription?.priceId
     );
+
+  // Get current period start date
+  const currentPeriodStart = subscription?.currentPeriodStart
+    ? formatDate(subscription.currentPeriodStart)
+    : null;
 
   // Format next billing date if subscription is active
   const nextBillingDate = subscription?.currentPeriodEnd
@@ -178,15 +183,23 @@ export default function BillingCard() {
         {/* Plan name and status */}
         <div className="flex items-center justify-start space-x-4">
           <div className="text-3xl font-medium">{currentPlan?.name}</div>
-          {subscription && (
-            <Badge variant="outline">
-              {subscription?.status === 'trialing'
-                ? t('status.trial')
-                : subscription?.status === 'active'
-                  ? t('status.active')
-                  : ''}
-            </Badge>
-          )}
+          {subscription &&
+            (subscription.status === 'trialing' ||
+              subscription.status === 'active') && (
+              <Badge variant="outline" className="text-xs">
+                {subscription.status === 'trialing' ? (
+                  <div className="flex items-center space-x-2">
+                    <ClockIcon className="size-3 mr-1 text-amber-600" />
+                    {t('status.trial')}
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <CheckCircleIcon className="size-3 mr-1 text-green-600" />
+                    {t('status.active')}
+                  </div>
+                )}
+              </Badge>
+            )}
         </div>
 
         {/* Free plan message */}
@@ -206,7 +219,7 @@ export default function BillingCard() {
         {/* Subscription plan message */}
         {subscription && currentPrice && (
           <div className="text-sm text-muted-foreground space-y-2">
-            <div>
+            {/* <div>
               {t('price')}{' '}
               {formatPrice(currentPrice.amount, currentPrice.currency)} /{' '}
               {currentPrice.interval === PlanIntervals.MONTH
@@ -214,10 +227,16 @@ export default function BillingCard() {
                 : currentPrice.interval === PlanIntervals.YEAR
                   ? t('interval.year')
                   : t('interval.oneTime')}
-            </div>
+            </div> */}
+
+            {currentPeriodStart && (
+              <div className="text-muted-foreground">
+                {t('periodStartDate')} {currentPeriodStart}
+              </div>
+            )}
 
             {nextBillingDate && (
-              <div className="text-green-600">
+              <div className="text-muted-foreground">
                 {t('nextBillingDate')} {nextBillingDate}
               </div>
             )}

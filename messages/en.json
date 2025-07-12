@@ -571,6 +571,7 @@
           "createCustomerPortalFailed": "Failed to open Stripe customer portal"
         },
         "price": "Price:",
+        "periodStartDate": "Period start date:",
         "nextBillingDate": "Next billing date:",
         "trialEnds": "Trial ends:",
         "freePlanMessage": "You are currently on the free plan with limited features",
