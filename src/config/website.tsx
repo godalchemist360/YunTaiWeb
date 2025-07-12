@@ -120,7 +120,7 @@ export const websiteConfig: WebsiteConfig = {
         credits: {
           enable: true,
           amount: 1000,
-          expireDays: 90,
+          expireDays: 30,
         },
       },
       lifetime: {
@@ -139,7 +139,7 @@ export const websiteConfig: WebsiteConfig = {
         credits: {
           enable: true,
           amount: 2000,
-          expireDays: 120,
+          expireDays: 30,
         },
       },
     },
@@ -169,7 +169,7 @@ export const websiteConfig: WebsiteConfig = {
         id: 'standard',
         popular: true,
         credits: 200,
-        expireDays: 60,
+        expireDays: 30,
         price: {
           priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_STANDARD!,
           amount: 1490,
@@ -181,7 +181,7 @@ export const websiteConfig: WebsiteConfig = {
         id: 'premium',
         popular: false,
         credits: 500,
-        expireDays: 90,
+        expireDays: 30,
         price: {
           priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_PREMIUM!,
           amount: 3990,
@@ -193,7 +193,7 @@ export const websiteConfig: WebsiteConfig = {
         id: 'enterprise',
         popular: false,
         credits: 1000,
-        expireDays: 120,
+        expireDays: 30,
         price: {
           priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_ENTERPRISE!,
           amount: 6990,

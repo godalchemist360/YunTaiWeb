@@ -355,45 +355,6 @@ export async function processExpiredCredits(userId: string) {
 }
 
 /**
- * Add subscription renewal credits
- * @param userId - User ID
- * @param priceId - Price ID
- */
-export async function addSubscriptionRenewalCredits(
-  userId: string,
-  priceId: string
-) {
-  const pricePlan = findPlanByPriceId(priceId);
-  if (
-    !pricePlan ||
-    pricePlan.isFree ||
-    !pricePlan.credits ||
-    !pricePlan.credits.enable
-  ) {
-    console.log(
-      `addSubscriptionRenewalCredits, no credits configured for plan ${priceId}`
-    );
-    return;
-  }
-
-  const credits = pricePlan.credits.amount;
-  const expireDays = pricePlan.credits.expireDays;
-  const now = new Date();
-
-  await addCredits({
-    userId,
-    amount: credits,
-    type: CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL,
-    description: `Subscription renewal credits: ${credits} for ${now.getFullYear()}-${now.getMonth() + 1}`,
-    expireDays,
-  });
-
-  console.log(
-    `addSubscriptionRenewalCredits, ${credits} credits for user ${userId}, priceId: ${priceId}`
-  );
-}
-
-/**
  * Add register gift credits
  * @param userId - User ID
  */
@@ -490,6 +451,45 @@ export async function addMonthlyFreeCreditsIfNeed(userId: string) {
       `addMonthlyFreeCreditsIfNeed, ${credits} credits for user ${userId}, date: ${now.getFullYear()}-${now.getMonth() + 1}`
     );
   }
+}
+
+/**
+ * Add subscription renewal credits
+ * @param userId - User ID
+ * @param priceId - Price ID
+ */
+export async function addSubscriptionRenewalCredits(
+  userId: string,
+  priceId: string
+) {
+  const pricePlan = findPlanByPriceId(priceId);
+  if (
+    !pricePlan ||
+    pricePlan.isFree ||
+    !pricePlan.credits ||
+    !pricePlan.credits.enable
+  ) {
+    console.log(
+      `addSubscriptionRenewalCredits, no credits configured for plan ${priceId}`
+    );
+    return;
+  }
+
+  const credits = pricePlan.credits.amount;
+  const expireDays = pricePlan.credits.expireDays;
+  const now = new Date();
+
+  await addCredits({
+    userId,
+    amount: credits,
+    type: CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL,
+    description: `Subscription renewal credits: ${credits} for ${now.getFullYear()}-${now.getMonth() + 1}`,
+    expireDays,
+  });
+
+  console.log(
+    `addSubscriptionRenewalCredits, ${credits} credits for user ${userId}, priceId: ${priceId}`
+  );
 }
 
 /**

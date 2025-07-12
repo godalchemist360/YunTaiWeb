@@ -1,10 +1,19 @@
 import { randomUUID } from 'crypto';
-import { addCredits, addSubscriptionRenewalCredits } from '@/credits/credits';
+import { websiteConfig } from '@/config/website';
+import {
+  addCredits,
+  addLifetimeMonthlyCreditsIfNeed,
+  addSubscriptionRenewalCredits,
+} from '@/credits/credits';
 import { getCreditPackageById } from '@/credits/server';
 import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 import { getDb } from '@/db';
 import { payment, user } from '@/db/schema';
-import { findPlanByPlanId, findPriceInPlan } from '@/lib/price-plan';
+import {
+  findPlanByPlanId,
+  findPlanByPriceId,
+  findPriceInPlan,
+} from '@/lib/price-plan';
 import { sendNotification } from '@/notification/notification';
 import { desc, eq } from 'drizzle-orm';
 import { Stripe } from 'stripe';
@@ -580,6 +589,15 @@ export class StripeProvider implements PaymentProvider {
         `<< No payment record created for Stripe subscription ${stripeSubscription.id}`
       );
     }
+
+    // Conditionally handle credits after subscription creation
+    if (websiteConfig.credits?.enableCredits) {
+      // Add subscription renewal credits if plan config enables credits
+      const pricePlan = findPlanByPriceId(priceId);
+      if (pricePlan?.credits?.enable) {
+        await addSubscriptionRenewalCredits(userId, priceId);
+      }
+    }
   }
 
   /**
@@ -770,6 +788,17 @@ export class StripeProvider implements PaymentProvider {
       console.log(
         `<< Created one-time payment record for user ${userId}, price: ${priceId}`
       );
+
+      // Conditionally handle credits after one-time payment
+      if (websiteConfig.credits?.enableCredits) {
+        // If the plan is lifetime and credits are enabled, add lifetime monthly credits if needed
+        const lifetimePlan = Object.values(
+          websiteConfig.price?.plans || {}
+        ).find((plan) => plan.isLifetime && plan.credits?.enable);
+        if (lifetimePlan?.prices?.some((p) => p.priceId === priceId)) {
+          await addLifetimeMonthlyCreditsIfNeed(userId);
+        }
+      }
 
       // Send notification
       const amount = session.amount_total ? session.amount_total / 100 : 0;
