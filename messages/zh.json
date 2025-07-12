@@ -585,7 +585,7 @@
       },
       "credits": {
         "title": "积分",
-        "description": "管理您的积分和消费记录",
+        "description": "管理您的积分交易",
         "balance": {
           "title": "积分余额",
           "description": "您的积分余额",
@@ -599,7 +599,6 @@
           "expiringCredits": "{credits} 积分将在 {date} 过期"
         },
         "packages": {
-          "balance": "积分余额",
           "title": "积分套餐",
           "description": "购买积分以使用我们的更多服务",
           "purchase": "购买",
@@ -609,21 +608,17 @@
           "failedToFetchCredits": "获取积分失败",
           "failedToCreatePaymentIntent": "创建付款意向失败",
           "failedToInitiatePayment": "发起付款失败",
-          "creditsAdded": "积分已添加到您的账户",
           "cancel": "取消",
           "purchaseFailed": "购买积分失败",
           "checkoutFailed": "创建支付会话失败",
           "loading": "加载中...",
           "pay": "支付"
         },
-        "tabs": {
-          "balance": "积分余额",
-          "transactions": "积分记录"
-        },
         "transactions": {
           "title": "积分记录",
           "error": "获取积分交易记录失败",
           "search": "搜索积分交易记录...",
+          "paymentIdCopied": "支付ID已复制到剪贴板",
           "columns": {
             "columns": "列",
             "id": "ID",
@@ -637,11 +632,10 @@
             "createdAt": "创建时间",
             "updatedAt": "更新时间"
           },
-          "paymentIdCopied": "支付ID已复制到剪贴板",
           "types": {
             "MONTHLY_REFRESH": "每月赠送",
             "REGISTER_GIFT": "注册赠送",
-            "PURCHASE": "购买积分",
+            "PURCHASE_PACKAGE": "购买积分",
             "USAGE": "使用积分",
             "EXPIRE": "过期积分",
             "SUBSCRIPTION_RENEWAL": "订阅月度积分",
@@ -652,7 +646,7 @@
             "close": "关闭"
           },
           "expired": "已过期",
-          "never": "永不"
+          "never": "永不过期"
         }
       },
       "notification": {

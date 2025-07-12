@@ -598,7 +598,6 @@
           "expiringCredits": "{credits} credits expiring on {date}"
         },
         "packages": {
-          "balance": "Credit Balance",
           "title": "Credit Packages",
           "description": "Purchase additional credits to use our services",
           "purchase": "Purchase",
@@ -608,21 +607,17 @@
           "failedToFetchCredits": "Failed to fetch credits",
           "failedToCreatePaymentIntent": "Failed to create payment intent",
           "failedToInitiatePayment": "Failed to initiate payment",
-          "creditsAdded": "Credits have been added to your account",
           "cancel": "Cancel",
           "purchaseFailed": "Purchase credits failed",
           "checkoutFailed": "Failed to create checkout session",
           "loading": "Loading...",
           "pay": "Pay"
         },
-        "tabs": {
-          "balance": "Balance",
-          "transactions": "Transactions"
-        },
         "transactions": {
           "title": "Credit Transactions",
           "error": "Failed to get credit transactions",
           "search": "Search credit transactions...",
+          "paymentIdCopied": "Payment ID copied to clipboard",
           "columns": {
             "columns": "Columns",
             "id": "ID",
@@ -636,11 +631,10 @@
             "createdAt": "Created At",
             "updatedAt": "Updated At"
           },
-          "paymentIdCopied": "Payment ID copied to clipboard",
           "types": {
             "MONTHLY_REFRESH": "Monthly Refresh",
             "REGISTER_GIFT": "Register Gift",
-            "PURCHASE": "Purchased Credits",
+            "PURCHASE_PACKAGE": "Purchased Credits",
             "USAGE": "Consumed Credits",
             "EXPIRE": "Expired Credits",
             "SUBSCRIPTION_RENEWAL": "Subscription Renewal",
