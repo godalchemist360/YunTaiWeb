@@ -1,6 +1,14 @@
 import { randomUUID } from 'crypto';
+import { websiteConfig } from '@/config/website';
+import {
+  addCredits,
+  addLifetimeMonthlyCredits,
+  addSubscriptionRenewalCredits,
+} from '@/credits/credits';
+import { getCreditPackageById } from '@/credits/server';
+import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 import { getDb } from '@/db';
-import { payment, session, user } from '@/db/schema';
+import { payment, user } from '@/db/schema';
 import {
   findPlanByPlanId,
   findPlanByPriceId,
@@ -12,6 +20,7 @@ import { Stripe } from 'stripe';
 import {
   type CheckoutResult,
   type CreateCheckoutParams,
+  type CreateCreditCheckoutParams,
   type CreatePortalParams,
   type PaymentProvider,
   type PaymentStatus,
@@ -280,6 +289,104 @@ export class StripeProvider implements PaymentProvider {
   }
 
   /**
+   * Create a checkout session for a plan
+   * @param params Parameters for creating the checkout session
+   * @returns Checkout result
+   */
+  public async createCreditCheckout(
+    params: CreateCreditCheckoutParams
+  ): Promise<CheckoutResult> {
+    const {
+      packageId,
+      priceId,
+      customerEmail,
+      successUrl,
+      cancelUrl,
+      metadata,
+      locale,
+    } = params;
+
+    try {
+      // Get credit package
+      const creditPackage = getCreditPackageById(packageId);
+      if (!creditPackage) {
+        throw new Error(`Credit package with ID ${packageId} not found`);
+      }
+
+      // Get priceId from credit package
+      const priceId = creditPackage.price.priceId;
+      if (!priceId) {
+        throw new Error(`Price ID not found for credit package ${packageId}`);
+      }
+
+      // Get userName from metadata if available
+      const userName = metadata?.userName;
+
+      // Create or get customer
+      const customerId = await this.createOrGetCustomer(
+        customerEmail,
+        userName
+      );
+
+      // Add planId and priceId to metadata, so we can get it in the webhook event
+      const customMetadata = {
+        ...metadata,
+        packageId,
+        priceId,
+      };
+
+      // Set up the line items
+      const lineItems = [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ];
+
+      // Create checkout session parameters
+      const checkoutParams: Stripe.Checkout.SessionCreateParams = {
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: successUrl ?? '',
+        cancel_url: cancelUrl ?? '',
+        metadata: customMetadata,
+        allow_promotion_codes: creditPackage.price.allowPromotionCode ?? false,
+      };
+
+      // Add customer to checkout session
+      checkoutParams.customer = customerId;
+
+      // Add locale if provided
+      if (locale) {
+        checkoutParams.locale = this.mapLocaleToStripeLocale(
+          locale
+        ) as Stripe.Checkout.SessionCreateParams.Locale;
+      }
+
+      // Add payment intent data for one-time payments
+      checkoutParams.payment_intent_data = {
+        metadata: customMetadata,
+      };
+      // Automatically create an invoice for the one-time payment
+      checkoutParams.invoice_creation = {
+        enabled: true,
+      };
+
+      // Create the checkout session
+      const session =
+        await this.stripe.checkout.sessions.create(checkoutParams);
+
+      return {
+        url: session.url!,
+        id: session.id,
+      };
+    } catch (error) {
+      console.error('Create credit checkout session error:', error);
+      throw new Error('Failed to create credit checkout session');
+    }
+  }
+
+  /**
    * Create a customer portal session
    * @param params Parameters for creating the portal
    * @returns Portal result
@@ -394,7 +501,11 @@ export class StripeProvider implements PaymentProvider {
 
           // Only process one-time payments (likely for lifetime plan)
           if (session.mode === 'payment') {
-            await this.onOnetimePayment(session);
+            if (session.metadata?.type === 'credit_purchase') {
+              await this.onCreditPurchase(session);
+            } else {
+              await this.onOnetimePayment(session);
+            }
           }
         }
       }
@@ -478,6 +589,15 @@ export class StripeProvider implements PaymentProvider {
         `<< No payment record created for Stripe subscription ${stripeSubscription.id}`
       );
     }
+
+    // Conditionally handle credits after subscription creation
+    if (websiteConfig.credits?.enableCredits) {
+      // Add subscription renewal credits if plan config enables credits
+      const pricePlan = findPlanByPriceId(priceId);
+      if (pricePlan?.credits?.enable) {
+        await addSubscriptionRenewalCredits(userId, priceId);
+      }
+    }
   }
 
   /**
@@ -500,6 +620,34 @@ export class StripeProvider implements PaymentProvider {
       return;
     }
 
+    // Get current payment record to check for period changes (indicating renewal)
+    const db = await getDb();
+    const currentPayment = await db
+      .select({
+        userId: payment.userId,
+        periodStart: payment.periodStart,
+        periodEnd: payment.periodEnd,
+      })
+      .from(payment)
+      .where(eq(payment.subscriptionId, stripeSubscription.id))
+      .limit(1);
+
+    // get new period start and end
+    const newPeriodStart = stripeSubscription.current_period_start
+      ? new Date(stripeSubscription.current_period_start * 1000)
+      : undefined;
+    const newPeriodEnd = stripeSubscription.current_period_end
+      ? new Date(stripeSubscription.current_period_end * 1000)
+      : undefined;
+
+    // Check if this is a renewal (period has changed and subscription is active)
+    const isRenewal =
+      currentPayment.length > 0 &&
+      stripeSubscription.status === 'active' &&
+      currentPayment[0].periodStart &&
+      newPeriodStart &&
+      currentPayment[0].periodStart.getTime() !== newPeriodStart.getTime();
+
     // update fields
     const updateFields: any = {
       priceId: priceId,
@@ -507,12 +655,8 @@ export class StripeProvider implements PaymentProvider {
       status: this.mapSubscriptionStatusToPaymentStatus(
         stripeSubscription.status
       ),
-      periodStart: stripeSubscription.current_period_start
-        ? new Date(stripeSubscription.current_period_start * 1000)
-        : undefined,
-      periodEnd: stripeSubscription.current_period_end
-        ? new Date(stripeSubscription.current_period_end * 1000)
-        : undefined,
+      periodStart: newPeriodStart,
+      periodEnd: newPeriodEnd,
       cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
       trialStart: stripeSubscription.trial_start
         ? new Date(stripeSubscription.trial_start * 1000)
@@ -523,7 +667,6 @@ export class StripeProvider implements PaymentProvider {
       updatedAt: new Date(),
     };
 
-    const db = await getDb();
     const result = await db
       .update(payment)
       .set(updateFields)
@@ -534,6 +677,24 @@ export class StripeProvider implements PaymentProvider {
       console.log(
         `<< Updated payment record ${result[0].id} for Stripe subscription ${stripeSubscription.id}`
       );
+
+      // Add credits for subscription renewal
+      if (isRenewal && currentPayment[0].userId) {
+        try {
+          await addSubscriptionRenewalCredits(
+            currentPayment[0].userId,
+            priceId
+          );
+          console.log(
+            `<< Added renewal credits for user ${currentPayment[0].userId}, priceId: ${priceId}`
+          );
+        } catch (error) {
+          console.error(
+            `<< Failed to add renewal credits for user ${currentPayment[0].userId}:`,
+            error
+          );
+        }
+      }
     } else {
       console.warn(
         `<< No payment record found for Stripe subscription ${stripeSubscription.id}`
@@ -599,37 +760,120 @@ export class StripeProvider implements PaymentProvider {
       return;
     }
 
-    // Create a one-time payment record
-    const now = new Date();
-    const db = await getDb();
-    const result = await db
-      .insert(payment)
-      .values({
-        id: randomUUID(),
-        priceId: priceId,
-        type: PaymentTypes.ONE_TIME,
-        userId: userId,
-        customerId: customerId,
-        status: 'completed', // One-time payments are always completed
-        periodStart: now,
-        createdAt: now,
-        updatedAt: now,
-      })
-      .returning({ id: payment.id });
+    try {
+      // Create a one-time payment record
+      const now = new Date();
+      const db = await getDb();
+      const result = await db
+        .insert(payment)
+        .values({
+          id: randomUUID(),
+          priceId: priceId,
+          type: PaymentTypes.ONE_TIME,
+          userId: userId,
+          customerId: customerId,
+          status: 'completed', // One-time payments are always completed
+          periodStart: now,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning({ id: payment.id });
 
-    if (result.length === 0) {
-      console.warn(
-        `<< Failed to create one-time payment record for user ${userId}`
+      if (result.length === 0) {
+        console.warn(
+          `<< Failed to create one-time payment record for user ${userId}`
+        );
+        return;
+      }
+      console.log(
+        `<< Created one-time payment record for user ${userId}, price: ${priceId}`
       );
+
+      // Conditionally handle credits after one-time payment
+      if (websiteConfig.credits?.enableCredits) {
+        // If the plan is lifetime and credits are enabled, add lifetime monthly credits if needed
+        const lifetimePlan = Object.values(
+          websiteConfig.price?.plans || {}
+        ).find(
+          (plan) => plan.isLifetime && !plan.disabled && plan.credits?.enable
+        );
+        if (lifetimePlan?.prices?.some((p) => p.priceId === priceId)) {
+          await addLifetimeMonthlyCredits(userId);
+        }
+      }
+
+      // Send notification
+      const amount = session.amount_total ? session.amount_total / 100 : 0;
+      await sendNotification(session.id, customerId, userId, amount);
+    } catch (error) {
+      console.error(
+        `<< onOnetimePayment error for session ${session.id}:`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Handle credit purchase
+   * @param session Stripe checkout session
+   */
+  private async onCreditPurchase(
+    session: Stripe.Checkout.Session
+  ): Promise<void> {
+    const customerId = session.customer as string;
+    console.log(`>> Handle credit purchase for customer ${customerId}`);
+
+    // get userId from session metadata, we add it in the createCheckout session
+    const userId = session.metadata?.userId;
+    if (!userId) {
+      console.warn(`<< No userId found for checkout session ${session.id}`);
       return;
     }
-    console.log(
-      `<< Created one-time payment record for user ${userId}, price: ${priceId}`
-    );
 
-    // Send notification
-    const amount = session.amount_total ? session.amount_total / 100 : 0;
-    await sendNotification(session.id, customerId, userId, amount);
+    // get packageId from session metadata
+    const packageId = session.metadata?.packageId;
+    if (!packageId) {
+      console.warn(`<< No packageId found for checkout session ${session.id}`);
+      return;
+    }
+
+    // get credits from session metadata
+    const credits = session.metadata?.credits;
+    if (!credits) {
+      console.warn(`<< No credits found for checkout session ${session.id}`);
+      return;
+    }
+
+    // get credit package
+    const creditPackage = getCreditPackageById(packageId);
+    if (!creditPackage) {
+      console.warn(`<< Credit package ${packageId} not found`);
+      return;
+    }
+
+    try {
+      // add credits to user account
+      const amount = session.amount_total ? session.amount_total / 100 : 0;
+      await addCredits({
+        userId,
+        amount: Number.parseInt(credits),
+        type: CREDIT_TRANSACTION_TYPE.PURCHASE_PACKAGE,
+        description: `+${credits} credits for package ${packageId} ($${amount.toLocaleString()})`,
+        paymentId: session.id,
+        expireDays: creditPackage.expireDays,
+      });
+
+      console.log(
+        `<< Added ${credits} credits to user ${userId} for $${amount}${creditPackage.expireDays ? ` (expires in ${creditPackage.expireDays} days)` : ' (no expiration)'}`
+      );
+    } catch (error) {
+      console.error(
+        `<< onCreditPurchase error for session ${session.id}:`,
+        error
+      );
+      throw error;
+    }
   }
 
   /**
