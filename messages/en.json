@@ -499,8 +499,8 @@
         "emailCopied": "Email copied to clipboard",
         "banned": "Banned",
         "active": "Active",
-        "joined": "Joined",
-        "updated": "Updated",
+        "joined": "Joined at",
+        "updated": "Updated at",
         "ban": {
           "reason": "Ban Reason",
           "reasonPlaceholder": "Enter the reason for banning this user",
