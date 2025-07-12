@@ -146,12 +146,12 @@ export const websiteConfig: WebsiteConfig = {
   },
   credits: {
     enableCredits: true,
+    enableForFreePlan: false,
     registerGiftCredits: {
       enable: true,
       credits: 100,
       expireDays: 30,
     },
-
     packages: {
       basic: {
         id: 'basic',

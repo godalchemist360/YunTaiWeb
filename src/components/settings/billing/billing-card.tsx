@@ -170,7 +170,7 @@ export default function BillingCard() {
       </CardHeader>
       <CardContent className="space-y-4 flex-1">
         {/* Plan name and status */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-start space-x-4">
           <div className="text-3xl font-medium">{currentPlan?.name}</div>
           {subscription && (
             <Badge variant="outline">

@@ -11,6 +11,7 @@ import {
 import { getCreditPackages } from '@/config/credits-config';
 import { websiteConfig } from '@/config/website';
 import { useCurrentUser } from '@/hooks/use-current-user';
+import { usePayment } from '@/hooks/use-payment';
 import { formatPrice } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { CircleCheckBigIcon, CoinsIcon } from 'lucide-react';
@@ -24,11 +25,18 @@ import { CreditCheckoutButton } from './credit-checkout-button';
 export function CreditPackages() {
   const t = useTranslations('Dashboard.settings.credits.packages');
 
-  // Get current user
+  // Get current user and payment info
   const currentUser = useCurrentUser();
+  const { currentPlan } = usePayment();
 
   // Don't render if credits are disabled
   if (!websiteConfig.credits.enableCredits) {
+    return null;
+  }
+
+  // Check if user is on free plan and enableForFreePlan is false
+  const isFreePlan = currentPlan?.isFree === true;
+  if (isFreePlan && !websiteConfig.credits.enableForFreePlan) {
     return null;
   }
 
