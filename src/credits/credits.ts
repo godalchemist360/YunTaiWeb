@@ -575,6 +575,7 @@ export async function distributeCreditsToAllUsers() {
     })
     .from(user)
     .where(eq(user.banned, false)); // Only active users
+  console.log('distributing credits to all users, users count:', users.length);
 
   let processedCount = 0;
   let errorCount = 0;
