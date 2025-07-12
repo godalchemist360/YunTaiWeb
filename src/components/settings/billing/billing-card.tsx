@@ -90,87 +90,81 @@ export default function BillingCard() {
   // Render loading skeleton
   if (isPageLoading) {
     return (
-      <div className="grid md:grid-cols-2 gap-8">
-        <Card
-          className={cn(
-            'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
-          )}
-        >
-          <CardHeader>
-            <CardTitle>{t('currentPlan.title')}</CardTitle>
-            <CardDescription>{t('currentPlan.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 flex-1">
-            <div className="space-y-3">
-              <Skeleton className="h-6 w-1/2" />
-              <Skeleton className="h-6 w-4/5" />
-              <Skeleton className="h-6 w-4/5" />
-            </div>
-          </CardContent>
-          <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
-            <Skeleton className="h-10 w-4/5" />
-          </CardFooter>
-        </Card>
-      </div>
+      <Card
+        className={cn(
+          'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
+        )}
+      >
+        <CardHeader>
+          <CardTitle>{t('currentPlan.title')}</CardTitle>
+          <CardDescription>{t('currentPlan.description')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 flex-1">
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-1/2" />
+            <Skeleton className="h-6 w-4/5" />
+            <Skeleton className="h-6 w-4/5" />
+          </div>
+        </CardContent>
+        <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
+          <Skeleton className="h-10 w-4/5" />
+        </CardFooter>
+      </Card>
     );
   }
 
   // Render error state
   if (loadPaymentError) {
     return (
-      <div className="grid md:grid-cols-2 gap-8">
-        <Card
-          className={cn(
-            'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
-          )}
-        >
-          <CardHeader>
-            <CardTitle>{t('currentPlan.title')}</CardTitle>
-            <CardDescription>{t('currentPlan.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 flex-1">
-            <div className="text-destructive text-sm">{loadPaymentError}</div>
-          </CardContent>
-          <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
-            <Button
-              variant="outline"
-              className="cursor-pointer"
-              onClick={() => refetch()}
-            >
-              <RefreshCwIcon className="size-4 mr-1" />
-              {t('retry')}
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+      <Card
+        className={cn(
+          'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
+        )}
+      >
+        <CardHeader>
+          <CardTitle>{t('currentPlan.title')}</CardTitle>
+          <CardDescription>{t('currentPlan.description')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 flex-1">
+          <div className="text-destructive text-sm">{loadPaymentError}</div>
+        </CardContent>
+        <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={() => refetch()}
+          >
+            <RefreshCwIcon className="size-4 mr-1" />
+            {t('retry')}
+          </Button>
+        </CardFooter>
+      </Card>
     );
   }
 
   // currentPlanFromStore maybe null, so we need to check if it is null
   if (!currentPlanFromStore) {
     return (
-      <div className="grid md:grid-cols-2 gap-8">
-        <Card
-          className={cn(
-            'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
-          )}
-        >
-          <CardHeader>
-            <CardTitle>{t('currentPlan.title')}</CardTitle>
-            <CardDescription>{t('currentPlan.description')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm text-muted-foreground">
-              {t('currentPlan.noPlan')}
-            </div>
-          </CardContent>
-          <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-muted rounded-none">
-            <Button variant="default" className="cursor-pointer" asChild>
-              <LocaleLink href={Routes.Pricing}>{t('upgradePlan')}</LocaleLink>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+      <Card
+        className={cn(
+          'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
+        )}
+      >
+        <CardHeader>
+          <CardTitle>{t('currentPlan.title')}</CardTitle>
+          <CardDescription>{t('currentPlan.description')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-muted-foreground">
+            {t('currentPlan.noPlan')}
+          </div>
+        </CardContent>
+        <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-muted rounded-none">
+          <Button variant="default" className="cursor-pointer" asChild>
+            <LocaleLink href={Routes.Pricing}>{t('upgradePlan')}</LocaleLink>
+          </Button>
+        </CardFooter>
+      </Card>
     );
   }
 
@@ -179,98 +173,96 @@ export default function BillingCard() {
   // console.log('billing card, currentUser', currentUser);
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
-      <Card
-        className={cn(
-          'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
-        )}
-      >
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">
-            {t('currentPlan.title')}
-          </CardTitle>
-          <CardDescription>{t('currentPlan.description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 flex-1">
-          {/* Plan name and status */}
-          <div className="flex items-center justify-between">
-            <div className="text-3xl font-medium">{currentPlan?.name}</div>
-            {subscription && (
-              <Badge variant="outline">
-                {subscription?.status === 'trialing'
-                  ? t('status.trial')
-                  : subscription?.status === 'active'
-                    ? t('status.active')
-                    : ''}
-              </Badge>
-            )}
+    <Card
+      className={cn(
+        'w-full max-w-lg md:max-w-xl overflow-hidden pt-6 pb-0 flex flex-col'
+      )}
+    >
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">
+          {t('currentPlan.title')}
+        </CardTitle>
+        <CardDescription>{t('currentPlan.description')}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4 flex-1">
+        {/* Plan name and status */}
+        <div className="flex items-center justify-between">
+          <div className="text-3xl font-medium">{currentPlan?.name}</div>
+          {subscription && (
+            <Badge variant="outline">
+              {subscription?.status === 'trialing'
+                ? t('status.trial')
+                : subscription?.status === 'active'
+                  ? t('status.active')
+                  : ''}
+            </Badge>
+          )}
+        </div>
+
+        {/* Free plan message */}
+        {isFreePlan && (
+          <div className="text-sm text-muted-foreground">
+            {t('freePlanMessage')}
           </div>
+        )}
 
-          {/* Free plan message */}
-          {isFreePlan && (
-            <div className="text-sm text-muted-foreground">
-              {t('freePlanMessage')}
+        {/* Lifetime plan message */}
+        {isLifetimeMember && (
+          <div className="text-sm text-muted-foreground">
+            {t('lifetimeMessage')}
+          </div>
+        )}
+
+        {/* Subscription plan message */}
+        {subscription && currentPrice && (
+          <div className="text-sm text-muted-foreground space-y-2">
+            <div>
+              {t('price')}{' '}
+              {formatPrice(currentPrice.amount, currentPrice.currency)} /{' '}
+              {currentPrice.interval === PlanIntervals.MONTH
+                ? t('interval.month')
+                : currentPrice.interval === PlanIntervals.YEAR
+                  ? t('interval.year')
+                  : t('interval.oneTime')}
             </div>
-          )}
 
-          {/* Lifetime plan message */}
-          {isLifetimeMember && (
-            <div className="text-sm text-muted-foreground">
-              {t('lifetimeMessage')}
-            </div>
-          )}
-
-          {/* Subscription plan message */}
-          {subscription && currentPrice && (
-            <div className="text-sm text-muted-foreground space-y-2">
+            {nextBillingDate && (
               <div>
-                {t('price')}{' '}
-                {formatPrice(currentPrice.amount, currentPrice.currency)} /{' '}
-                {currentPrice.interval === PlanIntervals.MONTH
-                  ? t('interval.month')
-                  : currentPrice.interval === PlanIntervals.YEAR
-                    ? t('interval.year')
-                    : t('interval.oneTime')}
+                {t('nextBillingDate')} {nextBillingDate}
               </div>
+            )}
 
-              {nextBillingDate && (
-                <div>
-                  {t('nextBillingDate')} {nextBillingDate}
+            {subscription.status === 'trialing' &&
+              subscription.currentPeriodEnd && (
+                <div className="text-amber-500">
+                  {t('trialEnds')} {formatDate(subscription.currentPeriodEnd)}
                 </div>
               )}
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
+        {/* user is on free plan, show upgrade plan button */}
+        {isFreePlan && (
+          <Button variant="default" className="cursor-pointer" asChild>
+            <LocaleLink href={Routes.Pricing}>{t('upgradePlan')}</LocaleLink>
+          </Button>
+        )}
 
-              {subscription.status === 'trialing' &&
-                subscription.currentPeriodEnd && (
-                  <div className="text-amber-500">
-                    {t('trialEnds')} {formatDate(subscription.currentPeriodEnd)}
-                  </div>
-                )}
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
-          {/* user is on free plan, show upgrade plan button */}
-          {isFreePlan && (
-            <Button variant="default" className="cursor-pointer" asChild>
-              <LocaleLink href={Routes.Pricing}>{t('upgradePlan')}</LocaleLink>
-            </Button>
-          )}
+        {/* user is lifetime member, show manage billing button */}
+        {isLifetimeMember && currentUser && (
+          <CustomerPortalButton userId={currentUser.id} className="">
+            {t('manageBilling')}
+          </CustomerPortalButton>
+        )}
 
-          {/* user is lifetime member, show manage billing button */}
-          {isLifetimeMember && currentUser && (
-            <CustomerPortalButton userId={currentUser.id} className="">
-              {t('manageBilling')}
-            </CustomerPortalButton>
-          )}
-
-          {/* user has subscription, show manage subscription button */}
-          {subscription && currentUser && (
-            <CustomerPortalButton userId={currentUser.id} className="">
-              {t('manageSubscription')}
-            </CustomerPortalButton>
-          )}
-        </CardFooter>
-      </Card>
-    </div>
+        {/* user has subscription, show manage subscription button */}
+        {subscription && currentUser && (
+          <CustomerPortalButton userId={currentUser.id} className="">
+            {t('manageSubscription')}
+          </CustomerPortalButton>
+        )}
+      </CardFooter>
+    </Card>
   );
 }

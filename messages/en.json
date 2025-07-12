@@ -587,9 +587,12 @@
         "description": "Manage your credits",
         "balance": {
           "title": "Credit Balance",
+          "description": "Your credit balance",
           "credits": "Credits",
           "creditsDescription": "You have {credits} credits",
-          "creditsExpired": "Credits expired"
+          "creditsExpired": "Credits expired",
+          "creditsAdded": "Credits have been added to your account",
+          "viewTransactions": "View Transactions"
         },
         "packages": {
           "balance": "Credit Balance",
