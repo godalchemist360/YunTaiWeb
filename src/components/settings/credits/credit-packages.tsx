@@ -23,16 +23,16 @@ import { CreditCheckoutButton } from './credit-checkout-button';
  * @returns Credit packages component
  */
 export function CreditPackages() {
+  // If credits are not enabled, return null
+  if (!websiteConfig.credits.enableCredits) {
+    return null;
+  }
+
   const t = useTranslations('Dashboard.settings.credits.packages');
 
   // Get current user and payment info
   const currentUser = useCurrentUser();
   const { currentPlan } = usePayment();
-
-  // Don't render if credits are disabled
-  if (!websiteConfig.credits.enableCredits) {
-    return null;
-  }
 
   // Check if user is on free plan and enableForFreePlan is false
   const isFreePlan = currentPlan?.isFree === true;

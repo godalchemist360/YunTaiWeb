@@ -20,9 +20,7 @@ export interface CreditsState {
   fetchCredits: (user: Session['user'] | null | undefined) => Promise<void>;
   consumeCredits: (amount: number, description: string) => Promise<boolean>;
   refreshCredits: (user: Session['user'] | null | undefined) => Promise<void>;
-  resetState: () => void;
-  // For optimistic updates
-  updateBalanceOptimistically: (amount: number) => void;
+  resetCreditsState: () => void;
 }
 
 // Cache duration: 30 seconds
@@ -193,21 +191,9 @@ export const useCreditsStore = create<CreditsState>((set, get) => ({
   },
 
   /**
-   * Update balance optimistically (for external credit additions)
-   * @param amount Amount to add to current balance
-   */
-  updateBalanceOptimistically: (amount: number) => {
-    const { balance } = get();
-    set({
-      balance: balance + amount,
-      lastFetchTime: null, // Clear cache to fetch fresh data next time
-    });
-  },
-
-  /**
    * Reset credits state
    */
-  resetState: () => {
+  resetCreditsState: () => {
     set({
       balance: 0,
       isLoading: false,

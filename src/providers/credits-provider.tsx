@@ -12,7 +12,7 @@ import { useEffect } from 'react';
  */
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
   const user = useCurrentUser();
-  const { fetchCredits, resetState } = useCreditsStore();
+  const { fetchCredits, resetCreditsState } = useCreditsStore();
 
   useEffect(() => {
     if (user) {
@@ -20,9 +20,9 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       fetchCredits(user);
     } else {
       // User is logged out, reset the credits state
-      resetState();
+      resetCreditsState();
     }
-  }, [user, fetchCredits, resetState]);
+  }, [user, fetchCredits, resetCreditsState]);
 
   return <>{children}</>;
 }

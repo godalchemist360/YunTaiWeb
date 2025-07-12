@@ -18,7 +18,6 @@ import { LogOutIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { CreditsBalanceButton } from './credits-balance-button';
 import { CreditsBalanceMenu } from './credits-balance-menu';
 
 interface UserButtonProps {

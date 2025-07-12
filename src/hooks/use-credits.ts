@@ -16,7 +16,6 @@ export function useCredits() {
     fetchCredits,
     consumeCredits,
     refreshCredits,
-    updateBalanceOptimistically,
   } = useCreditsStore();
 
   const { data: session } = authClient.useSession();
@@ -56,7 +55,6 @@ export function useCredits() {
 
     // Methods
     consumeCredits,
-    updateBalanceOptimistically,
 
     // Utility methods
     refetch,
