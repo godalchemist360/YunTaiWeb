@@ -585,12 +585,18 @@
       },
       "credits": {
         "title": "积分",
-        "description": "管理您的积分",
+        "description": "管理您的积分和消费记录",
         "balance": {
           "title": "积分余额",
+          "description": "您的积分余额",
           "credits": "积分",
           "creditsDescription": "您有 {credits} 积分",
-          "creditsExpired": "积分已过期"
+          "creditsExpired": "积分已过期",
+          "creditsAdded": "积分已添加到您的账户",
+          "viewTransactions": "查看积分记录",
+          "subscriptionCredits": "本月订阅获得 {credits} 积分",
+          "lifetimeCredits": "本月终身会员获得 {credits} 积分",
+          "expiringCredits": "{credits} 积分将在 {date} 过期"
         },
         "packages": {
           "balance": "积分余额",

@@ -138,7 +138,7 @@ export const websiteConfig: WebsiteConfig = {
         isLifetime: true,
         credits: {
           enable: true,
-          amount: 2000,
+          amount: 1000,
           expireDays: 30,
         },
       },
@@ -149,7 +149,7 @@ export const websiteConfig: WebsiteConfig = {
     enableForFreePlan: false,
     registerGiftCredits: {
       enable: true,
-      credits: 100,
+      credits: 50,
       expireDays: 30,
     },
     packages: {

@@ -584,7 +584,7 @@
       },
       "credits": {
         "title": "Credits",
-        "description": "Manage your credits",
+        "description": "Manage your credit transactions",
         "balance": {
           "title": "Credit Balance",
           "description": "Your credit balance",
@@ -592,7 +592,10 @@
           "creditsDescription": "You have {credits} credits",
           "creditsExpired": "Credits expired",
           "creditsAdded": "Credits have been added to your account",
-          "viewTransactions": "View Transactions"
+          "viewTransactions": "View Credit Transactions",
+          "subscriptionCredits": "{credits} credits from subscription this month",
+          "lifetimeCredits": "{credits} credits from lifetime plan this month",
+          "expiringCredits": "{credits} credits expiring on {date}"
         },
         "packages": {
           "balance": "Credit Balance",
