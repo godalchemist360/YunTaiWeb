@@ -181,7 +181,7 @@ export default function CreditsBalanceCard() {
               {/* Expiring credits warning */}
               {creditStats.expiringCredits.amount > 0 &&
                 creditStats.expiringCredits.earliestExpiration && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="flex items-center gap-2 text-amber-600">
                     <span>
                       {t('expiringCredits', {
                         credits: creditStats.expiringCredits.amount,

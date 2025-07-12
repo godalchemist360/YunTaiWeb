@@ -211,14 +211,14 @@ export default function BillingCard() {
             </div>
 
             {nextBillingDate && (
-              <div>
+              <div className="text-green-600">
                 {t('nextBillingDate')} {nextBillingDate}
               </div>
             )}
 
             {subscription.status === 'trialing' &&
               subscription.currentPeriodEnd && (
-                <div className="text-amber-500">
+                <div className="text-amber-600">
                   {t('trialEnds')} {formatDate(subscription.currentPeriodEnd)}
                 </div>
               )}
