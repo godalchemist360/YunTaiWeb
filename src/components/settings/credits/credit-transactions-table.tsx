@@ -1,5 +1,6 @@
 'use client';
 
+import { CreditDetailViewer } from '@/components/settings/credits/credit-detail-viewer';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -31,7 +32,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { CreditDetailViewer } from '@/credits/credit-detail-viewer';
 import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 import { formatDate } from '@/lib/formatter';
 import { CaretDownIcon, CaretUpIcon } from '@radix-ui/react-icons';

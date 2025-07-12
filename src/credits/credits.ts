@@ -118,18 +118,18 @@ export async function addCredits({
 }) {
   if (!userId || !type || !description) {
     console.error('addCredits, invalid params', userId, type, description);
-    throw new Error('addCredits, invalid params');
+    throw new Error('Invalid params');
   }
   if (!Number.isFinite(amount) || amount <= 0) {
     console.error('addCredits, invalid amount', userId, amount);
-    throw new Error('addCredits, invalid amount');
+    throw new Error('Invalid amount');
   }
   if (
     expireDays !== undefined &&
     (!Number.isFinite(expireDays) || expireDays <= 0)
   ) {
     console.error('addCredits, invalid expire days', userId, expireDays);
-    throw new Error('addCredits, invalid expire days');
+    throw new Error('Invalid expire days');
   }
   // Process expired credits first
   await processExpiredCredits(userId);
@@ -201,11 +201,11 @@ export async function consumeCredits({
 }) {
   if (!userId || !description) {
     console.error('consumeCredits, invalid params', userId, description);
-    throw new Error('consumeCredits, invalid params');
+    throw new Error('Invalid params');
   }
   if (!Number.isFinite(amount) || amount <= 0) {
     console.error('consumeCredits, invalid amount', userId, amount);
-    throw new Error('consumeCredits, invalid amount');
+    throw new Error('Invalid amount');
   }
   // Process expired credits first
   await processExpiredCredits(userId);

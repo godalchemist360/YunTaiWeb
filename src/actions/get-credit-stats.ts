@@ -8,8 +8,8 @@ import { addDays } from 'date-fns';
 import { and, eq, gte, isNotNull, lte, sql, sum } from 'drizzle-orm';
 import { createSafeActionClient } from 'next-safe-action';
 
-const CREDITS_EXPIRATION_DAYS = 30;
-const CREDITS_MONTHLY_DAYS = 30;
+const CREDITS_EXPIRATION_DAYS = 31;
+const CREDITS_MONTHLY_DAYS = 31;
 
 // Create a safe action client
 const actionClient = createSafeActionClient();
@@ -21,6 +21,7 @@ export const getCreditStatsAction = actionClient.action(async () => {
   try {
     const session = await getSession();
     if (!session) {
+      console.warn('unauthorized request to get credit stats');
       return {
         success: false,
         error: 'Unauthorized',
@@ -30,8 +31,8 @@ export const getCreditStatsAction = actionClient.action(async () => {
     const db = await getDb();
     const userId = session.user.id;
 
-    // Get credits expiring in the next 30 days
-    const thirtyDaysFromNow = addDays(new Date(), CREDITS_EXPIRATION_DAYS);
+    // Get credits expiring in the next CREDITS_EXPIRATION_DAYS days
+    const expirationDaysFromNow = addDays(new Date(), CREDITS_EXPIRATION_DAYS);
     const expiringCredits = await db
       .select({
         amount: sum(creditTransaction.remainingAmount),
@@ -44,13 +45,13 @@ export const getCreditStatsAction = actionClient.action(async () => {
           isNotNull(creditTransaction.expirationDate),
           isNotNull(creditTransaction.remainingAmount),
           gte(creditTransaction.remainingAmount, 1),
-          lte(creditTransaction.expirationDate, thirtyDaysFromNow),
+          lte(creditTransaction.expirationDate, expirationDaysFromNow),
           gte(creditTransaction.expirationDate, new Date())
         )
       );
 
-    // Get credits from subscription renewals (recent 30 days)
-    const thirtyDaysAgo = addDays(new Date(), -CREDITS_MONTHLY_DAYS);
+    // Get credits from subscription renewals (recent CREDITS_MONTHLY_DAYS days)
+    const monthlyRefreshDaysAgo = addDays(new Date(), -CREDITS_MONTHLY_DAYS);
     const subscriptionCredits = await db
       .select({
         amount: sum(creditTransaction.amount),
@@ -63,11 +64,11 @@ export const getCreditStatsAction = actionClient.action(async () => {
             creditTransaction.type,
             CREDIT_TRANSACTION_TYPE.SUBSCRIPTION_RENEWAL
           ),
-          gte(creditTransaction.createdAt, thirtyDaysAgo)
+          gte(creditTransaction.createdAt, monthlyRefreshDaysAgo)
         )
       );
 
-    // Get credits from monthly lifetime distribution (recent 30 days)
+    // Get credits from monthly lifetime distribution (recent CREDITS_MONTHLY_DAYS days)
     const lifetimeCredits = await db
       .select({
         amount: sum(creditTransaction.amount),
@@ -77,7 +78,7 @@ export const getCreditStatsAction = actionClient.action(async () => {
         and(
           eq(creditTransaction.userId, userId),
           eq(creditTransaction.type, CREDIT_TRANSACTION_TYPE.LIFETIME_MONTHLY),
-          gte(creditTransaction.createdAt, thirtyDaysAgo)
+          gte(creditTransaction.createdAt, monthlyRefreshDaysAgo)
         )
       );
 

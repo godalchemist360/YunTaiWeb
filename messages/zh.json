@@ -11,9 +11,9 @@
     "language": "切换语言",
     "mode": {
       "label": "切换模式",
-      "light": "浅色",
-      "dark": "深色",
-      "system": "系统"
+      "light": "浅色模式",
+      "dark": "深色模式",
+      "system": "跟随系统"
     },
     "theme": {
       "label": "切换主题",

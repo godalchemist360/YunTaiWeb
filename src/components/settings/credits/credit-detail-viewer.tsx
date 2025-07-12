@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { CREDIT_TRANSACTION_TYPE } from './types';
+import { CREDIT_TRANSACTION_TYPE } from '../../../credits/types';
 
 // Define the credit transaction interface (matching the one in the table)
 export interface CreditTransaction {
