@@ -1,6 +1,6 @@
 'use client';
 
-import { useCurrentUser } from '@/hooks/use-current-user';
+import { authClient } from '@/lib/auth-client';
 import { useCreditsStore } from '@/stores/credits-store';
 import { useEffect } from 'react';
 
@@ -11,18 +11,14 @@ import { useEffect } from 'react';
  * and handles cleanup when the user logs out.
  */
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
-  const user = useCurrentUser();
-  const { fetchCredits, resetCreditsState } = useCreditsStore();
+  const { fetchCredits } = useCreditsStore();
+  const { data: session } = authClient.useSession();
 
   useEffect(() => {
-    if (user) {
-      // User is logged in, fetch their credits
-      fetchCredits(user);
-    } else {
-      // User is logged out, reset the credits state
-      resetCreditsState();
+    if (session?.user) {
+      fetchCredits(session.user);
     }
-  }, [user, fetchCredits, resetCreditsState]);
+  }, [session?.user, fetchCredits]);
 
   return <>{children}</>;
 }
