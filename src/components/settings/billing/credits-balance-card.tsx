@@ -82,7 +82,7 @@ export default function CreditsBalanceCard() {
 
   // Check for payment success and show success message
   useEffect(() => {
-    const sessionId = searchParams.get('session_id');
+    const sessionId = searchParams.get('credits_session_id');
     if (sessionId && !hasHandledSession.current) {
       hasHandledSession.current = true;
 
@@ -98,7 +98,7 @@ export default function CreditsBalanceCard() {
 
       // Clean up URL parameters
       const url = new URL(window.location.href);
-      url.searchParams.delete('session_id');
+      url.searchParams.delete('credits_session_id');
       localeRouter.replace(Routes.SettingsBilling + url.search);
     }
   }, [searchParams, localeRouter, fetchCredits, fetchCreditStats, t]);

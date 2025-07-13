@@ -90,7 +90,7 @@ export const createCreditCheckoutSession = actionClient
 
       // Create checkout session with credit-specific URLs
       const successUrl = getUrlWithLocale(
-        `${Routes.SettingsBilling}?session_id={CHECKOUT_SESSION_ID}`,
+        `${Routes.SettingsBilling}?credits_session_id={CHECKOUT_SESSION_ID}`,
         locale
       );
       const cancelUrl = getUrlWithLocale(Routes.SettingsBilling, locale);
