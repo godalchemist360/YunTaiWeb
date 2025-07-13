@@ -3,8 +3,8 @@ import { getCreditBalanceAction } from '@/actions/get-credit-balance';
 import type { Session } from '@/lib/auth-types';
 import { create } from 'zustand';
 
-// Cache duration: 30 seconds
-const CACHE_DURATION = 30 * 1000;
+// Cache duration: 2 minutes (optimized for better UX)
+const CACHE_DURATION = 2 * 60 * 1000;
 
 /**
  * Credits state interface
