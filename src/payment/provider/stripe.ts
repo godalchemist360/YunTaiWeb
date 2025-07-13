@@ -87,9 +87,7 @@ export class StripeProvider implements PaymentProvider {
         // user does not exist, update user with customer id
         // in case you deleted user in database, but forgot to delete customer in Stripe
         if (!userId) {
-          console.log(
-            `User ${email} does not exist, update with customer id ${customerId}`
-          );
+          console.log('User does not exist, update with customer id (hidden)');
           await this.updateUserWithCustomerId(customerId, email);
         }
         return customerId;
@@ -134,9 +132,9 @@ export class StripeProvider implements PaymentProvider {
         .returning({ id: user.id });
 
       if (result.length > 0) {
-        console.log(`Updated user ${email} with customer ID ${customerId}`);
+        console.log('Updated user with customer ID (hidden)');
       } else {
-        console.log(`No user found with email ${email}`);
+        console.log('No user found with given email');
       }
     } catch (error) {
       console.error('Update user with customer ID error:', error);
@@ -164,7 +162,7 @@ export class StripeProvider implements PaymentProvider {
       if (result.length > 0) {
         return result[0].id;
       }
-      console.warn(`No user found with customerId ${customerId}`);
+      console.warn('No user found with given customerId');
 
       return undefined;
     } catch (error) {
@@ -522,26 +520,20 @@ export class StripeProvider implements PaymentProvider {
   private async onCreateSubscription(
     stripeSubscription: Stripe.Subscription
   ): Promise<void> {
-    console.log(
-      `>> Create payment record for Stripe subscription ${stripeSubscription.id}`
-    );
+    console.log('>> Create payment record for Stripe subscription');
     const customerId = stripeSubscription.customer as string;
 
     // get priceId from subscription items (this is always available)
     const priceId = stripeSubscription.items.data[0]?.price.id;
     if (!priceId) {
-      console.warn(
-        `<< No priceId found for subscription ${stripeSubscription.id}`
-      );
+      console.warn('No priceId found for subscription');
       return;
     }
 
     // get userId from metadata, we add it in the createCheckout session
     const userId = stripeSubscription.metadata.userId;
     if (!userId) {
-      console.warn(
-        `<< No userId found for subscription ${stripeSubscription.id}`
-      );
+      console.warn('No userId found for subscription');
       return;
     }
 
@@ -581,13 +573,9 @@ export class StripeProvider implements PaymentProvider {
       .returning({ id: payment.id });
 
     if (result.length > 0) {
-      console.log(
-        `<< Created new payment record ${result[0].id} for Stripe subscription ${stripeSubscription.id}`
-      );
+      console.log('<< Created new payment record for Stripe subscription');
     } else {
-      console.warn(
-        `<< No payment record created for Stripe subscription ${stripeSubscription.id}`
-      );
+      console.warn('<< No payment record created for Stripe subscription');
     }
 
     // Conditionally handle credits after subscription creation
@@ -607,16 +595,12 @@ export class StripeProvider implements PaymentProvider {
   private async onUpdateSubscription(
     stripeSubscription: Stripe.Subscription
   ): Promise<void> {
-    console.log(
-      `>> Update payment record for Stripe subscription ${stripeSubscription.id}`
-    );
+    console.log('>> Update payment record for Stripe subscription');
 
     // get priceId from subscription items (this is always available)
     const priceId = stripeSubscription.items.data[0]?.price.id;
     if (!priceId) {
-      console.warn(
-        `<< No priceId found for subscription ${stripeSubscription.id}`
-      );
+      console.warn('No priceId found for subscription');
       return;
     }
 
@@ -674,9 +658,7 @@ export class StripeProvider implements PaymentProvider {
       .returning({ id: payment.id });
 
     if (result.length > 0) {
-      console.log(
-        `<< Updated payment record ${result[0].id} for Stripe subscription ${stripeSubscription.id}`
-      );
+      console.log('<< Updated payment record for Stripe subscription');
 
       // Add credits for subscription renewal
       const currentPayment = payments[0];
@@ -690,25 +672,18 @@ export class StripeProvider implements PaymentProvider {
         if (pricePlan?.credits?.enable) {
           try {
             await addSubscriptionCredits(currentPayment.userId, priceId);
-            console.log(
-              `<< Added renewal credits for user ${currentPayment.userId}, priceId: ${priceId}`
-            );
+            console.log('<< Added renewal credits for user');
           } catch (error) {
-            console.error(
-              `<< Failed to add renewal credits for user ${currentPayment.userId}:`,
-              error
-            );
+            console.error('<< Failed to add renewal credits for user:', error);
           }
         }
       } else {
         console.log(
-          `<< No renewal credits added for user ${currentPayment.userId}, isRenewal: ${isRenewal}`
+          '<< No renewal credits added for user, isRenewal: ' + isRenewal
         );
       }
     } else {
-      console.warn(
-        `<< No payment record found for Stripe subscription ${stripeSubscription.id}`
-      );
+      console.warn('<< No payment record found for Stripe subscription');
     }
   }
 
@@ -719,9 +694,7 @@ export class StripeProvider implements PaymentProvider {
   private async onDeleteSubscription(
     stripeSubscription: Stripe.Subscription
   ): Promise<void> {
-    console.log(
-      `>> Mark payment record for Stripe subscription ${stripeSubscription.id} as canceled`
-    );
+    console.log('>> Mark payment record for Stripe subscription as canceled');
     const db = await getDb();
     const result = await db
       .update(payment)
@@ -735,12 +708,10 @@ export class StripeProvider implements PaymentProvider {
       .returning({ id: payment.id });
 
     if (result.length > 0) {
-      console.log(
-        `<< Marked payment record for subscription ${stripeSubscription.id} as canceled`
-      );
+      console.log('<< Marked payment record for subscription as canceled');
     } else {
       console.warn(
-        `<< No payment record found to cancel for Stripe subscription ${stripeSubscription.id}`
+        '<< No payment record found to cancel for Stripe subscription'
       );
     }
   }
@@ -753,12 +724,12 @@ export class StripeProvider implements PaymentProvider {
     session: Stripe.Checkout.Session
   ): Promise<void> {
     const customerId = session.customer as string;
-    console.log(`>> Handle onetime payment for customer ${customerId}`);
+    console.log('>> Handle onetime payment for customer');
 
     // get userId from session metadata, we add it in the createCheckout session
     const userId = session.metadata?.userId;
     if (!userId) {
-      console.warn(`<< No userId found for checkout session ${session.id}`);
+      console.warn('No userId found for checkout session');
       return;
     }
 
@@ -766,7 +737,7 @@ export class StripeProvider implements PaymentProvider {
     // const priceId = session.line_items?.data[0]?.price?.id;
     const priceId = session.metadata?.priceId;
     if (!priceId) {
-      console.warn(`<< No priceId found for checkout session ${session.id}`);
+      console.warn('No priceId found for checkout session');
       return;
     }
 
@@ -790,14 +761,10 @@ export class StripeProvider implements PaymentProvider {
         .returning({ id: payment.id });
 
       if (result.length === 0) {
-        console.warn(
-          `<< Failed to create one-time payment record for user ${userId}`
-        );
+        console.warn('<< Failed to create one-time payment record for user');
         return;
       }
-      console.log(
-        `<< Created one-time payment record for user ${userId}, price: ${priceId}`
-      );
+      console.log('Created one-time payment record for user');
 
       // Conditionally handle credits after one-time payment
       if (websiteConfig.credits?.enableCredits) {
@@ -816,10 +783,7 @@ export class StripeProvider implements PaymentProvider {
       const amount = session.amount_total ? session.amount_total / 100 : 0;
       await sendNotification(session.id, customerId, userId, amount);
     } catch (error) {
-      console.error(
-        `<< onOnetimePayment error for session ${session.id}:`,
-        error
-      );
+      console.error('onOnetimePayment error for session: ' + session.id, error);
       throw error;
     }
   }
@@ -832,33 +796,33 @@ export class StripeProvider implements PaymentProvider {
     session: Stripe.Checkout.Session
   ): Promise<void> {
     const customerId = session.customer as string;
-    console.log(`>> Handle credit purchase for customer ${customerId}`);
+    console.log('>> Handle credit purchase for customer');
 
     // get userId from session metadata, we add it in the createCheckout session
     const userId = session.metadata?.userId;
     if (!userId) {
-      console.warn(`<< No userId found for checkout session ${session.id}`);
+      console.warn('No userId found for checkout session');
       return;
     }
 
     // get packageId from session metadata
     const packageId = session.metadata?.packageId;
     if (!packageId) {
-      console.warn(`<< No packageId found for checkout session ${session.id}`);
+      console.warn('No packageId found for checkout session');
       return;
     }
 
     // get credits from session metadata
     const credits = session.metadata?.credits;
     if (!credits) {
-      console.warn(`<< No credits found for checkout session ${session.id}`);
+      console.warn('No credits found for checkout session');
       return;
     }
 
     // get credit package
     const creditPackage = getCreditPackageById(packageId);
     if (!creditPackage) {
-      console.warn(`<< Credit package ${packageId} not found`);
+      console.warn('Credit package ' + packageId + ' not found');
       return;
     }
 
@@ -874,14 +838,9 @@ export class StripeProvider implements PaymentProvider {
         expireDays: creditPackage.expireDays,
       });
 
-      console.log(
-        `<< Added ${credits} credits to user ${userId} for $${amount}${creditPackage.expireDays ? ` (expires in ${creditPackage.expireDays} days)` : ' (no expiration)'}`
-      );
+      console.log('Added ' + credits + ' credits to user');
     } catch (error) {
-      console.error(
-        `<< onCreditPurchase error for session ${session.id}:`,
-        error
-      );
+      console.error('onCreditPurchase error for session: ' + session.id, error);
       throw error;
     }
   }
