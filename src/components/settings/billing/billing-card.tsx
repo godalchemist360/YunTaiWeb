@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getPricePlans } from '@/config/price-config';
+import { useMounted } from '@/hooks/use-mounted';
 import { usePayment } from '@/hooks/use-payment';
 import { LocaleLink, useLocaleRouter } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
@@ -30,6 +31,7 @@ export default function BillingCard() {
   const searchParams = useSearchParams();
   const localeRouter = useLocaleRouter();
   const hasHandledSession = useRef(false);
+  const mounted = useMounted();
 
   const {
     isLoading: isLoadingPayment,
@@ -72,10 +74,6 @@ export default function BillingCard() {
     ? formatDate(subscription.currentPeriodEnd)
     : null;
 
-  // Determine if we are in a loading state
-  const isPageLoading = isLoadingPayment || isLoadingSession;
-  // console.log('billing card, isLoadingPayment', isLoadingPayment, 'isLoadingSession', isLoadingSession);
-
   // Retry payment data fetching
   const handleRetry = useCallback(() => {
     // console.log('handleRetry, refetch payment info');
@@ -97,8 +95,9 @@ export default function BillingCard() {
     }
   }, [searchParams, localeRouter]);
 
-  // Render loading skeleton
-  if (isPageLoading) {
+  // Render loading skeleton if not mounted or in a loading state
+  const isPageLoading = isLoadingPayment || isLoadingSession;
+  if (!mounted || isPageLoading) {
     return (
       <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
@@ -108,10 +107,12 @@ export default function BillingCard() {
           <CardDescription>{t('currentPlan.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 flex-1">
-          <div className="space-y-3">
-            <Skeleton className="h-6 w-1/2" />
-            <Skeleton className="h-6 w-4/5" />
-            <Skeleton className="h-6 w-4/5" />
+          <div className="flex items-center justify-start space-x-4">
+            <Skeleton className="h-6 w-1/5" />
+          </div>
+          <div className="text-sm text-muted-foreground space-y-2">
+            <Skeleton className="h-6 w-2/5" />
+            <Skeleton className="h-6 w-3/5" />
           </div>
         </CardContent>
         <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
@@ -148,8 +149,8 @@ export default function BillingCard() {
     );
   }
 
-  // currentPlanFromStore maybe null, so we need to check if it is null
-  if (!currentPlanFromStore) {
+  // currentPlan maybe null, so we need to check if it is null
+  if (!currentPlan) {
     return (
       <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>

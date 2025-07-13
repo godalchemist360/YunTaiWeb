@@ -13,6 +13,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { websiteConfig } from '@/config/website';
 import { useCredits } from '@/hooks/use-credits';
+import { useMounted } from '@/hooks/use-mounted';
 import { usePayment } from '@/hooks/use-payment';
 import { LocaleLink, useLocaleRouter } from '@/i18n/navigation';
 import { formatDate } from '@/lib/formatter';
@@ -29,6 +30,7 @@ export default function CreditsBalanceCard() {
   const searchParams = useSearchParams();
   const localeRouter = useLocaleRouter();
   const hasHandledSession = useRef(false);
+  const mounted = useMounted();
 
   // Use the credits hook to get balance
   const {
@@ -114,7 +116,7 @@ export default function CreditsBalanceCard() {
 
   // Render loading skeleton
   const isPageLoading = isLoadingBalance || isLoadingStats;
-  if (isPageLoading) {
+  if (!mounted || isPageLoading) {
     return (
       <Card className={cn('w-full overflow-hidden pt-6 pb-0 flex flex-col')}>
         <CardHeader>
