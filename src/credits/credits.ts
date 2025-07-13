@@ -458,10 +458,7 @@ export async function addMonthlyFreeCredits(userId: string) {
  * @param userId - User ID
  * @param priceId - Price ID
  */
-export async function addSubscriptionRenewalCredits(
-  userId: string,
-  priceId: string
-) {
+export async function addSubscriptionCredits(userId: string, priceId: string) {
   const pricePlan = findPlanByPriceId(priceId);
   if (
     !pricePlan ||

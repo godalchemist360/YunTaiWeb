@@ -3,7 +3,7 @@ import { websiteConfig } from '@/config/website';
 import {
   addCredits,
   addLifetimeMonthlyCredits,
-  addSubscriptionRenewalCredits,
+  addSubscriptionCredits,
 } from '@/credits/credits';
 import { getCreditPackageById } from '@/credits/server';
 import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
@@ -595,7 +595,7 @@ export class StripeProvider implements PaymentProvider {
       // Add subscription renewal credits if plan config enables credits
       const pricePlan = findPlanByPriceId(priceId);
       if (pricePlan?.credits?.enable) {
-        await addSubscriptionRenewalCredits(userId, priceId);
+        await addSubscriptionCredits(userId, priceId);
       }
     }
   }
@@ -681,10 +681,7 @@ export class StripeProvider implements PaymentProvider {
       // Add credits for subscription renewal
       if (isRenewal && currentPayment[0].userId) {
         try {
-          await addSubscriptionRenewalCredits(
-            currentPayment[0].userId,
-            priceId
-          );
+          await addSubscriptionCredits(currentPayment[0].userId, priceId);
           console.log(
             `<< Added renewal credits for user ${currentPayment[0].userId}, priceId: ${priceId}`
           );
