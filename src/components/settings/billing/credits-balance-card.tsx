@@ -86,18 +86,15 @@ export default function CreditsBalanceCard() {
     if (sessionId && !hasHandledSession.current) {
       hasHandledSession.current = true;
 
-      // Show success toast (delayed to avoid React lifecycle conflicts)
       setTimeout(() => {
+        // Show success toast and refresh data after payment
         toast.success(t('creditsAdded'));
-      }, 0);
 
-      // Use setTimeout to ensure async operations complete properly
-      setTimeout(() => {
         // Force refresh credits data to show updated balance
         fetchCredits(true);
         // Refresh credit stats
         fetchCreditStats();
-      }, 100);
+      }, 0);
 
       // Clean up URL parameters
       const url = new URL(window.location.href);
