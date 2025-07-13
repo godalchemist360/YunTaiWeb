@@ -622,7 +622,7 @@ export class StripeProvider implements PaymentProvider {
 
     // Get current payment record to check for period changes (indicating renewal)
     const db = await getDb();
-    const currentPayment = await db
+    const payments = await db
       .select({
         userId: payment.userId,
         periodStart: payment.periodStart,
@@ -642,11 +642,11 @@ export class StripeProvider implements PaymentProvider {
 
     // Check if this is a renewal (period has changed and subscription is active)
     const isRenewal =
-      currentPayment.length > 0 &&
+      payments.length > 0 &&
       stripeSubscription.status === 'active' &&
-      currentPayment[0].periodStart &&
+      payments[0].periodStart &&
       newPeriodStart &&
-      currentPayment[0].periodStart.getTime() !== newPeriodStart.getTime();
+      payments[0].periodStart.getTime() !== newPeriodStart.getTime();
 
     // update fields
     const updateFields: any = {
@@ -679,18 +679,31 @@ export class StripeProvider implements PaymentProvider {
       );
 
       // Add credits for subscription renewal
-      if (isRenewal && currentPayment[0].userId) {
-        try {
-          await addSubscriptionCredits(currentPayment[0].userId, priceId);
-          console.log(
-            `<< Added renewal credits for user ${currentPayment[0].userId}, priceId: ${priceId}`
-          );
-        } catch (error) {
-          console.error(
-            `<< Failed to add renewal credits for user ${currentPayment[0].userId}:`,
-            error
-          );
+      const currentPayment = payments[0];
+      if (
+        isRenewal &&
+        currentPayment.userId &&
+        websiteConfig.credits?.enableCredits
+      ) {
+        // Add subscription renewal credits if plan config enables credits
+        const pricePlan = findPlanByPriceId(priceId);
+        if (pricePlan?.credits?.enable) {
+          try {
+            await addSubscriptionCredits(currentPayment.userId, priceId);
+            console.log(
+              `<< Added renewal credits for user ${currentPayment.userId}, priceId: ${priceId}`
+            );
+          } catch (error) {
+            console.error(
+              `<< Failed to add renewal credits for user ${currentPayment.userId}:`,
+              error
+            );
+          }
         }
+      } else {
+        console.log(
+          `<< No renewal credits added for user ${currentPayment.userId}, isRenewal: ${isRenewal}`
+        );
       }
     } else {
       console.warn(
