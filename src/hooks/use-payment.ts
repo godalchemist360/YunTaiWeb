@@ -23,8 +23,7 @@ export function usePayment() {
     (force = false) => {
       const currentUser = session?.user;
       if (currentUser) {
-        console.log('fetch payment info for user', currentUser.id);
-        fetchPaymentFromStore(currentUser);
+        fetchPaymentFromStore(currentUser, force);
       }
     },
     [session?.user, fetchPaymentFromStore]
@@ -33,7 +32,6 @@ export function usePayment() {
   useEffect(() => {
     const currentUser = session?.user;
     if (currentUser) {
-      console.log('fetch payment info for user', currentUser.id);
       fetchPaymentFromStore(currentUser);
     }
   }, [session?.user, fetchPaymentFromStore]);

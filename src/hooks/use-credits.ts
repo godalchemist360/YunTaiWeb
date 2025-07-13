@@ -23,10 +23,6 @@ export function useCredits() {
     (force = false) => {
       const currentUser = session?.user;
       if (currentUser) {
-        console.log(
-          `${force ? 'force fetch' : 'fetch'} credits for user`,
-          currentUser.id
-        );
         fetchCreditsFromStore(currentUser, force);
       }
     },
@@ -36,7 +32,6 @@ export function useCredits() {
   useEffect(() => {
     const currentUser = session?.user;
     if (currentUser) {
-      console.log('fetch credits info for user', currentUser.id);
       fetchCreditsFromStore(currentUser);
     }
   }, [session?.user, fetchCreditsFromStore]);

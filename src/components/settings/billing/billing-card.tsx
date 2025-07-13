@@ -16,14 +16,13 @@ import { getPricePlans } from '@/config/price-config';
 import { usePayment } from '@/hooks/use-payment';
 import { LocaleLink, useLocaleRouter } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
-import { formatDate, formatPrice } from '@/lib/formatter';
+import { formatDate } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
-import { PlanIntervals } from '@/payment/types';
 import { Routes } from '@/routes';
 import { CheckCircleIcon, ClockIcon, RefreshCwIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
 export default function BillingCard() {
@@ -37,7 +36,7 @@ export default function BillingCard() {
     error: loadPaymentError,
     subscription,
     currentPlan: currentPlanFromStore,
-    refetch,
+    fetchPayment,
   } = usePayment();
 
   // Get user session for customer ID
@@ -76,6 +75,12 @@ export default function BillingCard() {
   // Determine if we are in a loading state
   const isPageLoading = isLoadingPayment || isLoadingSession;
   // console.log('billing card, isLoadingPayment', isLoadingPayment, 'isLoadingSession', isLoadingSession);
+
+  // Retry payment data fetching
+  const handleRetry = useCallback(() => {
+    // console.log('handleRetry, refetch payment info');
+    fetchPayment(true);
+  }, [fetchPayment]);
 
   // Check for payment success and show success message
   useEffect(() => {
@@ -133,7 +138,7 @@ export default function BillingCard() {
           <Button
             variant="outline"
             className="cursor-pointer"
-            onClick={() => refetch()}
+            onClick={handleRetry}
           >
             <RefreshCwIcon className="size-4 mr-1" />
             {t('retry')}

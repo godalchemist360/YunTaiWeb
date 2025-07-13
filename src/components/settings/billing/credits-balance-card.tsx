@@ -18,10 +18,10 @@ import { LocaleLink, useLocaleRouter } from '@/i18n/navigation';
 import { formatDate } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes';
-import { Loader2Icon } from 'lucide-react';
+import { RefreshCwIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function CreditsBalanceCard() {
@@ -35,7 +35,7 @@ export default function CreditsBalanceCard() {
     balance,
     isLoading: isLoadingBalance,
     error,
-    refresh: refreshBalance,
+    fetchCredits,
   } = useCredits();
 
   // Get payment info to check plan type
@@ -57,22 +57,23 @@ export default function CreditsBalanceCard() {
     return null;
   }
 
-  // Function to fetch credit statistics
-  const fetchCreditStats = async () => {
+  // Fetch credit statistics
+  const fetchCreditStats = useCallback(async () => {
+    console.log('fetchCreditStats, fetch start');
     setIsLoadingStats(true);
     try {
       const result = await getCreditStatsAction();
       if (result?.data?.success && result.data.data) {
         setCreditStats(result.data.data);
       } else {
-        console.error('Failed to fetch credit stats:', result?.data?.error);
+        console.error('fetchCreditStats, failed to fetch credit stats', result);
       }
     } catch (error) {
-      console.error('Failed to fetch credit stats:', error);
+      console.error('fetchCreditStats, error:', error);
     } finally {
       setIsLoadingStats(false);
     }
-  };
+  }, []);
 
   // Fetch stats on component mount
   useEffect(() => {
@@ -84,22 +85,35 @@ export default function CreditsBalanceCard() {
     const sessionId = searchParams.get('session_id');
     if (sessionId && !hasHandledSession.current) {
       hasHandledSession.current = true;
+
       // Show success toast (delayed to avoid React lifecycle conflicts)
       setTimeout(() => {
         toast.success(t('creditsAdded'));
       }, 0);
 
-      // Refresh credits data to show updated balance
-      refreshBalance();
-      // Refresh credit stats
-      fetchCreditStats();
+      // Use setTimeout to ensure async operations complete properly
+      setTimeout(() => {
+        // Force refresh credits data to show updated balance
+        fetchCredits(true);
+        // Refresh credit stats
+        fetchCreditStats();
+      }, 100);
 
       // Clean up URL parameters
       const url = new URL(window.location.href);
       url.searchParams.delete('session_id');
       localeRouter.replace(Routes.SettingsBilling + url.search);
     }
-  }, [searchParams, localeRouter, refreshBalance, fetchCreditStats]);
+  }, [searchParams, localeRouter, fetchCredits, fetchCreditStats, t]);
+
+  // Retry all data fetching
+  const handleRetry = useCallback(() => {
+    // console.log('handleRetry, refetch credits data');
+    // Force refresh credits balance (ignore cache)
+    fetchCredits(true);
+    // Refresh credit stats
+    fetchCreditStats();
+  }, [fetchCredits, fetchCreditStats]);
 
   // Render loading skeleton
   const isPageLoading = isLoadingBalance || isLoadingStats;
@@ -138,10 +152,13 @@ export default function CreditsBalanceCard() {
           <div className="text-destructive text-sm">{error}</div>
         </CardContent>
         <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
-          <Button variant="outline" className="cursor-pointer" asChild>
-            <LocaleLink href={Routes.SettingsCredits}>
-              {t('viewTransactions')}
-            </LocaleLink>
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={handleRetry}
+          >
+            <RefreshCwIcon className="size-4 mr-1" />
+            {t('retry')}
           </Button>
         </CardFooter>
       </Card>
