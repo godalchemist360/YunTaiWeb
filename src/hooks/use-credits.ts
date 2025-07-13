@@ -13,39 +13,33 @@ export function useCredits() {
     balance,
     isLoading,
     error,
-    fetchCredits,
+    fetchCredits: fetchCreditsFromStore,
     consumeCredits,
-    refreshCredits,
   } = useCreditsStore();
 
   const { data: session } = authClient.useSession();
 
-  // Stable refetch function using useCallback
-  const refetch = useCallback(() => {
-    const currentUser = session?.user;
-    if (currentUser) {
-      console.log('refetching credits info for user', currentUser.id);
-      fetchCredits(currentUser);
-    }
-  }, [session?.user, fetchCredits]);
-
-  // Stable refresh function using useCallback
-  const refresh = useCallback(() => {
-    const currentUser = session?.user;
-    if (currentUser) {
-      console.log('refreshing credits info for user', currentUser.id);
-      refreshCredits(currentUser);
-    }
-  }, [session?.user, refreshCredits]);
+  const fetchCredits = useCallback(
+    (force = false) => {
+      const currentUser = session?.user;
+      if (currentUser) {
+        console.log(
+          `${force ? 'force fetch' : 'fetch'} credits for user`,
+          currentUser.id
+        );
+        fetchCreditsFromStore(currentUser, force);
+      }
+    },
+    [session?.user, fetchCreditsFromStore]
+  );
 
   useEffect(() => {
     const currentUser = session?.user;
-    // Fetch credits data whenever the user session changes
     if (currentUser) {
-      console.log('fetching credits info for user', currentUser.id);
-      fetchCredits(currentUser);
+      console.log('fetch credits info for user', currentUser.id);
+      fetchCreditsFromStore(currentUser);
     }
-  }, [session?.user, fetchCredits]);
+  }, [session?.user, fetchCreditsFromStore]);
 
   return {
     // State
@@ -54,11 +48,8 @@ export function useCredits() {
     error,
 
     // Methods
+    fetchCredits,
     consumeCredits,
-
-    // Utility methods
-    refetch,
-    refresh,
 
     // Helper methods
     hasEnoughCredits: (amount: number) => balance >= amount,
