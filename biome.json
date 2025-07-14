@@ -33,7 +33,8 @@
     "indentStyle": "space",
     "indentWidth": 2,
     "lineWidth": 80,
-    "formatWithErrors": true
+    "formatWithErrors": true,
+    "useEditorconfig": true
   },
   "organizeImports": {
     "enabled": true
