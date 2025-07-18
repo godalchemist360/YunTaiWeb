@@ -57,6 +57,9 @@ export const LoginForm = ({
   const [isPending, setIsPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Check if credential login is enabled
+  const credentialLoginEnabled = websiteConfig.auth.enableCredentialLogin;
+
   // turnstile captcha schema
   const turnstileEnabled = websiteConfig.features.enableTurnstileCaptcha;
   const captchaSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -148,102 +151,111 @@ export const LoginForm = ({
       bottomButtonHref={`${Routes.Register}`}
       className={cn('', className)}
     >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('email')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="name@example.com"
-                      type="email"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex justify-between items-center">
-                    <FormLabel>{t('password')}</FormLabel>
-                    <Button
-                      size="sm"
-                      variant="link"
-                      asChild
-                      className="px-0 font-normal text-muted-foreground"
-                    >
-                      <LocaleLink
-                        href={`${Routes.ForgotPassword}`}
-                        className="text-xs hover:underline hover:underline-offset-4 hover:text-primary"
-                      >
-                        {t('forgotPassword')}
-                      </LocaleLink>
-                    </Button>
-                  </div>
-                  <FormControl>
-                    <div className="relative">
+      {credentialLoginEnabled && (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('email')}</FormLabel>
+                    <FormControl>
                       <Input
                         {...field}
                         disabled={isPending}
-                        placeholder="******"
-                        type={showPassword ? 'text' : 'password'}
-                        className="pr-10"
+                        placeholder="name@example.com"
+                        type="email"
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex justify-between items-center">
+                      <FormLabel>{t('password')}</FormLabel>
                       <Button
-                        type="button"
-                        variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={togglePasswordVisibility}
-                        disabled={isPending}
+                        variant="link"
+                        asChild
+                        className="px-0 font-normal text-muted-foreground"
                       >
-                        {showPassword ? (
-                          <EyeOffIcon className="size-4 text-muted-foreground" />
-                        ) : (
-                          <EyeIcon className="size-4 text-muted-foreground" />
-                        )}
-                        <span className="sr-only">
-                          {showPassword ? t('hidePassword') : t('showPassword')}
-                        </span>
+                        <LocaleLink
+                          href={`${Routes.ForgotPassword}`}
+                          className="text-xs hover:underline hover:underline-offset-4 hover:text-primary"
+                        >
+                          {t('forgotPassword')}
+                        </LocaleLink>
                       </Button>
                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          disabled={isPending}
+                          placeholder="******"
+                          type={showPassword ? 'text' : 'password'}
+                          className="pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={togglePasswordVisibility}
+                          disabled={isPending}
+                        >
+                          {showPassword ? (
+                            <EyeOffIcon className="size-4 text-muted-foreground" />
+                          ) : (
+                            <EyeIcon className="size-4 text-muted-foreground" />
+                          )}
+                          <span className="sr-only">
+                            {showPassword
+                              ? t('hidePassword')
+                              : t('showPassword')}
+                          </span>
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormError message={error || urlError || undefined} />
+            <FormSuccess message={success} />
+            {captchaConfigured && (
+              <Captcha
+                onSuccess={(token) => form.setValue('captchaToken', token)}
+                validationError={form.formState.errors.captchaToken?.message}
+              />
+            )}
+            <Button
+              disabled={isPending || (captchaConfigured && !captchaToken)}
+              size="lg"
+              type="submit"
+              className="w-full flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {isPending && (
+                <Loader2Icon className="mr-2 size-4 animate-spin" />
               )}
-            />
-          </div>
-          <FormError message={error || urlError || undefined} />
-          <FormSuccess message={success} />
-          {captchaConfigured && (
-            <Captcha
-              onSuccess={(token) => form.setValue('captchaToken', token)}
-              validationError={form.formState.errors.captchaToken?.message}
-            />
-          )}
-          <Button
-            disabled={isPending || (captchaConfigured && !captchaToken)}
-            size="lg"
-            type="submit"
-            className="w-full flex items-center justify-center gap-2 cursor-pointer"
-          >
-            {isPending && <Loader2Icon className="mr-2 size-4 animate-spin" />}
-            <span>{t('signIn')}</span>
-          </Button>
-        </form>
-      </Form>
+              <span>{t('signIn')}</span>
+            </Button>
+          </form>
+        </Form>
+      )}
       <div className="mt-4">
-        <SocialLoginButton callbackUrl={callbackUrl} />
+        <SocialLoginButton
+          callbackUrl={callbackUrl}
+          showDivider={credentialLoginEnabled}
+        />
       </div>
     </AuthCard>
   );
