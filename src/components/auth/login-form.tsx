@@ -1,5 +1,6 @@
 'use client';
 
+import { validateCaptchaAction } from '@/actions/validate-captcha';
 import { AuthCard } from '@/components/auth/auth-card';
 import { FormError } from '@/components/shared/form-error';
 import { FormSuccess } from '@/components/shared/form-success';
@@ -13,6 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { websiteConfig } from '@/config/website';
 import { LocaleLink } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
 import { getUrlWithLocaleInCallbackUrl } from '@/lib/urls/urls';
@@ -23,8 +25,9 @@ import { EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import * as z from 'zod';
+import { Captcha } from '../shared/captcha';
 import { SocialLoginButton } from './social-login-button';
 
 export interface LoginFormProps {
@@ -54,6 +57,14 @@ export const LoginForm = ({
   const [isPending, setIsPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // turnstile captcha schema
+  const turnstileEnabled = websiteConfig.features.enableTurnstileCaptcha;
+  const captchaSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const captchaConfigured = turnstileEnabled && !!captchaSiteKey;
+  const captchaSchema = captchaConfigured
+    ? z.string().min(1, 'Please complete the captcha')
+    : z.string().optional();
+
   const LoginSchema = z.object({
     email: z.string().email({
       message: t('emailRequired'),
@@ -61,6 +72,7 @@ export const LoginForm = ({
     password: z.string().min(1, {
       message: t('passwordRequired'),
     }),
+    captchaToken: captchaSchema,
   });
 
   const form = useForm<z.infer<typeof LoginSchema>>({
@@ -68,10 +80,30 @@ export const LoginForm = ({
     defaultValues: {
       email: '',
       password: '',
+      captchaToken: '',
     },
   });
 
+  const captchaToken = useWatch({
+    control: form.control,
+    name: 'captchaToken',
+  });
+
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
+    // Validate captcha token if turnstile is enabled and site key is available
+    if (captchaConfigured && values.captchaToken) {
+      const captchaResult = await validateCaptchaAction({
+        captchaToken: values.captchaToken,
+      });
+
+      if (!captchaResult?.data?.success || !captchaResult?.data?.valid) {
+        console.error('login, captcha invalid:', values.captchaToken);
+        const errorMessage = captchaResult?.data?.error || t('captchaInvalid');
+        setError(errorMessage);
+        return;
+      }
+    }
+
     // 1. if callbackUrl is provided, user will be redirected to the callbackURL after login successfully.
     // if user email is not verified, a new verification email will be sent to the user with the callbackURL.
     // 2. if callbackUrl is not provided, we should redirect manually in the onSuccess callback.
@@ -193,8 +225,14 @@ export const LoginForm = ({
           </div>
           <FormError message={error || urlError || undefined} />
           <FormSuccess message={success} />
+          {captchaConfigured && (
+            <Captcha
+              onSuccess={(token) => form.setValue('captchaToken', token)}
+              validationError={form.formState.errors.captchaToken?.message}
+            />
+          )}
           <Button
-            disabled={isPending}
+            disabled={isPending || (captchaConfigured && !captchaToken)}
             size="lg"
             type="submit"
             className="w-full flex items-center justify-center gap-2 cursor-pointer"

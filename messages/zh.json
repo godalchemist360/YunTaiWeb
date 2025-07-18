@@ -219,7 +219,9 @@
       "hidePassword": "隐藏密码",
       "or": "或以社媒账号登录",
       "emailRequired": "请输入邮箱",
-      "passwordRequired": "请输入密码"
+      "passwordRequired": "请输入密码",
+      "captchaInvalid": "验证码验证失败",
+      "captchaError": "验证码验证出错"
     },
     "register": {
       "title": "注册",

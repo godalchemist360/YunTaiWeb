@@ -219,7 +219,9 @@
       "hidePassword": "Hide password",
       "or": "Or continue with",
       "emailRequired": "Please enter your email",
-      "passwordRequired": "Please enter your password"
+      "passwordRequired": "Please enter your password",
+      "captchaInvalid": "Captcha verification failed",
+      "captchaError": "Captcha verification error"
     },
     "register": {
       "title": "Register",
