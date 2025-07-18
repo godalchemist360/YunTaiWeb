@@ -194,6 +194,9 @@ importers:
       cookie:
         specifier: ^1.0.2
         version: 1.0.2
+      crisp-sdk-web:
+        specifier: ^1.0.25
+        version: 1.0.25
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -4388,6 +4391,9 @@ packages:
   cors@2.8.5:
     resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
     engines: {node: '>= 0.10'}
+
+  crisp-sdk-web@1.0.25:
+    resolution: {integrity: sha512-CWTHFFeHRV0oqiXoPh/aIAKhFs6xcIM4NenGPnClAMCZUDQgQsF1OWmZWmnVNjJriXUmWRgDfeUxcxygS0dCRA==}
 
   cross-domain-safe-weakmap@1.0.29:
     resolution: {integrity: sha512-VLoUgf2SXnf3+na8NfeUFV59TRZkIJqCIATaMdbhccgtnTlSnHXkyTRwokngEGYdQXx8JbHT9GDYitgR2sdjuA==}
@@ -10475,6 +10481,8 @@ snapshots:
     dependencies:
       object-assign: 4.1.1
       vary: 1.1.2
+
+  crisp-sdk-web@1.0.25: {}
 
   cross-domain-safe-weakmap@1.0.29:
     dependencies:
