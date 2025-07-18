@@ -54,7 +54,9 @@ export const RegisterForm = ({
 
   // turnstile captcha schema
   const turnstileEnabled = websiteConfig.features.enableTurnstileCaptcha;
-  const captchaSchema = turnstileEnabled
+  const captchaSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const captchaConfigured = turnstileEnabled && !!captchaSiteKey;
+  const captchaSchema = captchaConfigured
     ? z.string().min(1, 'Please complete the captcha')
     : z.string().optional();
 
@@ -87,8 +89,8 @@ export const RegisterForm = ({
   });
 
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
-    // Validate captcha token if turnstile is enabled
-    if (turnstileEnabled && values.captchaToken) {
+    // Validate captcha token if turnstile is enabled and site key is available
+    if (captchaConfigured && values.captchaToken) {
       const captchaResult = await validateCaptchaAction({
         captchaToken: values.captchaToken,
       });
@@ -229,14 +231,14 @@ export const RegisterForm = ({
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          {turnstileEnabled && (
+          {captchaConfigured && (
             <Captcha
               onSuccess={(token) => form.setValue('captchaToken', token)}
               validationError={form.formState.errors.captchaToken?.message}
             />
           )}
           <Button
-            disabled={isPending || (turnstileEnabled && !captchaToken)}
+            disabled={isPending || (captchaConfigured && !captchaToken)}
             size="lg"
             type="submit"
             className="cursor-pointer w-full flex items-center justify-center gap-2"
