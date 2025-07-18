@@ -38,7 +38,7 @@ export const websiteConfig: WebsiteConfig = {
     enableAffonsoAffiliate: false,
     enablePromotekitAffiliate: false,
     enableDatafastRevenueTrack: false,
-    enableTurnstileCaptcha: true,
+    enableTurnstileCaptcha: process.env.NEXT_PUBLIC_DEMO_WEBSITE === 'true',
   },
   routes: {
     defaultLoginRedirect: '/dashboard',
@@ -145,7 +145,7 @@ export const websiteConfig: WebsiteConfig = {
     },
   },
   credits: {
-    enableCredits: true,
+    enableCredits: process.env.NEXT_PUBLIC_DEMO_WEBSITE === 'true',
     enableForFreePlan: false,
     registerGiftCredits: {
       enable: true,
