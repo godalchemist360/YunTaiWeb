@@ -15,6 +15,13 @@
       "when": 1751214200582,
       "tag": "0001_woozy_jigsaw",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1752913862566,
+      "tag": "0002_left_grandmaster",
+      "breakpoints": true
     }
   ]
 }
