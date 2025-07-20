@@ -71,6 +71,7 @@ export const payment = pgTable("payment", {
 	userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
 	customerId: text('customer_id').notNull(),
 	subscriptionId: text('subscription_id'),
+	sessionId: text('session_id'),
 	status: text('status').notNull(),
 	periodStart: timestamp('period_start'),
 	periodEnd: timestamp('period_end'),
@@ -86,6 +87,7 @@ export const payment = pgTable("payment", {
 	paymentCustomerIdIdx: index("payment_customer_id_idx").on(table.customerId),
 	paymentStatusIdx: index("payment_status_idx").on(table.status),
 	paymentSubscriptionIdIdx: index("payment_subscription_id_idx").on(table.subscriptionId),
+	paymentSessionIdIdx: index("payment_session_id_idx").on(table.sessionId),
 }));
 
 export const userCredit = pgTable("user_credit", {
