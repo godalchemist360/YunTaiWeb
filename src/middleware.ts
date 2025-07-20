@@ -33,7 +33,7 @@ export default async function middleware(req: NextRequest) {
 
   // Handle internal docs link redirection for internationalization
   // Check if this is a docs page without locale prefix
-  if (nextUrl.pathname.startsWith('/docs/')) {
+  if (nextUrl.pathname.startsWith('/docs/') || nextUrl.pathname === '/docs') {
     // Get the user's preferred locale from cookie
     const localeCookie = req.cookies.get(LOCALE_COOKIE_NAME);
     const preferredLocale = localeCookie?.value;
