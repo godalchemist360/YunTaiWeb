@@ -24,8 +24,10 @@
     "knip": "knip"
   },
   "dependencies": {
+    "@ai-sdk/deepseek": "^0.2.16",
     "@ai-sdk/fal": "^0.1.12",
     "@ai-sdk/fireworks": "^0.2.14",
+    "@ai-sdk/google": "^1.2.22",
     "@ai-sdk/google-vertex": "^2.2.24",
     "@ai-sdk/openai": "^1.1.13",
     "@ai-sdk/replicate": "^0.2.8",

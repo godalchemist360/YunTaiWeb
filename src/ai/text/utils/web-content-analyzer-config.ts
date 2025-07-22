@@ -100,15 +100,22 @@ export const webContentAnalyzerConfig = {
   },
 
   /**
-   * OpenAI analysis options
+   * AI model providers
    */
   openai: {
     model: 'gpt-4o-mini',
     temperature: 0.1, // Low temperature for consistent results
-    /**
-     * Token optimization settings
-     */
     maxTokens: 2000, // Limit response tokens for performance
+  },
+  gemini: {
+    model: 'gemini-2.0-flash',
+    temperature: 0.1,
+    maxTokens: 2000,
+  },
+  deepseek: {
+    model: 'deepseek-chat',
+    temperature: 0.1,
+    maxTokens: 2000,
   },
 } as const;
 

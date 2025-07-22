@@ -1,10 +1,7 @@
 'use client';
 
 import { checkWebContentAnalysisCreditsAction } from '@/actions/check-web-content-analysis-credits';
-import {
-  type UrlInputFormProps,
-  urlSchema,
-} from '@/ai/text/utils/web-content-analyzer';
+import type { UrlInputFormProps } from '@/ai/text/utils/web-content-analyzer';
 import { webContentAnalyzerConfig } from '@/ai/text/utils/web-content-analyzer-config';
 import { LoginWrapper } from '@/components/auth/login-wrapper';
 import { Button } from '@/components/ui/button';
@@ -16,6 +13,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useLocalePathname } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,7 +40,7 @@ import { useDebounce } from '../utils/performance';
 
 // Form schema for URL input
 const urlFormSchema = z.object({
-  url: urlSchema,
+  url: z.string().url().optional(), // Allow empty string for initial state
 });
 
 type UrlFormData = z.infer<typeof urlFormSchema>;
@@ -45,6 +49,8 @@ export function UrlInputForm({
   onSubmit,
   isLoading,
   disabled = false,
+  modelProvider,
+  setModelProvider,
 }: UrlInputFormProps) {
   const [creditInfo, setCreditInfo] = useState<{
     hasEnoughCredits: boolean;
@@ -133,7 +139,7 @@ export function UrlInputForm({
       }, 0);
       return;
     }
-    onSubmit(data.url);
+    onSubmit(data.url ?? '', modelProvider);
   };
 
   const handleFormSubmit = form.handleSubmit(handleSubmit);
@@ -144,6 +150,23 @@ export function UrlInputForm({
   return (
     <>
       <div className="w-full max-w-2xl mx-auto">
+        {/* Model Provider Selection (for mobile/smaller screens, optional) */}
+        <div className="flex justify-end items-center mb-4">
+          <Select
+            value={modelProvider}
+            onValueChange={setModelProvider}
+            disabled={isLoading || disabled}
+          >
+            <SelectTrigger id="model-provider-select-form" className="w-40">
+              <SelectValue placeholder="Select model" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="openai">OpenAI GPT-4o</SelectItem>
+              <SelectItem value="gemini">Google Gemini</SelectItem>
+              <SelectItem value="deepseek">DeepSeek</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <Form {...form}>
           <form onSubmit={handleFormSubmit} className="space-y-4">
             <FormField
@@ -216,7 +239,7 @@ export function UrlInputForm({
             ) : isAuthenticated ? (
               <Button
                 type="submit"
-                disabled={isFormDisabled || !urlValue.trim()}
+                disabled={isFormDisabled || !urlValue?.trim()}
                 className="w-full"
                 size="lg"
               >

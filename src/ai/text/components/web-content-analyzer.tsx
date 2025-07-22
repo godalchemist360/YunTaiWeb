@@ -3,6 +3,7 @@
 import type {
   AnalysisState,
   AnalyzeContentResponse,
+  ModelProvider,
   WebContentAnalyzerProps,
 } from '@/ai/text/utils/web-content-analyzer';
 import { Button } from '@/components/ui/button';
@@ -192,150 +193,161 @@ export function WebContentAnalyzer({ className }: WebContentAnalyzerProps) {
   // Use reducer for better state management and performance
   const [state, dispatch] = useReducer(analysisReducer, initialState);
 
+  // Model provider state
+  const [modelProvider, setModelProvider] = useState<ModelProvider>('openai');
+
   // Enhanced error state
   const [analyzedError, setAnalyzedError] =
     useState<WebContentAnalyzerError | null>(null);
 
   // Handle analysis submission with enhanced error handling
-  const handleAnalyzeUrl = useCallback(async (url: string) => {
-    // Reset state and start analysis
-    dispatch({ type: 'START_ANALYSIS', payload: { url } });
-    setAnalyzedError(null);
+  const handleAnalyzeUrl = useCallback(
+    async (url: string, provider: ModelProvider) => {
+      // Reset state and start analysis
+      dispatch({ type: 'START_ANALYSIS', payload: { url } });
+      setAnalyzedError(null);
 
-    try {
-      // Use retry mechanism for the API call
-      const result = await withRetry(async () => {
-        const response = await fetch('/api/analyze-content', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ url }),
-        });
+      try {
+        // Use retry mechanism for the API call
+        const result = await withRetry(async () => {
+          const response = await fetch('/api/analyze-content', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url, modelProvider: provider }),
+          });
 
-        const data: AnalyzeContentResponse = await response.json();
+          const data: AnalyzeContentResponse = await response.json();
 
-        // Handle HTTP errors
-        if (!response.ok) {
-          // Create specific error based on status code
-          let errorType = ErrorType.UNKNOWN;
-          let severity = ErrorSeverity.MEDIUM;
-          let retryable = true;
+          // Handle HTTP errors
+          if (!response.ok) {
+            // Create specific error based on status code
+            let errorType = ErrorType.UNKNOWN;
+            let severity = ErrorSeverity.MEDIUM;
+            let retryable = true;
 
-          switch (response.status) {
-            case 400:
-              errorType = ErrorType.VALIDATION;
-              retryable = false;
-              break;
-            case 401:
-              errorType = ErrorType.AUTHENTICATION;
-              severity = ErrorSeverity.HIGH;
-              retryable = false;
-              break;
-            case 402:
-              errorType = ErrorType.CREDITS;
-              severity = ErrorSeverity.HIGH;
-              retryable = false;
-              break;
-            case 408:
-              errorType = ErrorType.TIMEOUT;
-              break;
-            case 422:
-              errorType = ErrorType.SCRAPING;
-              break;
-            case 429:
-              errorType = ErrorType.RATE_LIMIT;
-              break;
-            case 503:
-              errorType = ErrorType.SERVICE_UNAVAILABLE;
-              severity = ErrorSeverity.HIGH;
-              break;
-            default:
-              errorType = ErrorType.NETWORK;
+            switch (response.status) {
+              case 400:
+                errorType = ErrorType.VALIDATION;
+                retryable = false;
+                break;
+              case 401:
+                errorType = ErrorType.AUTHENTICATION;
+                severity = ErrorSeverity.HIGH;
+                retryable = false;
+                break;
+              case 402:
+                errorType = ErrorType.CREDITS;
+                severity = ErrorSeverity.HIGH;
+                retryable = false;
+                break;
+              case 408:
+                errorType = ErrorType.TIMEOUT;
+                break;
+              case 422:
+                errorType = ErrorType.SCRAPING;
+                break;
+              case 429:
+                errorType = ErrorType.RATE_LIMIT;
+                break;
+              case 503:
+                errorType = ErrorType.SERVICE_UNAVAILABLE;
+                severity = ErrorSeverity.HIGH;
+                break;
+              default:
+                errorType = ErrorType.NETWORK;
+            }
+
+            throw new WebContentAnalyzerError(
+              errorType,
+              data.error || `HTTP ${response.status}: ${response.statusText}`,
+              data.error || 'Failed to analyze website. Please try again.',
+              severity,
+              retryable
+            );
           }
 
-          throw new WebContentAnalyzerError(
-            errorType,
-            data.error || `HTTP ${response.status}: ${response.statusText}`,
-            data.error || 'Failed to analyze website. Please try again.',
-            severity,
-            retryable
-          );
-        }
+          if (!data.success || !data.data) {
+            throw new WebContentAnalyzerError(
+              ErrorType.ANALYSIS,
+              data.error || 'Analysis failed',
+              data.error ||
+                'Failed to analyze website content. Please try again.',
+              ErrorSeverity.MEDIUM,
+              true
+            );
+          }
 
-        if (!data.success || !data.data) {
-          throw new WebContentAnalyzerError(
-            ErrorType.ANALYSIS,
-            data.error || 'Analysis failed',
-            data.error ||
-              'Failed to analyze website content. Please try again.',
-            ErrorSeverity.MEDIUM,
-            true
-          );
-        }
-
-        return data;
-      });
-
-      // Update state to analyzing stage
-      dispatch({ type: 'SET_LOADING_STAGE', payload: { stage: 'analyzing' } });
-
-      // Simulate a brief delay for analyzing stage to show progress
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Set results and complete analysis
-      dispatch({
-        type: 'SET_RESULTS',
-        payload: {
-          results: result.data!.analysis,
-          screenshot: result.data!.screenshot,
-        },
-      });
-
-      // Show success toast - defer to avoid flushSync during render
-      setTimeout(() => {
-        toast.success('Website analysis completed successfully!', {
-          description: `Analyzed ${new URL(url).hostname}`,
+          return data;
         });
-      }, 0);
-    } catch (error) {
-      // Classify the error
-      const analyzedError =
-        error instanceof WebContentAnalyzerError ? error : classifyError(error);
 
-      // Log the error
-      logError(analyzedError, { url, component: 'WebContentAnalyzer' });
+        // Update state to analyzing stage
+        dispatch({
+          type: 'SET_LOADING_STAGE',
+          payload: { stage: 'analyzing' },
+        });
 
-      // Update state with error
-      dispatch({
-        type: 'SET_ERROR',
-        payload: { error: analyzedError.userMessage },
-      });
+        // Simulate a brief delay for analyzing stage to show progress
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Set the analyzed error for the ErrorDisplay component
-      setAnalyzedError(analyzedError);
+        // Set results and complete analysis
+        dispatch({
+          type: 'SET_RESULTS',
+          payload: {
+            results: result.data!.analysis,
+            screenshot: result.data!.screenshot,
+          },
+        });
 
-      // Show error toast with appropriate severity - defer to avoid flushSync during render
-      const toastOptions = {
-        description: analyzedError.userMessage,
-      };
+        // Show success toast - defer to avoid flushSync during render
+        setTimeout(() => {
+          toast.success('Website analysis completed successfully!', {
+            description: `Analyzed ${new URL(url).hostname}`,
+          });
+        }, 0);
+      } catch (error) {
+        // Classify the error
+        const analyzedError =
+          error instanceof WebContentAnalyzerError
+            ? error
+            : classifyError(error);
 
-      setTimeout(() => {
-        switch (analyzedError.severity) {
-          case ErrorSeverity.CRITICAL:
-          case ErrorSeverity.HIGH:
-            toast.error('Analysis Failed', toastOptions);
-            break;
-          case ErrorSeverity.MEDIUM:
-            toast.warning('Analysis Failed', toastOptions);
-            break;
-          case ErrorSeverity.LOW:
-            toast.info('Analysis Issue', toastOptions);
-            break;
-        }
-      }, 0);
-    }
-  }, []);
+        // Log the error
+        logError(analyzedError, { url, component: 'WebContentAnalyzer' });
+
+        // Update state with error
+        dispatch({
+          type: 'SET_ERROR',
+          payload: { error: analyzedError.userMessage },
+        });
+
+        // Set the analyzed error for the ErrorDisplay component
+        setAnalyzedError(analyzedError);
+
+        // Show error toast with appropriate severity - defer to avoid flushSync during render
+        const toastOptions = {
+          description: analyzedError.userMessage,
+        };
+
+        setTimeout(() => {
+          switch (analyzedError.severity) {
+            case ErrorSeverity.CRITICAL:
+            case ErrorSeverity.HIGH:
+              toast.error('Analysis Failed', toastOptions);
+              break;
+            case ErrorSeverity.MEDIUM:
+              toast.warning('Analysis Failed', toastOptions);
+              break;
+            case ErrorSeverity.LOW:
+              toast.info('Analysis Issue', toastOptions);
+              break;
+          }
+        }, 0);
+      }
+    },
+    []
+  );
 
   // Handle starting a new analysis
   const handleNewAnalysis = useCallback(() => {
@@ -374,6 +386,8 @@ export function WebContentAnalyzer({ className }: WebContentAnalyzerProps) {
               onSubmit={handleAnalyzeUrl}
               isLoading={state.isLoading}
               disabled={state.isLoading}
+              modelProvider={modelProvider}
+              setModelProvider={setModelProvider}
             />
           )}
 

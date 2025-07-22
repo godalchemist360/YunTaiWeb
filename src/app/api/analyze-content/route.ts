@@ -19,7 +19,9 @@ import {
 } from '@/ai/text/utils/web-content-analyzer-config';
 import { consumeCredits, hasEnoughCredits } from '@/credits/credits';
 import { getSession } from '@/lib/server';
-import { openai } from '@ai-sdk/openai';
+import { createDeepSeek } from '@ai-sdk/deepseek';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createOpenAI } from '@ai-sdk/openai';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { generateObject } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -195,15 +197,50 @@ async function scrapeWebpage(
   });
 }
 
-// Analyze content using OpenAI with retry logic
+// Analyze content using selected provider with retry logic
 async function analyzeContent(
   content: string,
-  url: string
+  url: string,
+  provider: string
 ): Promise<AnalysisResults> {
   return withRetry(async () => {
     try {
+      let model: any;
+      let temperature: number | undefined;
+      let maxTokens: number | undefined;
+      switch (provider) {
+        case 'openai':
+          model = createOpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+          }).chat(webContentAnalyzerConfig.openai.model);
+          temperature = webContentAnalyzerConfig.openai.temperature;
+          maxTokens = webContentAnalyzerConfig.openai.maxTokens;
+          break;
+        case 'gemini':
+          model = createGoogleGenerativeAI({
+            apiKey: process.env.GOOGLE_API_KEY,
+          }).chat(webContentAnalyzerConfig.gemini.model);
+          temperature = webContentAnalyzerConfig.gemini.temperature;
+          maxTokens = webContentAnalyzerConfig.gemini.maxTokens;
+          break;
+        case 'deepseek':
+          model = createDeepSeek({
+            apiKey: process.env.DEEPSEEK_API_KEY,
+          }).chat(webContentAnalyzerConfig.deepseek.model);
+          temperature = webContentAnalyzerConfig.deepseek.temperature;
+          maxTokens = webContentAnalyzerConfig.deepseek.maxTokens;
+          break;
+        default:
+          throw new WebContentAnalyzerError(
+            ErrorType.VALIDATION,
+            'Invalid model provider',
+            'Please select a valid model provider.',
+            ErrorSeverity.MEDIUM,
+            false
+          );
+      }
       const { object } = await generateObject({
-        model: openai(webContentAnalyzerConfig.openai.model),
+        model,
         schema: analysisSchema,
         prompt: `
           Analyze the following webpage content and extract structured information.
@@ -216,8 +253,8 @@ async function analyzeContent(
           - For features and use cases: provide empty arrays if none are found
           - Ensure the title and description are meaningful and based on the actual content
         `,
-        temperature: webContentAnalyzerConfig.openai.temperature,
-        maxTokens: webContentAnalyzerConfig.openai.maxTokens,
+        temperature,
+        maxTokens,
       });
 
       return {
@@ -229,11 +266,9 @@ async function analyzeContent(
       if (error instanceof WebContentAnalyzerError) {
         throw error;
       }
-
       // Check for specific OpenAI/AI errors
       if (error instanceof Error) {
         const message = error.message.toLowerCase();
-
         if (message.includes('rate limit') || message.includes('quota')) {
           throw new WebContentAnalyzerError(
             ErrorType.RATE_LIMIT,
@@ -244,7 +279,6 @@ async function analyzeContent(
             error
           );
         }
-
         if (message.includes('timeout') || message.includes('aborted')) {
           throw new WebContentAnalyzerError(
             ErrorType.TIMEOUT,
@@ -256,7 +290,6 @@ async function analyzeContent(
           );
         }
       }
-
       // Classify and throw the error
       throw classifyError(error);
     }
@@ -295,7 +328,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { url } = validationResult.data;
+    const { url, modelProvider } = validationResult.data;
+    console.log('modelProvider', modelProvider, 'url', url);
 
     // Additional URL validation
     const urlValidation = validateUrl(url);
@@ -402,8 +436,8 @@ export async function POST(req: NextRequest) {
         // Step 1: Scrape webpage
         const { content, screenshot } = await scrapeWebpage(url);
 
-        // Step 2: Analyze content with AI
-        const analysis = await analyzeContent(content, url);
+        // Step 2: Analyze content with AI (pass provider)
+        const analysis = await analyzeContent(content, url, modelProvider);
 
         // Step 3: Consume credits (only on successful analysis)
         await consumeCredits({

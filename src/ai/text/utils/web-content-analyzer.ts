@@ -15,6 +15,7 @@ export interface AnalysisResults {
 // API Request/Response Interfaces
 export interface AnalyzeContentRequest {
   url: string;
+  modelProvider: ModelProvider;
 }
 
 export interface AnalyzeContentResponse {
@@ -66,14 +67,19 @@ export interface AnalysisState {
 }
 
 // Component Props Interfaces
+export type ModelProvider = 'openai' | 'gemini' | 'deepseek';
+
 export interface WebContentAnalyzerProps {
   className?: string;
+  modelProvider?: ModelProvider;
 }
 
 export interface UrlInputFormProps {
-  onSubmit: (url: string) => void;
+  onSubmit: (url: string, modelProvider: ModelProvider) => void;
   isLoading: boolean;
   disabled?: boolean;
+  modelProvider: ModelProvider;
+  setModelProvider: (provider: ModelProvider) => void;
 }
 
 export interface AnalysisResultsProps {
@@ -114,6 +120,7 @@ export const analysisResultsSchema = z.object({
 // API Request Schema
 export const analyzeContentRequestSchema = z.object({
   url: urlSchema,
+  modelProvider: z.enum(['openai', 'gemini', 'deepseek']),
 });
 
 // API Response Schema
