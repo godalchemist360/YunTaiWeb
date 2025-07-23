@@ -54,11 +54,6 @@ export default function CreditsBalanceCard() {
   } | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
 
-  // Don't render if credits are disabled
-  if (!websiteConfig.credits.enableCredits) {
-    return null;
-  }
-
   // Fetch credit statistics
   const fetchCreditStats = useCallback(async () => {
     console.log('fetchCreditStats, fetch start');
@@ -113,6 +108,11 @@ export default function CreditsBalanceCard() {
     // Refresh credit stats
     fetchCreditStats();
   }, [fetchCredits, fetchCreditStats]);
+
+  // Don't render if credits are disabled
+  if (!websiteConfig.credits.enableCredits) {
+    return null;
+  }
 
   // Render loading skeleton
   const isPageLoading = isLoadingBalance || isLoadingStats;
