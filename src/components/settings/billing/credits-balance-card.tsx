@@ -26,6 +26,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function CreditsBalanceCard() {
+  // Don't render if credits are disabled - move this check before any hooks
+  if (!websiteConfig.credits.enableCredits) {
+    return null;
+  }
+
   const t = useTranslations('Dashboard.settings.credits.balance');
   const searchParams = useSearchParams();
   const localeRouter = useLocaleRouter();
@@ -108,11 +113,6 @@ export default function CreditsBalanceCard() {
     // Refresh credit stats
     fetchCreditStats();
   }, [fetchCredits, fetchCreditStats]);
-
-  // Don't render if credits are disabled
-  if (!websiteConfig.credits.enableCredits) {
-    return null;
-  }
 
   // Render loading skeleton
   const isPageLoading = isLoadingBalance || isLoadingStats;
