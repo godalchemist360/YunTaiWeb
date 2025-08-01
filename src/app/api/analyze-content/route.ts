@@ -254,7 +254,7 @@ async function analyzeContent(
           - Ensure the title and description are meaningful and based on the actual content
         `,
         temperature,
-        maxTokens,
+        maxOutputTokens: maxTokens,
       });
 
       return {
