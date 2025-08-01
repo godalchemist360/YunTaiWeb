@@ -218,7 +218,7 @@ async function analyzeContent(
           break;
         case 'gemini':
           model = createGoogleGenerativeAI({
-            apiKey: process.env.GOOGLE_API_KEY,
+            apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
           }).chat(webContentAnalyzerConfig.gemini.model);
           temperature = webContentAnalyzerConfig.gemini.temperature;
           maxTokens = webContentAnalyzerConfig.gemini.maxTokens;
