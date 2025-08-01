@@ -21,7 +21,7 @@ const checkoutSchema = z.object({
   userId: z.string().min(1, { message: 'User ID is required' }),
   planId: z.string().min(1, { message: 'Plan ID is required' }),
   priceId: z.string().min(1, { message: 'Price ID is required' }),
-  metadata: z.record(z.string()).optional(),
+  metadata: z.record(z.string(), z.string()).optional(),
 });
 
 /**

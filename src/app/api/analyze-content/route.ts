@@ -336,7 +336,7 @@ export async function POST(req: NextRequest) {
     if (!urlValidation.success) {
       const urlError = new WebContentAnalyzerError(
         ErrorType.VALIDATION,
-        urlValidation.error.errors[0]?.message || 'Invalid URL',
+        urlValidation.error.issues[0]?.message || 'Invalid URL',
         'Please enter a valid URL starting with http:// or https://',
         ErrorSeverity.MEDIUM,
         false
