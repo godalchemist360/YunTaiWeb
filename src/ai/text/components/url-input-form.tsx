@@ -40,7 +40,7 @@ import { useDebounce } from '../utils/performance';
 
 // Form schema for URL input
 const urlFormSchema = z.object({
-  url: z.string().url().optional(), // Allow empty string for initial state
+  url: z.url().optional(), // Allow empty string for initial state
 });
 
 type UrlFormData = z.infer<typeof urlFormSchema>;
