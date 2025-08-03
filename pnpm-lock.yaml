@@ -59,6 +59,9 @@ importers:
       '@openpanel/nextjs':
         specifier: ^1.0.7
         version: 1.0.7(next@15.2.1(@babel/core@7.24.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@openrouter/ai-sdk-provider':
+        specifier: ^1.0.0-beta.6
+        version: 1.0.0-beta.6(ai@5.0.0(zod@4.0.14))(zod@4.0.14)
       '@orama/orama':
         specifier: ^3.1.4
         version: 3.1.4
@@ -1729,6 +1732,13 @@ packages:
 
   '@openpanel/web@1.0.1':
     resolution: {integrity: sha512-cVZ7Kr9SicczJ/RDIfEtZs8+1iGDzwkabVA/j3NqSl8VSucsC8m1+LVbjmCDzCJNnK4yVn6tEcc9PJRi2rtllw==}
+
+  '@openrouter/ai-sdk-provider@1.0.0-beta.6':
+    resolution: {integrity: sha512-1cj8yUek4ib10MqZ+9fw1p1a3SR0Zhx3HH1J3+WQIXXuH/rUhiAkwovgPi1ADuC1QECPSPiwfhK2GecnDm8hGg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      ai: ^5.0.0-beta.12
+      zod: ^3.24.1 || ^v4
 
   '@opentelemetry/api-logs@0.57.2':
     resolution: {integrity: sha512-uIX52NnTM0iBh84MShlpouI7UKqkZ7MrUszTmaypHBu4r7NofznSnQRfJ+uUeDtQDj6w8eFGg5KBLDAwAPz1+A==}
@@ -7526,6 +7536,11 @@ snapshots:
   '@openpanel/web@1.0.1':
     dependencies:
       '@openpanel/sdk': 1.0.0
+
+  '@openrouter/ai-sdk-provider@1.0.0-beta.6(ai@5.0.0(zod@4.0.14))(zod@4.0.14)':
+    dependencies:
+      ai: 5.0.0(zod@4.0.14)
+      zod: 4.0.14
 
   '@opentelemetry/api-logs@0.57.2':
     dependencies:

@@ -23,6 +23,7 @@ import { createDeepSeek } from '@ai-sdk/deepseek';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import FirecrawlApp from '@mendable/firecrawl-js';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { generateObject } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -229,6 +230,13 @@ async function analyzeContent(
           }).chat(webContentAnalyzerConfig.deepseek.model);
           temperature = webContentAnalyzerConfig.deepseek.temperature;
           maxTokens = webContentAnalyzerConfig.deepseek.maxTokens;
+          break;
+        case 'openrouter':
+          model = createOpenRouter({
+            apiKey: process.env.OPENROUTER_API_KEY,
+          }).chat(webContentAnalyzerConfig.openrouter.model);
+          temperature = webContentAnalyzerConfig.openrouter.temperature;
+          maxTokens = webContentAnalyzerConfig.openrouter.maxTokens;
           break;
         default:
           throw new WebContentAnalyzerError(

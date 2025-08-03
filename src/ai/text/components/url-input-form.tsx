@@ -164,6 +164,7 @@ export function UrlInputForm({
               <SelectItem value="openai">OpenAI GPT-4o</SelectItem>
               <SelectItem value="gemini">Google Gemini</SelectItem>
               <SelectItem value="deepseek">DeepSeek</SelectItem>
+              <SelectItem value="openrouter">OpenRouter</SelectItem>
             </SelectContent>
           </Select>
         </div>
