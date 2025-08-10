@@ -559,7 +559,7 @@ export async function addLifetimeMonthlyCredits(userId: string) {
  * This function is designed to be called by a cron job
  */
 export async function distributeCreditsToAllUsers() {
-  console.log('distributing credits to all users start');
+  console.log('distribute credits start');
 
   const db = await getDb();
 
@@ -572,7 +572,7 @@ export async function distributeCreditsToAllUsers() {
     })
     .from(user)
     .where(eq(user.banned, false)); // Only active users
-  console.log('distributing credits to all users, users count:', users.length);
+  console.log('distribute credits, users count:', users.length);
 
   let processedCount = 0;
   let errorCount = 0;
@@ -609,7 +609,7 @@ export async function distributeCreditsToAllUsers() {
       processedCount++;
     } catch (error) {
       console.error(
-        `distributing credits to all users error, user: ${userRecord.userId}, error:`,
+        `distribute credits error, user: ${userRecord.userId}, error:`,
         error
       );
       errorCount++;
@@ -617,7 +617,7 @@ export async function distributeCreditsToAllUsers() {
   }
 
   console.log(
-    `distributing credits to all users end, processed: ${processedCount}, errors: ${errorCount}`
+    `distribute credits end, processed: ${processedCount}, errors: ${errorCount}`
   );
   return { processedCount, errorCount };
 }
