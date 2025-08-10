@@ -569,35 +569,36 @@ export async function distributeCreditsToAllUsers() {
 
   // Get all users with their current active payments/subscriptions in a single query
   // This uses a LEFT JOIN to get users and their latest active payment in one query
+  const latestPaymentQuery = db
+    .select({
+      userId: payment.userId,
+      priceId: payment.priceId,
+      status: payment.status,
+      createdAt: payment.createdAt,
+      rowNumber:
+        sql<number>`ROW_NUMBER() OVER (PARTITION BY ${payment.userId} ORDER BY ${payment.createdAt} DESC)`.as(
+          'row_number'
+        ),
+    })
+    .from(payment)
+    .where(or(eq(payment.status, 'active'), eq(payment.status, 'trialing')))
+    .as('latest_payment');
+
   const usersWithPayments = await db
     .select({
       userId: user.id,
       email: user.email,
       name: user.name,
-      priceId: payment.priceId,
-      paymentStatus: payment.status,
-      paymentCreatedAt: payment.createdAt,
+      priceId: latestPaymentQuery.priceId,
+      paymentStatus: latestPaymentQuery.status,
+      paymentCreatedAt: latestPaymentQuery.createdAt,
     })
     .from(user)
     .leftJoin(
-      // Subquery to get the latest active payment for each user
-      db
-        .select({
-          userId: payment.userId,
-          priceId: payment.priceId,
-          status: payment.status,
-          createdAt: payment.createdAt,
-          rowNumber:
-            sql<number>`ROW_NUMBER() OVER (PARTITION BY ${payment.userId} ORDER BY ${payment.createdAt} DESC)`.as(
-              'row_number'
-            ),
-        })
-        .from(payment)
-        .where(or(eq(payment.status, 'active'), eq(payment.status, 'trialing')))
-        .as('latest_payment'),
+      latestPaymentQuery,
       and(
-        eq(user.id, sql`latest_payment.user_id`),
-        eq(sql`latest_payment.row_number`, 1)
+        eq(user.id, latestPaymentQuery.userId),
+        eq(latestPaymentQuery.rowNumber, 1)
       )
     )
     .where(or(isNull(user.banned), eq(user.banned, false)));
