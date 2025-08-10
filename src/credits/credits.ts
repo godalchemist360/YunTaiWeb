@@ -571,7 +571,7 @@ export async function distributeCreditsToAllUsers() {
       name: user.name,
     })
     .from(user)
-    .where(eq(user.banned, false)); // Only active users
+    .where(not(eq(user.banned, true))); // Only active users, banned is null by default
   console.log('distribute credits, users count:', users.length);
 
   let processedCount = 0;
