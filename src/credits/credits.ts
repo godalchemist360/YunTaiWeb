@@ -447,6 +447,9 @@ export async function addMonthlyFreeCredits(userId: string) {
       expireDays,
     });
 
+    // Update last refresh time for free monthly credits
+    await updateUserLastRefreshAt(userId, now);
+
     console.log(
       `addMonthlyFreeCredits, ${credits} credits for user ${userId}, date: ${now.getFullYear()}-${now.getMonth() + 1}`
     );
@@ -571,7 +574,7 @@ export async function distributeCreditsToAllUsers() {
       name: user.name,
     })
     .from(user)
-    .where(not(eq(user.banned, true))); // Only active users, banned is null by default
+    .where(or(isNull(user.banned), eq(user.banned, false)));
   console.log('distribute credits, users count:', users.length);
 
   let processedCount = 0;
