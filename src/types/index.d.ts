@@ -146,6 +146,7 @@ export interface NewsletterConfig {
  * Storage configuration
  */
 export interface StorageConfig {
+  enable: boolean;                   // Whether to enable the storage
   provider: 's3';                    // The storage provider, only s3 is supported for now
 }
 

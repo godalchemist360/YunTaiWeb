@@ -86,6 +86,7 @@ export const websiteConfig: WebsiteConfig = {
     autoSubscribeAfterSignUp: true,
   },
   storage: {
+    enable: true,
     provider: 's3',
   },
   payment: {
