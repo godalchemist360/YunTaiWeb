@@ -188,6 +188,7 @@ async function onCreateUser(user: User) {
 
   // Add register gift credits to the user if enabled in website config
   if (
+    websiteConfig.credits.enableCredits &&
     websiteConfig.credits.registerGiftCredits.enable &&
     websiteConfig.credits.registerGiftCredits.credits > 0
   ) {
@@ -203,21 +204,26 @@ async function onCreateUser(user: User) {
   }
 
   // Add free monthly credits to the user if enabled in website config
-  const pricePlans = await getAllPricePlans();
-  const freePlan = pricePlans.find((plan) => plan.isFree);
   if (
-    freePlan?.credits?.enable &&
-    freePlan?.credits?.amount &&
-    freePlan?.credits?.amount > 0
+    websiteConfig.credits.enableCredits &&
+    websiteConfig.credits.enableForFreePlan
   ) {
-    try {
-      await addMonthlyFreeCredits(user.id);
-      const credits = freePlan.credits.amount;
-      console.log(
-        `added free monthly credits for user ${user.id}, credits: ${credits}`
-      );
-    } catch (error) {
-      console.error('Free monthly credits error:', error);
+    const pricePlans = await getAllPricePlans();
+    const freePlan = pricePlans.find((plan) => plan.isFree);
+    if (
+      freePlan?.credits?.enable &&
+      freePlan?.credits?.amount &&
+      freePlan?.credits?.amount > 0
+    ) {
+      try {
+        await addMonthlyFreeCredits(user.id);
+        const credits = freePlan.credits.amount;
+        console.log(
+          `added free monthly credits for user ${user.id}, credits: ${credits}`
+        );
+      } catch (error) {
+        console.error('Free monthly credits error:', error);
+      }
     }
   }
 }
