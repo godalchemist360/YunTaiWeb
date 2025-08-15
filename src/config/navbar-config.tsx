@@ -69,11 +69,15 @@ export function getNavbarLinks(): NestedMenuItem[] {
           },
         ]
       : []),
-    {
-      title: t('docs.title'),
-      href: Routes.Docs,
-      external: false,
-    },
+    ...(websiteConfig.docs.enable
+      ? [
+          {
+            title: t('docs.title'),
+            href: Routes.Docs,
+            external: false,
+          },
+        ]
+      : []),
     {
       title: t('ai.title'),
       items: [

@@ -13,6 +13,7 @@ export type WebsiteConfig = {
   auth: AuthConfig;
   i18n: I18nConfig;
   blog: BlogConfig;
+  docs: DocsConfig;
   mail: MailConfig;
   newsletter: NewsletterConfig;
   storage: StorageConfig;
@@ -114,6 +115,13 @@ export interface BlogConfig {
   enable: boolean;                   // Whether to enable the blog
   paginationSize: number;            // Number of posts per page
   relatedPostsSize: number;          // Number of related posts to show
+}
+
+/**
+ * Docs configuration
+ */
+export interface DocsConfig {
+  enable: boolean;                   // Whether to enable the docs
 }
 
 /**

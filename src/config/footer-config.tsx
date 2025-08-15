@@ -51,11 +51,15 @@ export function getFooterLinks(): NestedMenuItem[] {
               },
             ]
           : []),
-        {
-          title: t('resources.items.docs'),
-          href: Routes.Docs,
-          external: false,
-        },
+        ...(websiteConfig.docs.enable
+          ? [
+              {
+                title: t('resources.items.docs'),
+                href: Routes.Docs,
+                external: false,
+              },
+            ]
+          : []),
         {
           title: t('resources.items.changelog'),
           href: Routes.Changelog,

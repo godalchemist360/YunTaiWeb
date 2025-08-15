@@ -14,7 +14,6 @@ type Href = Parameters<typeof getLocalePathname>[0]['href'];
 const staticRoutes = [
   '/',
   '/pricing',
-  '/docs',
   '/about',
   '/contact',
   '/waitlist',
@@ -24,6 +23,8 @@ const staticRoutes = [
   '/cookie',
   '/auth/login',
   '/auth/register',
+  ...(websiteConfig.blog.enable ? ['/blog'] : []),
+  ...(websiteConfig.docs.enable ? ['/docs'] : []),
 ];
 
 /**
@@ -133,18 +134,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   }
 
-  // add docs
-  const docsParams = source.generateParams();
-  sitemapList.push(
-    ...docsParams.flatMap((param) =>
-      routing.locales.map((locale) => ({
-        url: getUrl(`/docs/${param.slug.join('/')}`, locale),
-        lastModified: new Date(),
-        priority: 0.8,
-        changeFrequency: 'weekly' as const,
-      }))
-    )
-  );
+  // add docs related routes if enabled
+  if (websiteConfig.docs.enable) {
+    const docsParams = source.generateParams();
+    sitemapList.push(
+      ...docsParams.flatMap((param) =>
+        routing.locales.map((locale) => ({
+          url: getUrl(`/docs/${param.slug.join('/')}`, locale),
+          lastModified: new Date(),
+          priority: 0.8,
+          changeFrequency: 'weekly' as const,
+        }))
+      )
+    );
+  }
 
   return sitemapList;
 }
