@@ -81,6 +81,7 @@ export const websiteConfig: WebsiteConfig = {
     supportEmail: 'MkSaaS <support@mksaas.com>',
   },
   newsletter: {
+    enable: true,
     provider: 'resend',
     autoSubscribeAfterSignUp: true,
   },
