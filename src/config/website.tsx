@@ -34,12 +34,12 @@ export const websiteConfig: WebsiteConfig = {
   },
   features: {
     enableDiscordWidget: false,
-    enableCrispChat: process.env.NEXT_PUBLIC_DEMO_WEBSITE === 'true',
     enableUpgradeCard: true,
     enableUpdateAvatar: true,
     enableAffonsoAffiliate: false,
     enablePromotekitAffiliate: false,
     enableDatafastRevenueTrack: false,
+    enableCrispChat: process.env.NEXT_PUBLIC_DEMO_WEBSITE === 'true',
     enableTurnstileCaptcha: process.env.NEXT_PUBLIC_DEMO_WEBSITE === 'true',
   },
   routes: {
@@ -68,6 +68,7 @@ export const websiteConfig: WebsiteConfig = {
     },
   },
   blog: {
+    enable: false,
     paginationSize: 6,
     relatedPostsSize: 3,
   },
