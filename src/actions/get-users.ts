@@ -3,6 +3,7 @@
 import { getDb } from '@/db';
 import { user } from '@/db/schema';
 import { isDemoWebsite } from '@/lib/demo';
+import { getSession } from '@/lib/server';
 import { asc, desc, ilike, or, sql } from 'drizzle-orm';
 import { createSafeActionClient } from 'next-safe-action';
 import { z } from 'zod';
@@ -42,6 +43,14 @@ const sortFieldMap = {
 export const getUsersAction = actionClient
   .schema(getUsersSchema)
   .action(async ({ parsedInput }) => {
+    const session = await getSession();
+    if (!session || session.user.role !== 'admin') {
+      return {
+        success: false,
+        error: 'Unauthorized',
+      };
+    }
+
     try {
       const { pageIndex, pageSize, search, sorting } = parsedInput;
 
