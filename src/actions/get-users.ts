@@ -3,13 +3,9 @@
 import { getDb } from '@/db';
 import { user } from '@/db/schema';
 import { isDemoWebsite } from '@/lib/demo';
-import { getSession } from '@/lib/server';
+import { adminActionClient } from '@/lib/safe-action';
 import { asc, desc, ilike, or, sql } from 'drizzle-orm';
-import { createSafeActionClient } from 'next-safe-action';
 import { z } from 'zod';
-
-// Create a safe action client
-const actionClient = createSafeActionClient();
 
 // Define the schema for getUsers parameters
 const getUsersSchema = z.object({
@@ -40,17 +36,9 @@ const sortFieldMap = {
 } as const;
 
 // Create a safe action for getting users
-export const getUsersAction = actionClient
+export const getUsersAction = adminActionClient
   .schema(getUsersSchema)
   .action(async ({ parsedInput }) => {
-    const session = await getSession();
-    if (!session || session.user.role !== 'admin') {
-      return {
-        success: false,
-        error: 'Unauthorized',
-      };
-    }
-
     try {
       const { pageIndex, pageSize, search, sorting } = parsedInput;
 
