@@ -27,7 +27,6 @@ export const actionClient = createSafeActionClient({
 // -----------------------------------------------------------------------------
 export const userActionClient = actionClient.use(async ({ next }) => {
   const session = await getSession();
-
   if (!session?.user) {
     return {
       success: false,
@@ -45,6 +44,7 @@ export const adminActionClient = userActionClient.use(async ({ next, ctx }) => {
   const user = (ctx as { user: User }).user;
   const isDemo = isDemoWebsite();
   const isAdmin = user.role === 'admin';
+
   // If this is a demo website and user is not an admin, allow the request
   if (!isAdmin && !isDemo) {
     return {

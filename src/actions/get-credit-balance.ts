@@ -9,8 +9,8 @@ import { userActionClient } from '@/lib/safe-action';
  */
 export const getCreditBalanceAction = userActionClient.action(
   async ({ ctx }) => {
-    const user = (ctx as { user: User }).user;
-    const credits = await getUserCredits(user.id);
+    const currentUser = (ctx as { user: User }).user;
+    const credits = await getUserCredits(currentUser.id);
     return { success: true, credits };
   }
 );
