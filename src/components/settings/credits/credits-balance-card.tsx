@@ -227,12 +227,12 @@ export default function CreditsBalanceCard() {
           )}
         </div>
       </CardContent>
-      <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
-        <Button variant="default" className="cursor-pointer" asChild>
+      <CardFooter className="">
+        {/* <Button variant="default" className="cursor-pointer" asChild>
           <LocaleLink href={Routes.SettingsCredits}>
             {t('viewTransactions')}
           </LocaleLink>
-        </Button>
+        </Button> */}
       </CardFooter>
     </Card>
   );

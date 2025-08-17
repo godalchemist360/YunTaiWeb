@@ -22,7 +22,7 @@ export default function CreditsPageClient() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="balance" className="mt-2 flex flex-col gap-4">
+        <TabsContent value="balance" className="mt-4 flex flex-col gap-8">
           {/* Credits Balance Card */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <CreditsBalanceCard />
@@ -34,7 +34,7 @@ export default function CreditsPageClient() {
           </div>
         </TabsContent>
 
-        <TabsContent value="transactions" className="mt-2">
+        <TabsContent value="transactions" className="mt-4">
           {/* Credit Transactions */}
           <CreditTransactions />
         </TabsContent>
