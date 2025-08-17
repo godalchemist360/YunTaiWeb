@@ -104,7 +104,7 @@ export default function CreditsBalanceCard() {
       // Clean up URL parameters
       const url = new URL(window.location.href);
       url.searchParams.delete('credits_session_id');
-      localeRouter.replace(Routes.SettingsBilling + url.search);
+      localeRouter.replace(Routes.SettingsCredits + url.search);
     }
   }, [searchParams, localeRouter, fetchCredits, fetchCreditStats, t]);
 
