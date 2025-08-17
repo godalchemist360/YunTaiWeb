@@ -13,13 +13,23 @@ import { CREDIT_TRANSACTION_TYPE } from './types';
  * @returns User's current credit balance
  */
 export async function getUserCredits(userId: string): Promise<number> {
-  const db = await getDb();
-  const record = await db
-    .select()
-    .from(userCredit)
-    .where(eq(userCredit.userId, userId))
-    .limit(1);
-  return record[0]?.currentCredits || 0;
+  try {
+    const db = await getDb();
+
+    // Optimized query: only select the needed field
+    // This can benefit from covering index if we add one later
+    const record = await db
+      .select({ currentCredits: userCredit.currentCredits })
+      .from(userCredit)
+      .where(eq(userCredit.userId, userId))
+      .limit(1);
+
+    return record[0]?.currentCredits || 0;
+  } catch (error) {
+    console.error('getUserCredits, error:', error);
+    // Return 0 on error to prevent UI from breaking
+    return 0;
+  }
 }
 
 /**
@@ -28,11 +38,15 @@ export async function getUserCredits(userId: string): Promise<number> {
  * @param credits - New credit balance
  */
 export async function updateUserCredits(userId: string, credits: number) {
-  const db = await getDb();
-  await db
-    .update(userCredit)
-    .set({ currentCredits: credits, updatedAt: new Date() })
-    .where(eq(userCredit.userId, userId));
+  try {
+    const db = await getDb();
+    await db
+      .update(userCredit)
+      .set({ currentCredits: credits, updatedAt: new Date() })
+      .where(eq(userCredit.userId, userId));
+  } catch (error) {
+    console.error('updateUserCredits, error:', error);
+  }
 }
 
 /**
@@ -41,11 +55,15 @@ export async function updateUserCredits(userId: string, credits: number) {
  * @param date - Last refresh time
  */
 export async function updateUserLastRefreshAt(userId: string, date: Date) {
-  const db = await getDb();
-  await db
-    .update(userCredit)
-    .set({ lastRefreshAt: date, updatedAt: new Date() })
-    .where(eq(userCredit.userId, userId));
+  try {
+    const db = await getDb();
+    await db
+      .update(userCredit)
+      .set({ lastRefreshAt: date, updatedAt: new Date() })
+      .where(eq(userCredit.userId, userId));
+  } catch (error) {
+    console.error('updateUserLastRefreshAt, error:', error);
+  }
 }
 
 /**
