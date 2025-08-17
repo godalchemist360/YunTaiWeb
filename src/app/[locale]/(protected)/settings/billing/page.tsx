@@ -1,5 +1,8 @@
 import BillingCard from '@/components/settings/billing/billing-card';
 
+/**
+ * Billing page, show billing information
+ */
 export default function BillingPage() {
   return (
     <div className="flex flex-col gap-8">

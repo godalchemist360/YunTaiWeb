@@ -25,6 +25,9 @@ import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+/**
+ * Credits balance card, show credit balance
+ */
 export default function CreditsBalanceCard() {
   // Don't render if credits are disabled - move this check before any hooks
   if (!websiteConfig.credits.enableCredits) {
