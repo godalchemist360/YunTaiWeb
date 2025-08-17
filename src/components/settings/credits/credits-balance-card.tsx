@@ -15,7 +15,7 @@ import { websiteConfig } from '@/config/website';
 import { useCredits } from '@/hooks/use-credits';
 import { useMounted } from '@/hooks/use-mounted';
 import { usePayment } from '@/hooks/use-payment';
-import { LocaleLink, useLocaleRouter } from '@/i18n/navigation';
+import { useLocaleRouter } from '@/i18n/navigation';
 import { formatDate } from '@/lib/formatter';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes';
@@ -135,9 +135,7 @@ export default function CreditsBalanceCard() {
             <Skeleton className="h-6 w-3/5" />
           </div>
         </CardContent>
-        <CardFooter className="mt-2 px-6 py-4 flex justify-end items-center bg-background rounded-none">
-          <Skeleton className="h-10 w-1/2" />
-        </CardFooter>
+        <CardFooter className="">{/* show nothing */}</CardFooter>
       </Card>
     );
   }
