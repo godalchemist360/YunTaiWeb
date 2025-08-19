@@ -100,7 +100,7 @@ export default async function AboutPage() {
         </div>
 
         {/* image section */}
-        <BlurFadeDemo />
+        {/* <BlurFadeDemo /> */}
       </div>
     </Container>
   );
