@@ -21,7 +21,7 @@ import { DEFAULT_LOGIN_REDIRECT, Routes } from '@/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
+import { redirect, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import * as z from 'zod';
@@ -35,6 +35,10 @@ interface RegisterFormProps {
 export const RegisterForm = ({
   callbackUrl: propCallbackUrl,
 }: RegisterFormProps) => {
+  // If registration is disabled, redirect to login (client safety)
+  if (!websiteConfig.auth.enableRegistration) {
+    redirect('/auth/login');
+  }
   const t = useTranslations('AuthPage.register');
   const searchParams = useSearchParams();
   const paramCallbackUrl = searchParams.get('callbackUrl');

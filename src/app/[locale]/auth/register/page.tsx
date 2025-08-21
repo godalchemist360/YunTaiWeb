@@ -1,5 +1,7 @@
 import { RegisterForm } from '@/components/auth/register-form';
 import { LocaleLink } from '@/i18n/navigation';
+import { redirect } from 'next/navigation';
+import { websiteConfig } from '@/config/website';
 import { constructMetadata } from '@/lib/metadata';
 import { getUrlWithLocale } from '@/lib/urls/urls';
 import { Routes } from '@/routes';
@@ -25,6 +27,11 @@ export async function generateMetadata({
 
 export default async function RegisterPage() {
   const t = await getTranslations('AuthPage.common');
+
+  // If registration is disabled, redirect to login
+  if (!websiteConfig.auth.enableRegistration) {
+    redirect('/auth/login');
+  }
 
   return (
     <div className="flex flex-col gap-4">

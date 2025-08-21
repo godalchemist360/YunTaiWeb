@@ -151,8 +151,8 @@ export const LoginForm = ({
   return (
     <AuthCard
       headerLabel={t('welcomeBack')}
-      bottomButtonLabel={t('signUpHint')}
-      bottomButtonHref={`${Routes.Register}`}
+      bottomButtonLabel={websiteConfig.auth.enableRegistration ? t('signUpHint') : ''}
+      bottomButtonHref={websiteConfig.auth.enableRegistration ? `${Routes.Register}` : `${Routes.ForgotPassword}`}
       className={cn('', className)}
     >
       {credentialLoginEnabled && (

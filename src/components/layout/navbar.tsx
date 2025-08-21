@@ -22,6 +22,7 @@ import { LocaleLink, useLocalePathname } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes';
+import { websiteConfig } from '@/config/website';
 import { ArrowUpRightIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -236,17 +237,19 @@ export function Navbar({ scroll }: NavBarProps) {
                   </Button>
                 </LoginWrapper>
 
-                <LocaleLink
-                  href={Routes.Register}
-                  className={cn(
-                    buttonVariants({
-                      variant: 'default',
-                      size: 'sm',
-                    })
-                  )}
-                >
-                  {t('Common.signUp')}
-                </LocaleLink>
+                {websiteConfig.auth.enableRegistration ? (
+                  <LocaleLink
+                    href={Routes.Register}
+                    className={cn(
+                      buttonVariants({
+                        variant: 'default',
+                        size: 'sm',
+                      })
+                    )}
+                  >
+                    {t('Common.signUp')}
+                  </LocaleLink>
+                ) : null}
               </div>
             )}
 

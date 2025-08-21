@@ -37,7 +37,9 @@ export const AuthCard = ({
       </CardHeader>
       <CardContent>{children}</CardContent>
       <CardFooter>
-        <BottomLink label={bottomButtonLabel} href={bottomButtonHref} />
+        {bottomButtonLabel ? (
+          <BottomLink label={bottomButtonLabel} href={bottomButtonHref} />
+        ) : null}
       </CardFooter>
     </Card>
   );

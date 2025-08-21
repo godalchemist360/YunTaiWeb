@@ -14,6 +14,7 @@ import { LocaleLink, useLocalePathname } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes';
+import { websiteConfig } from '@/config/website';
 import { Portal } from '@radix-ui/react-portal';
 import {
   ArrowUpRightIcon,
@@ -171,19 +172,21 @@ function MainMobileMenu({ userLoggedIn, onLinkClicked }: MainMobileMenuProps) {
             >
               {t('Common.login')}
             </LocaleLink>
-            <LocaleLink
-              href={Routes.Register}
-              className={cn(
-                buttonVariants({
-                  variant: 'default',
-                  size: 'lg',
-                }),
-                'w-full'
-              )}
-              onClick={onLinkClicked}
-            >
-              {t('Common.signUp')}
-            </LocaleLink>
+            {websiteConfig.auth.enableRegistration ? (
+              <LocaleLink
+                href={Routes.Register}
+                className={cn(
+                  buttonVariants({
+                    variant: 'default',
+                    size: 'lg',
+                  }),
+                  'w-full'
+                )}
+                onClick={onLinkClicked}
+              >
+                {t('Common.signUp')}
+              </LocaleLink>
+            ) : null}
           </div>
         )}
 

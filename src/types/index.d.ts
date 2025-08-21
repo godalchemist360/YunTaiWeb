@@ -98,6 +98,7 @@ export interface AuthConfig {
   enableGoogleLogin?: boolean;       // Whether to enable google login
   enableGithubLogin?: boolean;       // Whether to enable github login
   enableCredentialLogin?: boolean;   // Whether to enable email/password login
+  enableRegistration?: boolean;      // Whether to enable self-registration
 }
 
 /**
@@ -105,6 +106,7 @@ export interface AuthConfig {
  */
 export interface I18nConfig {
   defaultLocale: string;              // The default locale of the website
+  enableSwitch?: boolean;             // Whether to show the locale switcher
   locales: Record<string, { flag?: string; name: string }>; // The locales of the website
 }
 

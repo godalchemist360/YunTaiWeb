@@ -50,12 +50,14 @@ export const websiteConfig: WebsiteConfig = {
     enableSpeedInsights: false,
   },
   auth: {
-    enableGoogleLogin: true,
-    enableGithubLogin: true,
+    enableGoogleLogin: false,
+    enableGithubLogin: false,
     enableCredentialLogin: true,
+    enableRegistration: false,
   },
   i18n: {
-    defaultLocale: 'en',
+    enableSwitch: false,
+    defaultLocale: 'zh-TW',
     locales: {
       en: {
         flag: '🇺🇸',
@@ -64,6 +66,10 @@ export const websiteConfig: WebsiteConfig = {
       zh: {
         flag: '🇨🇳',
         name: '中文',
+      },
+      'zh-TW': {
+        flag: '🇹🇼',
+        name: '繁體中文',
       },
     },
   },
