@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { websiteConfig } from '@/config/website';
-import { LocaleLink } from '@/i18n/navigation';
+import { LocaleLink, useLocaleRouter } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
 import { getUrlWithLocaleInCallbackUrl } from '@/lib/urls/urls';
 import { cn } from '@/lib/utils';
@@ -40,6 +40,7 @@ export const LoginForm = ({
   callbackUrl: propCallbackUrl,
 }: LoginFormProps) => {
   const t = useTranslations('AuthPage.login');
+  const router = useLocaleRouter();
   const searchParams = useSearchParams();
   const urlError = searchParams.get('error');
   const paramCallbackUrl = searchParams.get('callbackUrl');
@@ -69,8 +70,8 @@ export const LoginForm = ({
     : z.string().optional();
 
   const LoginSchema = z.object({
-    email: z.email({
-      message: t('accountRequired'),
+    account: z.string().min(1, {
+      message: t('accountRequired')
     }),
     password: z.string().min(1, {
       message: t('passwordRequired'),
@@ -81,7 +82,7 @@ export const LoginForm = ({
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
-      email: '',
+      account: '',
       password: '',
       captchaToken: '',
     },
@@ -92,6 +93,40 @@ export const LoginForm = ({
     name: 'captchaToken',
   });
 
+  const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
+    // 如果有開 Turnstile，你原本的驗證區塊保持不變（已寫好）
+
+    setIsPending(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          account: values.account,   // ← 用 account
+          password: values.password,
+        }),
+      });
+
+      const data = await res.json();
+      setIsPending(false);
+
+      if (res.ok && data.ok) {
+        // 成功：導到 callbackUrl（你上面已經算好）
+        window.location.href = callbackUrl;   // 或用 router.push(callbackUrl)
+        // setSuccess(t('loginSuccess'))  // 若要顯示成功訊息可加
+      } else {
+        setError(data.error || t('loginFailed')); // 例如：帳號不存在/密碼錯誤
+      }
+    } catch (err) {
+      setIsPending(false);
+      setError(t('serverError') || '伺服器錯誤');
+      console.error('login, fetch error:', err);
+    }
+  };
+  /*
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
     // Validate captcha token if turnstile is enabled and site key is available
     if (captchaConfigured && values.captchaToken) {
@@ -134,7 +169,7 @@ export const LoginForm = ({
         onSuccess: (ctx) => {
           // console.log("login, success:", ctx.data);
           // setSuccess("Login successful");
-          // router.push(callbackUrl || "/dashboard");
+          router.push(callbackUrl || "/dashboard");
         },
         onError: (ctx) => {
           console.error('login, error:', ctx.error);
@@ -144,6 +179,7 @@ export const LoginForm = ({
     );
   };
 
+  */
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
@@ -161,7 +197,7 @@ export const LoginForm = ({
             <div className="space-y-4">
               <FormField
                 control={form.control}
-                name="email"
+                name="account"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('account')}</FormLabel>
@@ -169,7 +205,7 @@ export const LoginForm = ({
                       <Input
                         {...field}
                         disabled={isPending}
-                        type="email"
+                        type="text"
                       />
                     </FormControl>
                     <FormMessage />
