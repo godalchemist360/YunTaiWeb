@@ -70,7 +70,7 @@ export const LoginForm = ({
 
   const LoginSchema = z.object({
     email: z.email({
-      message: t('emailRequired'),
+      message: t('accountRequired'),
     }),
     password: z.string().min(1, {
       message: t('passwordRequired'),
@@ -164,12 +164,11 @@ export const LoginForm = ({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('email')}</FormLabel>
+                    <FormLabel>{t('account')}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         disabled={isPending}
-                        placeholder="name@example.com"
                         type="email"
                       />
                     </FormControl>
@@ -182,28 +181,12 @@ export const LoginForm = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex justify-between items-center">
-                      <FormLabel>{t('password')}</FormLabel>
-                      <Button
-                        size="sm"
-                        variant="link"
-                        asChild
-                        className="px-0 font-normal text-muted-foreground"
-                      >
-                        <LocaleLink
-                          href={`${Routes.ForgotPassword}`}
-                          className="text-xs hover:underline hover:underline-offset-4 hover:text-primary"
-                        >
-                          {t('forgotPassword')}
-                        </LocaleLink>
-                      </Button>
-                    </div>
+                    <FormLabel>{t('password')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           {...field}
                           disabled={isPending}
-                          placeholder="******"
                           type={showPassword ? 'text' : 'password'}
                           className="pr-10"
                         />

@@ -208,7 +208,7 @@
     "login": {
       "title": "登录",
       "welcomeBack": "欢迎回来",
-      "email": "邮箱",
+      "email": "帳號",
       "password": "密码",
       "signIn": "登录",
       "signUpHint": "没有账号？注册",
@@ -218,7 +218,7 @@
       "showPassword": "显示密码",
       "hidePassword": "隐藏密码",
       "or": "或以社媒账号登录",
-      "emailRequired": "请输入邮箱",
+      "emailRequired": "请输入帳號",
       "passwordRequired": "请输入密码",
       "captchaInvalid": "验证码验证失败",
       "captchaError": "验证码验证出错"

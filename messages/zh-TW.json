@@ -209,6 +209,7 @@
       "title": "登入",
       "welcomeBack": "歡迎回來",
       "email": "郵箱",
+      "account": "帳號",
       "password": "密碼",
       "signIn": "登入",
       "signUpHint": "沒有賬號？註冊",
@@ -219,6 +220,7 @@
       "hidePassword": "隱藏密碼",
       "or": "或以社媒賬號登入",
       "emailRequired": "請輸入郵箱",
+      "accountRequired": "請輸入帳號",
       "passwordRequired": "請輸入密碼",
       "captchaInvalid": "驗證碼驗證失敗",
       "captchaError": "驗證碼驗證出錯"
