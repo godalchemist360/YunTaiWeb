@@ -13,6 +13,15 @@ import {
   Settings2Icon,
   SettingsIcon,
   UsersRoundIcon,
+  MegaphoneIcon,
+  HeadphonesIcon,
+  UserCheckIcon,
+  CalculatorIcon,
+  UploadIcon,
+  GraduationCapIcon,
+  SearchIcon,
+  BarChart3Icon,
+  UsersIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { websiteConfig } from './website';
@@ -35,63 +44,58 @@ export function getSidebarLinks(): NestedMenuItem[] {
 
   return [
     {
-      title: t('dashboard.title'),
-      icon: <LayoutDashboardIcon className="size-4 shrink-0" />,
-      href: Routes.Dashboard,
+      title: t('announcements.title'),
+      icon: <MegaphoneIcon className="size-4 shrink-0" />,
+      href: Routes.DashboardAnnouncements,
       external: false,
     },
     {
-      title: t('admin.title'),
-      icon: <SettingsIcon className="size-4 shrink-0" />,
-      authorizeOnly: isDemo ? ['admin', 'user'] : ['admin'],
-      items: [
-        {
-          title: t('admin.users.title'),
-          icon: <UsersRoundIcon className="size-4 shrink-0" />,
-          href: Routes.AdminUsers,
-          external: false,
-        },
-      ],
+      title: t('salesSupport.title'),
+      icon: <HeadphonesIcon className="size-4 shrink-0" />,
+      href: Routes.DashboardSalesSupport,
+      external: false,
     },
     {
-      title: t('settings.title'),
-      icon: <Settings2Icon className="size-4 shrink-0" />,
-      items: [
-        {
-          title: t('settings.profile.title'),
-          icon: <CircleUserRoundIcon className="size-4 shrink-0" />,
-          href: Routes.SettingsProfile,
-          external: false,
-        },
-        {
-          title: t('settings.billing.title'),
-          icon: <CreditCardIcon className="size-4 shrink-0" />,
-          href: Routes.SettingsBilling,
-          external: false,
-        },
-        ...(websiteConfig.credits.enableCredits
-          ? [
-              {
-                title: t('settings.credits.title'),
-                icon: <CoinsIcon className="size-4 shrink-0" />,
-                href: Routes.SettingsCredits,
-                external: false,
-              },
-            ]
-          : []),
-        {
-          title: t('settings.security.title'),
-          icon: <LockKeyholeIcon className="size-4 shrink-0" />,
-          href: Routes.SettingsSecurity,
-          external: false,
-        },
-        {
-          title: t('settings.notification.title'),
-          icon: <BellIcon className="size-4 shrink-0" />,
-          href: Routes.SettingsNotifications,
-          external: false,
-        },
-      ],
+      title: t('customerData.title'),
+      icon: <UserCheckIcon className="size-4 shrink-0" />,
+      href: Routes.DashboardCustomerData,
+      external: false,
+    },
+    {
+      title: t('commissionQuery.title'),
+      icon: <CalculatorIcon className="size-4 shrink-0" />,
+      href: Routes.DashboardCommissionQuery,
+      external: false,
+    },
+    {
+      title: t('dataUpload.title'),
+      icon: <UploadIcon className="size-4 shrink-0" />,
+      href: Routes.DashboardDataUpload,
+      external: false,
+    },
+    {
+      title: t('training.title'),
+      icon: <GraduationCapIcon className="size-4 shrink-0" />,
+      href: Routes.DashboardTraining,
+      external: false,
+    },
+    {
+      title: t('customerTracking.title'),
+      icon: <SearchIcon className="size-4 shrink-0" />,
+      href: Routes.DashboardCustomerTracking,
+      external: false,
+    },
+    {
+      title: t('analytics.title'),
+      icon: <BarChart3Icon className="size-4 shrink-0" />,
+      href: Routes.DashboardAnalytics,
+      external: false,
+    },
+    {
+      title: t('accountManagement.title'),
+      icon: <UsersIcon className="size-4 shrink-0" />,
+      href: Routes.DashboardAccountManagement,
+      external: false,
     },
   ];
 }

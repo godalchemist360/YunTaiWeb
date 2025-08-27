@@ -31,6 +31,19 @@ export enum Routes {
   // dashboard routes
   Dashboard = '/dashboard',
   AdminUsers = '/admin/users',
+
+  // New dashboard pages
+  DashboardAnnouncements = '/dashboard/announcements',
+  DashboardSalesSupport = '/dashboard/sales-support',
+  DashboardCustomerData = '/dashboard/customer-data',
+  DashboardCommissionQuery = '/dashboard/commission-query',
+  DashboardDataUpload = '/dashboard/data-upload',
+  DashboardTraining = '/dashboard/training',
+  DashboardCustomerTracking = '/dashboard/customer-tracking',
+  DashboardAnalytics = '/dashboard/analytics',
+  DashboardAccountManagement = '/dashboard/account-management',
+
+  // Settings routes (kept for reference but will be hidden from sidebar)
   SettingsProfile = '/settings/profile',
   SettingsBilling = '/settings/billing',
   SettingsCredits = '/settings/credits',

@@ -14,8 +14,8 @@ export const websiteConfig: WebsiteConfig = {
       enableSwitch: true,
     },
     mode: {
-      defaultMode: 'system',
-      enableSwitch: true,
+      defaultMode: 'light',
+      enableSwitch: false,
     },
     images: {
       ogImage: '/og.png',
@@ -43,7 +43,7 @@ export const websiteConfig: WebsiteConfig = {
     enableTurnstileCaptcha: process.env.NEXT_PUBLIC_DEMO_WEBSITE === 'true',
   },
   routes: {
-    defaultLoginRedirect: '/settings/profile',
+    defaultLoginRedirect: '/dashboard/announcements',
   },
   analytics: {
     enableVercelAnalytics: false,

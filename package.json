@@ -126,6 +126,7 @@
     "shiki": "^2.4.2",
     "sonner": "^2.0.0",
     "stripe": "^17.6.0",
+    "styled-jsx": "^5.1.7",
     "swiper": "^11.2.5",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",

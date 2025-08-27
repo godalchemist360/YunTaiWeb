@@ -474,6 +474,33 @@
     "dashboard": {
       "title": "Dashboard"
     },
+    "announcements": {
+      "title": "Announcements"
+    },
+    "salesSupport": {
+      "title": "Sales Support"
+    },
+    "customerData": {
+      "title": "Customer Data"
+    },
+    "commissionQuery": {
+      "title": "Commission Query"
+    },
+    "dataUpload": {
+      "title": "Data Upload"
+    },
+    "training": {
+      "title": "Training"
+    },
+    "customerTracking": {
+      "title": "Customer Tracking"
+    },
+    "analytics": {
+      "title": "Analytics"
+    },
+    "accountManagement": {
+      "title": "Account Management"
+    },
     "admin": {
       "title": "Admin",
       "users": {

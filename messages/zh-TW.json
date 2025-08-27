@@ -473,8 +473,32 @@
     }
   },
   "Dashboard": {
-    "dashboard": {
-      "title": "儀表盤"
+    "announcements": {
+      "title": "公告信息"
+    },
+    "salesSupport": {
+      "title": "銷售支援"
+    },
+    "customerData": {
+      "title": "客戶資料"
+    },
+    "commissionQuery": {
+      "title": "傭金查詢"
+    },
+    "dataUpload": {
+      "title": "資料上傳區"
+    },
+    "training": {
+      "title": "教育訓練"
+    },
+    "customerTracking": {
+      "title": "客況追蹤"
+    },
+    "analytics": {
+      "title": "數據分析"
+    },
+    "accountManagement": {
+      "title": "帳號管理"
     },
     "admin": {
       "title": "系統管理",

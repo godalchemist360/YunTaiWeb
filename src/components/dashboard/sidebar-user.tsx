@@ -100,7 +100,7 @@ export function SidebarUser({ user, className }: SidebarUserProps) {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="cursor-pointer data-[state=open]:bg-sidebar-accent 
+              className="cursor-pointer data-[state=open]:bg-sidebar-accent
               data-[state=open]:text-sidebar-accent-foreground"
             >
               <UserAvatar

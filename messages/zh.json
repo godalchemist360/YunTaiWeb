@@ -474,6 +474,33 @@
     "dashboard": {
       "title": "仪表盘"
     },
+    "announcements": {
+      "title": "公告信息"
+    },
+    "salesSupport": {
+      "title": "销售支援"
+    },
+    "customerData": {
+      "title": "客户资料"
+    },
+    "commissionQuery": {
+      "title": "佣金查询"
+    },
+    "dataUpload": {
+      "title": "资料上传区"
+    },
+    "training": {
+      "title": "教育训练"
+    },
+    "customerTracking": {
+      "title": "客况追踪"
+    },
+    "analytics": {
+      "title": "数据分析"
+    },
+    "accountManagement": {
+      "title": "账号管理"
+    },
     "admin": {
       "title": "系统管理",
       "users": {
