@@ -114,9 +114,31 @@ export const LoginForm = ({
       setIsPending(false);
 
       if (res.ok && data.ok) {
-        // 成功：導到 callbackUrl（你上面已經算好）
-        window.location.href = callbackUrl;   // 或用 router.push(callbackUrl)
-        // setSuccess(t('loginSuccess'))  // 若要顯示成功訊息可加
+        // 登入成功後，設置 session 並跳轉
+        try {
+          const sessionRes = await fetch('/api/login-success', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              account: data.user.account,
+              callbackUrl: callbackUrl,
+            }),
+          });
+
+          const sessionData = await sessionRes.json();
+
+          if (sessionRes.ok && sessionData.ok) {
+            // 設置 session 成功，跳轉到目標頁面
+            window.location.href = sessionData.redirectUrl;
+          } else {
+            // 設置 session 失敗，但仍然跳轉（用戶可能需要重新登入）
+            window.location.href = callbackUrl;
+          }
+        } catch (sessionErr) {
+          console.error('設置 session 失敗:', sessionErr);
+          // 即使設置 session 失敗，也跳轉到目標頁面
+          window.location.href = callbackUrl;
+        }
       } else {
         setError(data.error || t('loginFailed')); // 例如：帳號不存在/密碼錯誤
       }

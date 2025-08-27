@@ -55,16 +55,25 @@ export default async function middleware(req: NextRequest) {
 
   // do not use getSession() here, it will cause error related to edge runtime
   // const session = await getSession();
-  const { data: session } = await betterFetch<Session>(
-    '/api/auth/get-session',
-    {
-      baseURL: getBaseUrl(),
-      headers: {
-        cookie: req.headers.get('cookie') || '', // Forward the cookies from the request
-      },
-    }
-  );
-  const isLoggedIn = !!session;
+
+  // 檢查自定義認證 cookie
+  const customAuthCookie = req.cookies.get('custom-auth');
+  const isCustomLoggedIn = customAuthCookie?.value === 'true';
+
+  // 如果沒有自定義認證，則檢查 Better Auth session
+  let isLoggedIn = isCustomLoggedIn;
+  if (!isCustomLoggedIn) {
+    const { data: session } = await betterFetch<Session>(
+      '/api/auth/get-session',
+      {
+        baseURL: getBaseUrl(),
+        headers: {
+          cookie: req.headers.get('cookie') || '', // Forward the cookies from the request
+        },
+      }
+    );
+    isLoggedIn = !!session;
+  }
   // console.log('middleware, isLoggedIn', isLoggedIn);
 
   // Get the pathname of the request (e.g. /zh/dashboard to /dashboard)

@@ -32,20 +32,44 @@ export function UserButton({ user }: UserButtonProps) {
   const { resetState } = usePaymentStore();
 
   const handleSignOut = async () => {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          console.log('sign out success');
-          // Reset payment state on sign out
-          resetState();
-          localeRouter.replace('/');
+    try {
+      // 先調用自定義登出 API 清除自定義認證 cookie
+      await fetch('/api/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      // 然後調用 Better Auth 的登出
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            console.log('sign out success');
+            // Reset payment state on sign out
+            resetState();
+            localeRouter.replace('/');
+          },
+          onError: (error) => {
+            console.error('sign out error:', error);
+            toast.error(t('Common.logoutFailed'));
+          },
         },
-        onError: (error) => {
-          console.error('sign out error:', error);
-          toast.error(t('Common.logoutFailed'));
+      });
+    } catch (error) {
+      console.error('logout error:', error);
+      // 即使自定義登出失敗，也嘗試 Better Auth 登出
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            resetState();
+            localeRouter.replace('/');
+          },
+          onError: (error) => {
+            console.error('sign out error:', error);
+            toast.error(t('Common.logoutFailed'));
+          },
         },
-      },
-    });
+      });
+    }
   };
 
   // Desktop View, use DropdownMenu
