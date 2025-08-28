@@ -1,5 +1,16 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { Search, Users, UserCheck, Building, AlertTriangle, Plus, Eye, MessageSquare, Calendar, Clock } from 'lucide-react';
+import {
+  AlertTriangle,
+  Building,
+  Calendar,
+  Clock,
+  Eye,
+  MessageSquare,
+  Plus,
+  Search,
+  UserCheck,
+  Users,
+} from 'lucide-react';
 
 export default async function CustomerTrackingPage() {
   const breadcrumbs = [
@@ -24,10 +35,10 @@ export default async function CustomerTrackingPage() {
                     <Search className="h-6 w-6" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">客況追蹤</h1>
-                    <p className="text-gray-600">
-                      追蹤客戶互動和銷售機會
-                    </p>
+                    <h1 className="text-3xl font-bold text-gray-900">
+                      客況追蹤
+                    </h1>
+                    <p className="text-gray-600">追蹤客戶互動和銷售機會</p>
                   </div>
                 </div>
 
@@ -39,8 +50,12 @@ export default async function CustomerTrackingPage() {
                         <Users className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">總客戶數</p>
-                        <p className="text-2xl font-bold text-gray-900">1,247</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          總客戶數
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          1,247
+                        </p>
                         <p className="text-sm text-green-600">+12% 較上月</p>
                       </div>
                     </div>
@@ -52,7 +67,9 @@ export default async function CustomerTrackingPage() {
                         <UserCheck className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">活躍客戶</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          活躍客戶
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">892</p>
                         <p className="text-sm text-green-600">+8% 較上月</p>
                       </div>
@@ -65,7 +82,9 @@ export default async function CustomerTrackingPage() {
                         <Building className="h-5 w-5 text-yellow-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">潛在客戶</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          潛在客戶
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">156</p>
                         <p className="text-sm text-green-600">+15% 較上月</p>
                       </div>
@@ -78,7 +97,9 @@ export default async function CustomerTrackingPage() {
                         <AlertTriangle className="h-5 w-5 text-red-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">流失風險</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          流失風險
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">23</p>
                         <p className="text-sm text-red-600">需要關注</p>
                       </div>
@@ -112,7 +133,9 @@ export default async function CustomerTrackingPage() {
                 <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
                   <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-900">客戶互動記錄</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        客戶互動記錄
+                      </h3>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <span>最近 30 天</span>
                       </div>
@@ -129,7 +152,9 @@ export default async function CustomerTrackingPage() {
                         <div className="flex-1">
                           <div className="flex items-start justify-between">
                             <div>
-                              <h4 className="font-semibold text-gray-900">ABC 公司 - 產品演示</h4>
+                              <h4 className="font-semibold text-gray-900">
+                                ABC 公司 - 產品演示
+                              </h4>
                               <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                                 <Calendar className="h-4 w-4" />
                                 <span>2024年1月15日</span>
@@ -166,7 +191,9 @@ export default async function CustomerTrackingPage() {
                         <div className="flex-1">
                           <div className="flex items-start justify-between">
                             <div>
-                              <h4 className="font-semibold text-gray-900">XYZ 企業 - 報價討論</h4>
+                              <h4 className="font-semibold text-gray-900">
+                                XYZ 企業 - 報價討論
+                              </h4>
                               <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                                 <Calendar className="h-4 w-4" />
                                 <span>2024年1月14日</span>
@@ -203,7 +230,9 @@ export default async function CustomerTrackingPage() {
                         <div className="flex-1">
                           <div className="flex items-start justify-between">
                             <div>
-                              <h4 className="font-semibold text-gray-900">DEF 科技 - 初次接觸</h4>
+                              <h4 className="font-semibold text-gray-900">
+                                DEF 科技 - 初次接觸
+                              </h4>
                               <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                                 <Calendar className="h-4 w-4" />
                                 <span>2024年1月13日</span>

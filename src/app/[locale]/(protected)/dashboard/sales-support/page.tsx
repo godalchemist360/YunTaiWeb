@@ -1,5 +1,14 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { Headphones, BookOpen, Users, TrendingUp, FileText, Download, Play, Star } from 'lucide-react';
+import {
+  BookOpen,
+  Download,
+  FileText,
+  Headphones,
+  Play,
+  Star,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 
 export default async function SalesSupportPage() {
   const breadcrumbs = [
@@ -24,10 +33,10 @@ export default async function SalesSupportPage() {
                     <Headphones className="h-6 w-6" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">銷售支援</h1>
-                    <p className="text-gray-600">
-                      銷售支援工具和資源
-                    </p>
+                    <h1 className="text-3xl font-bold text-gray-900">
+                      銷售支援
+                    </h1>
+                    <p className="text-gray-600">銷售支援工具和資源</p>
                   </div>
                 </div>
 
@@ -39,7 +48,9 @@ export default async function SalesSupportPage() {
                         <FileText className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">產品資料</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          產品資料
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">156</p>
                       </div>
                     </div>
@@ -51,7 +62,9 @@ export default async function SalesSupportPage() {
                         <BookOpen className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">銷售技巧</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          銷售技巧
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">42</p>
                       </div>
                     </div>
@@ -63,7 +76,9 @@ export default async function SalesSupportPage() {
                         <Users className="h-5 w-5 text-purple-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">客戶案例</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          客戶案例
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">89</p>
                       </div>
                     </div>
@@ -75,7 +90,9 @@ export default async function SalesSupportPage() {
                         <TrendingUp className="h-5 w-5 text-orange-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">競爭分析</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          競爭分析
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">23</p>
                       </div>
                     </div>
@@ -91,7 +108,9 @@ export default async function SalesSupportPage() {
                         <FileText className="h-6 w-6" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">產品資料庫</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          產品資料庫
+                        </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
                           最新的產品規格、價格和宣傳資料，包含詳細的技術參數和應用場景說明。
                         </p>
@@ -126,7 +145,9 @@ export default async function SalesSupportPage() {
                         <BookOpen className="h-6 w-6" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">銷售技巧</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          銷售技巧
+                        </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
                           專業的銷售技巧和話術指南，包含客戶溝通、需求挖掘和成交技巧。
                         </p>
@@ -161,7 +182,9 @@ export default async function SalesSupportPage() {
                         <Users className="h-6 w-6" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">客戶案例</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          客戶案例
+                        </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
                           成功案例和客戶見證，展示產品在不同行業的應用效果和客戶滿意度。
                         </p>
@@ -196,7 +219,9 @@ export default async function SalesSupportPage() {
                         <TrendingUp className="h-6 w-6" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">競爭分析</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          競爭分析
+                        </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
                           市場競爭對手分析報告，包含產品對比、價格分析和市場定位策略。
                         </p>

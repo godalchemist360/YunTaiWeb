@@ -1,23 +1,42 @@
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import {
-  Users,
-  Plus,
-  Trash2,
-  Edit,
-  Search,
-  Filter,
-  UserPlus,
-  Shield,
-  UserCheck,
-  UserX
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+'use client';
 
-export default async function AccountManagementPage() {
+import { AddAccountDialog } from '@/components/account-management/add-account-dialog';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Edit,
+  Filter,
+  Plus,
+  Search,
+  Shield,
+  Trash2,
+  UserCheck,
+  UserPlus,
+  UserX,
+  Users,
+} from 'lucide-react';
+import { useState } from 'react';
+
+export default function AccountManagementPage() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
   const breadcrumbs = [
     {
       label: '帳號管理',
@@ -81,7 +100,11 @@ export default async function AccountManagementPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="default" className="bg-green-100 text-green-800">啟用</Badge>;
+        return (
+          <Badge variant="default" className="bg-green-100 text-green-800">
+            啟用
+          </Badge>
+        );
       case 'inactive':
         return <Badge variant="secondary">停用</Badge>;
       default:
@@ -104,7 +127,9 @@ export default async function AccountManagementPage() {
                     <Users className="h-6 w-6" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">帳號管理</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">
+                      帳號管理
+                    </h1>
                     <p className="text-gray-600">
                       管理系統用戶帳號，包含創建、編輯和刪除功能
                     </p>
@@ -115,43 +140,59 @@ export default async function AccountManagementPage() {
                 <div className="grid gap-4 md:grid-cols-4">
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">總帳號數</CardTitle>
+                      <CardTitle className="text-sm font-medium">
+                        總帳號數
+                      </CardTitle>
                       <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{accounts.length}</div>
+                      <div className="text-2xl font-bold">
+                        {accounts.length}
+                      </div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">啟用帳號</CardTitle>
+                      <CardTitle className="text-sm font-medium">
+                        啟用帳號
+                      </CardTitle>
                       <UserCheck className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold text-green-600">
-                        {accounts.filter(acc => acc.status === 'active').length}
+                        {
+                          accounts.filter((acc) => acc.status === 'active')
+                            .length
+                        }
                       </div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">停用帳號</CardTitle>
+                      <CardTitle className="text-sm font-medium">
+                        停用帳號
+                      </CardTitle>
                       <UserX className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold text-red-600">
-                        {accounts.filter(acc => acc.status === 'inactive').length}
+                        {
+                          accounts.filter((acc) => acc.status === 'inactive')
+                            .length
+                        }
                       </div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">管理員</CardTitle>
+                      <CardTitle className="text-sm font-medium">
+                        管理員
+                      </CardTitle>
                       <Shield className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold text-purple-600">
-                        {accounts.filter(acc => acc.level === 'admin').length}
+                        {accounts.filter((acc) => acc.level === 'admin').length}
                       </div>
                     </CardContent>
                   </Card>
@@ -162,17 +203,14 @@ export default async function AccountManagementPage() {
                   <div className="flex flex-1 items-center space-x-2">
                     <div className="relative flex-1 max-w-sm">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="搜尋帳號..."
-                        className="pl-8"
-                      />
+                      <Input placeholder="搜尋帳號..." className="pl-8" />
                     </div>
                     <Button variant="outline" size="sm">
                       <Filter className="mr-2 h-4 w-4" />
                       篩選
                     </Button>
                   </div>
-                  <Button>
+                  <Button onClick={() => setIsAddDialogOpen(true)}>
                     <UserPlus className="mr-2 h-4 w-4" />
                     新增帳號
                   </Button>
@@ -190,8 +228,8 @@ export default async function AccountManagementPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>帳號</TableHead>
                           <TableHead>使用者姓名</TableHead>
+                          <TableHead>帳號</TableHead>
                           <TableHead>帳號層級</TableHead>
                           <TableHead>狀態</TableHead>
                           <TableHead>建立時間</TableHead>
@@ -201,17 +239,27 @@ export default async function AccountManagementPage() {
                       <TableBody>
                         {accounts.map((account) => (
                           <TableRow key={account.id}>
-                            <TableCell className="font-medium">{account.username}</TableCell>
-                            <TableCell>{account.displayName}</TableCell>
-                            <TableCell>{getLevelBadge(account.level)}</TableCell>
-                            <TableCell>{getStatusBadge(account.status)}</TableCell>
+                            <TableCell className="font-medium">
+                              {account.displayName}
+                            </TableCell>
+                            <TableCell>{account.username}</TableCell>
+                            <TableCell>
+                              {getLevelBadge(account.level)}
+                            </TableCell>
+                            <TableCell>
+                              {getStatusBadge(account.status)}
+                            </TableCell>
                             <TableCell>{account.createdAt}</TableCell>
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-2">
                                 <Button variant="outline" size="sm">
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700"
+                                >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
@@ -227,6 +275,12 @@ export default async function AccountManagementPage() {
           </div>
         </div>
       </div>
+
+      {/* Add Account Dialog */}
+      <AddAccountDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+      />
     </>
   );
 }

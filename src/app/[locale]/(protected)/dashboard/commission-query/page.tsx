@@ -1,5 +1,14 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { Calculator, DollarSign, TrendingUp, Calendar, FileText, Download, Eye, BarChart3 } from 'lucide-react';
+import {
+  BarChart3,
+  Calculator,
+  Calendar,
+  DollarSign,
+  Download,
+  Eye,
+  FileText,
+  TrendingUp,
+} from 'lucide-react';
 
 export default async function CommissionQueryPage() {
   const breadcrumbs = [
@@ -24,10 +33,10 @@ export default async function CommissionQueryPage() {
                     <Calculator className="h-6 w-6" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">傭金查詢</h1>
-                    <p className="text-gray-600">
-                      查詢傭金計算和歷史記錄
-                    </p>
+                    <h1 className="text-3xl font-bold text-gray-900">
+                      傭金查詢
+                    </h1>
+                    <p className="text-gray-600">查詢傭金計算和歷史記錄</p>
                   </div>
                 </div>
 
@@ -39,8 +48,12 @@ export default async function CommissionQueryPage() {
                         <DollarSign className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">本月傭金</p>
-                        <p className="text-2xl font-bold text-gray-900">$12,450</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          本月傭金
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          $12,450
+                        </p>
                         <p className="text-sm text-green-600">+15% 較上月</p>
                       </div>
                     </div>
@@ -52,8 +65,12 @@ export default async function CommissionQueryPage() {
                         <Calendar className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">待結算傭金</p>
-                        <p className="text-2xl font-bold text-gray-900">$3,200</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          待結算傭金
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          $3,200
+                        </p>
                         <p className="text-sm text-blue-600">預計下月結算</p>
                       </div>
                     </div>
@@ -65,9 +82,15 @@ export default async function CommissionQueryPage() {
                         <TrendingUp className="h-5 w-5 text-purple-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">年度累計</p>
-                        <p className="text-2xl font-bold text-gray-900">$89,750</p>
-                        <p className="text-sm text-purple-600">目標達成率 85%</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          年度累計
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          $89,750
+                        </p>
+                        <p className="text-sm text-purple-600">
+                          目標達成率 85%
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -77,7 +100,9 @@ export default async function CommissionQueryPage() {
                 <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
                   <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-900">傭金明細</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        傭金明細
+                      </h3>
                       <div className="flex items-center gap-2">
                         <button className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
                           <Download className="h-4 w-4" />
@@ -127,12 +152,20 @@ export default async function CommissionQueryPage() {
                             2024-01-15
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">ABC 公司</div>
-                            <div className="text-sm text-gray-500">企業客戶</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              ABC 公司
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              企業客戶
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">企業版套裝</div>
-                            <div className="text-sm text-gray-500">年度授權</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              企業版套裝
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              年度授權
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             $25,000
@@ -167,12 +200,18 @@ export default async function CommissionQueryPage() {
                             2024-01-10
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">XYZ 企業</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              XYZ 企業
+                            </div>
                             <div className="text-sm text-gray-500">新客戶</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">專業版授權</div>
-                            <div className="text-sm text-gray-500">季度授權</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              專業版授權
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              季度授權
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             $15,000
@@ -207,12 +246,20 @@ export default async function CommissionQueryPage() {
                             2024-01-08
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">DEF 科技</div>
-                            <div className="text-sm text-gray-500">長期客戶</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              DEF 科技
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              長期客戶
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">進階版套裝</div>
-                            <div className="text-sm text-gray-500">年度授權</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              進階版套裝
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              年度授權
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             $18,500

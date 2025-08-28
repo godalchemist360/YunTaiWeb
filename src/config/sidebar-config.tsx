@@ -4,24 +4,24 @@ import { isDemoWebsite } from '@/lib/demo';
 import { Routes } from '@/routes';
 import type { NestedMenuItem } from '@/types';
 import {
+  BarChart3Icon,
   BellIcon,
+  CalculatorIcon,
   CircleUserRoundIcon,
   CoinsIcon,
   CreditCardIcon,
+  GraduationCapIcon,
+  HeadphonesIcon,
   LayoutDashboardIcon,
   LockKeyholeIcon,
+  MegaphoneIcon,
+  SearchIcon,
   Settings2Icon,
   SettingsIcon,
-  UsersRoundIcon,
-  MegaphoneIcon,
-  HeadphonesIcon,
-  UserCheckIcon,
-  CalculatorIcon,
   UploadIcon,
-  GraduationCapIcon,
-  SearchIcon,
-  BarChart3Icon,
+  UserCheckIcon,
   UsersIcon,
+  UsersRoundIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { websiteConfig } from './website';

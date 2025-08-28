@@ -1,5 +1,14 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { Bell, Calendar, FileText, Megaphone, Clock, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import {
+  AlertTriangle,
+  Bell,
+  Calendar,
+  CheckCircle,
+  Clock,
+  FileText,
+  Info,
+  Megaphone,
+} from 'lucide-react';
 
 export default async function AnnouncementsPage() {
   const breadcrumbs = [
@@ -24,10 +33,10 @@ export default async function AnnouncementsPage() {
                     <Megaphone className="h-6 w-6" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">公告信息</h1>
-                    <p className="text-gray-600">
-                      查看最新的公告和重要信息
-                    </p>
+                    <h1 className="text-3xl font-bold text-gray-900">
+                      公告信息
+                    </h1>
+                    <p className="text-gray-600">查看最新的公告和重要信息</p>
                   </div>
                 </div>
 
@@ -39,7 +48,9 @@ export default async function AnnouncementsPage() {
                         <Bell className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">總公告數</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          總公告數
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">24</p>
                       </div>
                     </div>
@@ -51,7 +62,9 @@ export default async function AnnouncementsPage() {
                         <CheckCircle className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">已讀公告</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          已讀公告
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">18</p>
                       </div>
                     </div>
@@ -63,7 +76,9 @@ export default async function AnnouncementsPage() {
                         <AlertTriangle className="h-5 w-5 text-orange-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">重要公告</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          重要公告
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">3</p>
                       </div>
                     </div>
@@ -80,7 +95,9 @@ export default async function AnnouncementsPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">系統維護通知</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            系統維護通知
+                          </h3>
                           <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
                             重要
                           </span>
@@ -117,7 +134,9 @@ export default async function AnnouncementsPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">新功能上線</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            新功能上線
+                          </h3>
                           <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
                             新功能
                           </span>
@@ -152,7 +171,9 @@ export default async function AnnouncementsPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">培訓課程安排</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            培訓課程安排
+                          </h3>
                           <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
                             培訓
                           </span>

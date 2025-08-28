@@ -1,13 +1,13 @@
 import { RegisterForm } from '@/components/auth/register-form';
-import { LocaleLink } from '@/i18n/navigation';
-import { redirect } from 'next/navigation';
 import { websiteConfig } from '@/config/website';
+import { LocaleLink } from '@/i18n/navigation';
 import { constructMetadata } from '@/lib/metadata';
 import { getUrlWithLocale } from '@/lib/urls/urls';
 import { Routes } from '@/routes';
 import type { Metadata } from 'next';
 import type { Locale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 
 export async function generateMetadata({
   params,

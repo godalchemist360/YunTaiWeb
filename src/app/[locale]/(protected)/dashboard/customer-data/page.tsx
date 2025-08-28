@@ -1,5 +1,17 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { UserCheck, Users, Plus, Search, Filter, MoreHorizontal, Edit, Eye, Phone, Mail, Building } from 'lucide-react';
+import {
+  Building,
+  Edit,
+  Eye,
+  Filter,
+  Mail,
+  MoreHorizontal,
+  Phone,
+  Plus,
+  Search,
+  UserCheck,
+  Users,
+} from 'lucide-react';
 
 export default async function CustomerDataPage() {
   const breadcrumbs = [
@@ -24,10 +36,10 @@ export default async function CustomerDataPage() {
                     <UserCheck className="h-6 w-6" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">客戶資料</h1>
-                    <p className="text-gray-600">
-                      管理客戶資料和聯繫信息
-                    </p>
+                    <h1 className="text-3xl font-bold text-gray-900">
+                      客戶資料
+                    </h1>
+                    <p className="text-gray-600">管理客戶資料和聯繫信息</p>
                   </div>
                 </div>
 
@@ -39,8 +51,12 @@ export default async function CustomerDataPage() {
                         <Users className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">總客戶數</p>
-                        <p className="text-2xl font-bold text-gray-900">1,247</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          總客戶數
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          1,247
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -51,7 +67,9 @@ export default async function CustomerDataPage() {
                         <UserCheck className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">活躍客戶</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          活躍客戶
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">892</p>
                       </div>
                     </div>
@@ -63,7 +81,9 @@ export default async function CustomerDataPage() {
                         <Building className="h-5 w-5 text-yellow-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">企業客戶</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          企業客戶
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">156</p>
                       </div>
                     </div>
@@ -75,7 +95,9 @@ export default async function CustomerDataPage() {
                         <Plus className="h-5 w-5 text-purple-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">本月新增</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          本月新增
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">45</p>
                       </div>
                     </div>
@@ -107,7 +129,9 @@ export default async function CustomerDataPage() {
                 {/* Customer Table */}
                 <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
                   <div className="p-6 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">客戶列表</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      客戶列表
+                    </h3>
                   </div>
 
                   <div className="overflow-x-auto">
@@ -139,23 +163,35 @@ export default async function CustomerDataPage() {
                                 <Building className="h-5 w-5 text-blue-600" />
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">ABC 公司</div>
-                                <div className="text-sm text-gray-500">科技產業</div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  ABC 公司
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  科技產業
+                                </div>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">張經理</div>
-                            <div className="text-sm text-gray-500">銷售經理</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              張經理
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              銷售經理
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2">
                               <Phone className="h-4 w-4 text-gray-400" />
-                              <span className="text-sm text-gray-900">0912-345-678</span>
+                              <span className="text-sm text-gray-900">
+                                0912-345-678
+                              </span>
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               <Mail className="h-4 w-4 text-gray-400" />
-                              <span className="text-sm text-gray-500">zhang@abc.com</span>
+                              <span className="text-sm text-gray-500">
+                                zhang@abc.com
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -187,23 +223,35 @@ export default async function CustomerDataPage() {
                                 <Building className="h-5 w-5 text-green-600" />
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">XYZ 企業</div>
-                                <div className="text-sm text-gray-500">製造業</div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  XYZ 企業
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  製造業
+                                </div>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">李總監</div>
-                            <div className="text-sm text-gray-500">營運總監</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              李總監
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              營運總監
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2">
                               <Phone className="h-4 w-4 text-gray-400" />
-                              <span className="text-sm text-gray-900">0923-456-789</span>
+                              <span className="text-sm text-gray-900">
+                                0923-456-789
+                              </span>
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               <Mail className="h-4 w-4 text-gray-400" />
-                              <span className="text-sm text-gray-500">li@xyz.com</span>
+                              <span className="text-sm text-gray-500">
+                                li@xyz.com
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -235,23 +283,35 @@ export default async function CustomerDataPage() {
                                 <Building className="h-5 w-5 text-purple-600" />
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">DEF 科技</div>
-                                <div className="text-sm text-gray-500">軟體開發</div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  DEF 科技
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  軟體開發
+                                </div>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">王工程師</div>
-                            <div className="text-sm text-gray-500">技術主管</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              王工程師
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              技術主管
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2">
                               <Phone className="h-4 w-4 text-gray-400" />
-                              <span className="text-sm text-gray-900">0934-567-890</span>
+                              <span className="text-sm text-gray-900">
+                                0934-567-890
+                              </span>
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               <Mail className="h-4 w-4 text-gray-400" />
-                              <span className="text-sm text-gray-500">wang@def.com</span>
+                              <span className="text-sm text-gray-500">
+                                wang@def.com
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">

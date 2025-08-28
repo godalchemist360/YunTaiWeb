@@ -1,5 +1,14 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { GraduationCap, BookOpen, Clock, CheckCircle, Play, Download, Star, Award } from 'lucide-react';
+import {
+  Award,
+  BookOpen,
+  CheckCircle,
+  Clock,
+  Download,
+  GraduationCap,
+  Play,
+  Star,
+} from 'lucide-react';
 
 export default async function TrainingPage() {
   const breadcrumbs = [
@@ -24,10 +33,10 @@ export default async function TrainingPage() {
                     <GraduationCap className="h-6 w-6" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">教育訓練</h1>
-                    <p className="text-gray-600">
-                      提升專業技能和業務知識
-                    </p>
+                    <h1 className="text-3xl font-bold text-gray-900">
+                      教育訓練
+                    </h1>
+                    <p className="text-gray-600">提升專業技能和業務知識</p>
                   </div>
                 </div>
 
@@ -39,7 +48,9 @@ export default async function TrainingPage() {
                         <BookOpen className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">總課程數</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          總課程數
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">24</p>
                       </div>
                     </div>
@@ -51,7 +62,9 @@ export default async function TrainingPage() {
                         <CheckCircle className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">已完成</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          已完成
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">18</p>
                       </div>
                     </div>
@@ -63,7 +76,9 @@ export default async function TrainingPage() {
                         <Clock className="h-5 w-5 text-yellow-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">進行中</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          進行中
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">3</p>
                       </div>
                     </div>
@@ -75,7 +90,9 @@ export default async function TrainingPage() {
                         <Award className="h-5 w-5 text-purple-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-600">獲得證書</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          獲得證書
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">12</p>
                       </div>
                     </div>
@@ -96,7 +113,9 @@ export default async function TrainingPage() {
                             進行中
                           </span>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">銷售技巧基礎課程</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          銷售技巧基礎課程
+                        </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
                           學習基本的銷售技巧和客戶溝通方法，提升成交率
                         </p>
@@ -112,10 +131,15 @@ export default async function TrainingPage() {
                         <div className="mb-4">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-sm text-gray-600">進度</span>
-                            <span className="text-sm font-medium text-gray-900">60%</span>
+                            <span className="text-sm font-medium text-gray-900">
+                              60%
+                            </span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: '60%' }}></div>
+                            <div
+                              className="bg-blue-600 h-2 rounded-full"
+                              style={{ width: '60%' }}
+                            ></div>
                           </div>
                         </div>
                         <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
@@ -137,7 +161,9 @@ export default async function TrainingPage() {
                             已完成
                           </span>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">產品知識培訓</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          產品知識培訓
+                        </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
                           深入了解公司產品特性和優勢，掌握產品賣點
                         </p>
@@ -153,10 +179,15 @@ export default async function TrainingPage() {
                         <div className="mb-4">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-sm text-gray-600">進度</span>
-                            <span className="text-sm font-medium text-gray-900">100%</span>
+                            <span className="text-sm font-medium text-gray-900">
+                              100%
+                            </span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div className="bg-green-600 h-2 rounded-full" style={{ width: '100%' }}></div>
+                            <div
+                              className="bg-green-600 h-2 rounded-full"
+                              style={{ width: '100%' }}
+                            ></div>
                           </div>
                         </div>
                         <button className="w-full bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors">
@@ -178,7 +209,9 @@ export default async function TrainingPage() {
                             即將開始
                           </span>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">客戶關係管理</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          客戶關係管理
+                        </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
                           學習如何建立和維護長期客戶關係，提升客戶滿意度
                         </p>
@@ -194,10 +227,15 @@ export default async function TrainingPage() {
                         <div className="mb-4">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-sm text-gray-600">進度</span>
-                            <span className="text-sm font-medium text-gray-900">0%</span>
+                            <span className="text-sm font-medium text-gray-900">
+                              0%
+                            </span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div className="bg-yellow-600 h-2 rounded-full" style={{ width: '0%' }}></div>
+                            <div
+                              className="bg-yellow-600 h-2 rounded-full"
+                              style={{ width: '0%' }}
+                            ></div>
                           </div>
                         </div>
                         <button className="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
@@ -219,7 +257,9 @@ export default async function TrainingPage() {
                             未開始
                           </span>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">進階銷售技巧</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          進階銷售技巧
+                        </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
                           掌握高級銷售策略和談判技巧，提升大單成交能力
                         </p>
@@ -235,10 +275,15 @@ export default async function TrainingPage() {
                         <div className="mb-4">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-sm text-gray-600">進度</span>
-                            <span className="text-sm font-medium text-gray-900">0%</span>
+                            <span className="text-sm font-medium text-gray-900">
+                              0%
+                            </span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div className="bg-gray-300 h-2 rounded-full" style={{ width: '0%' }}></div>
+                            <div
+                              className="bg-gray-300 h-2 rounded-full"
+                              style={{ width: '0%' }}
+                            ></div>
                           </div>
                         </div>
                         <button className="w-full bg-orange-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-orange-700 transition-colors">
@@ -260,7 +305,9 @@ export default async function TrainingPage() {
                             未開始
                           </span>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">市場分析與洞察</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          市場分析與洞察
+                        </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
                           學習市場分析方法和競爭對手研究技巧
                         </p>
@@ -276,10 +323,15 @@ export default async function TrainingPage() {
                         <div className="mb-4">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-sm text-gray-600">進度</span>
-                            <span className="text-sm font-medium text-gray-900">0%</span>
+                            <span className="text-sm font-medium text-gray-900">
+                              0%
+                            </span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div className="bg-gray-300 h-2 rounded-full" style={{ width: '0%' }}></div>
+                            <div
+                              className="bg-gray-300 h-2 rounded-full"
+                              style={{ width: '0%' }}
+                            ></div>
                           </div>
                         </div>
                         <button className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-teal-700 transition-colors">
@@ -301,7 +353,9 @@ export default async function TrainingPage() {
                             未開始
                           </span>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">數位行銷基礎</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          數位行銷基礎
+                        </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
                           了解數位行銷工具和策略，提升線上銷售能力
                         </p>
@@ -317,10 +371,15 @@ export default async function TrainingPage() {
                         <div className="mb-4">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-sm text-gray-600">進度</span>
-                            <span className="text-sm font-medium text-gray-900">0%</span>
+                            <span className="text-sm font-medium text-gray-900">
+                              0%
+                            </span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div className="bg-gray-300 h-2 rounded-full" style={{ width: '0%' }}></div>
+                            <div
+                              className="bg-gray-300 h-2 rounded-full"
+                              style={{ width: '0%' }}
+                            ></div>
                           </div>
                         </div>
                         <button className="w-full bg-pink-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-pink-700 transition-colors">

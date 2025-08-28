@@ -71,7 +71,7 @@ export const LoginForm = ({
 
   const LoginSchema = z.object({
     account: z.string().min(1, {
-      message: t('accountRequired')
+      message: t('accountRequired'),
     }),
     password: z.string().min(1, {
       message: t('passwordRequired'),
@@ -105,7 +105,7 @@ export const LoginForm = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          account: values.account,   // ← 用 account
+          account: values.account, // ← 用 account
           password: values.password,
         }),
       });
@@ -209,8 +209,14 @@ export const LoginForm = ({
   return (
     <AuthCard
       headerLabel={t('welcomeBack')}
-      bottomButtonLabel={websiteConfig.auth.enableRegistration ? t('signUpHint') : ''}
-      bottomButtonHref={websiteConfig.auth.enableRegistration ? `${Routes.Register}` : `${Routes.ForgotPassword}`}
+      bottomButtonLabel={
+        websiteConfig.auth.enableRegistration ? t('signUpHint') : ''
+      }
+      bottomButtonHref={
+        websiteConfig.auth.enableRegistration
+          ? `${Routes.Register}`
+          : `${Routes.ForgotPassword}`
+      }
       className={cn('', className)}
     >
       {credentialLoginEnabled && (
@@ -224,11 +230,7 @@ export const LoginForm = ({
                   <FormItem>
                     <FormLabel>{t('account')}</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        disabled={isPending}
-                        type="text"
-                      />
+                      <Input {...field} disabled={isPending} type="text" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

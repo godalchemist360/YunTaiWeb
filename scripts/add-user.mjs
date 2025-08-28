@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import bcrypt from 'bcryptjs';   // ← 用 bcryptjs
+import bcrypt from 'bcryptjs'; // ← 用 bcryptjs
 import pkg from 'pg';
 const { Client } = pkg;
 
