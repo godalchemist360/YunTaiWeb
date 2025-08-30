@@ -23,11 +23,18 @@ import { useState } from 'react';
 interface AddAccountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSubmit?: (formData: {
+    displayName: string;
+    username: string;
+    password: string;
+    level: string;
+  }) => Promise<void>;
 }
 
 export function AddAccountDialog({
   open,
   onOpenChange,
+  onSubmit,
 }: AddAccountDialogProps) {
   const [formData, setFormData] = useState({
     displayName: '',
@@ -43,20 +50,32 @@ export function AddAccountDialog({
     }));
   };
 
-  const handleSubmit = () => {
-    // 這裡可以添加表單驗證邏輯
-    console.log('新增帳號資料:', formData);
+  const handleSubmit = async () => {
+    // 基本驗證
+    if (!formData.displayName || !formData.username || !formData.password || !formData.level) {
+      alert('請填寫所有必填欄位');
+      return;
+    }
 
-    // 重置表單
-    setFormData({
-      displayName: '',
-      username: '',
-      password: '',
-      level: '',
-    });
+    try {
+      if (onSubmit) {
+        await onSubmit(formData);
+      }
 
-    // 關閉對話框
-    onOpenChange(false);
+      // 重置表單
+      setFormData({
+        displayName: '',
+        username: '',
+        password: '',
+        level: '',
+      });
+
+      // 關閉對話框
+      onOpenChange(false);
+    } catch (error) {
+      console.error('新增帳號失敗:', error);
+      alert('新增帳號失敗');
+    }
   };
 
   const handleCancel = () => {
@@ -133,7 +152,7 @@ export function AddAccountDialog({
           <Button variant="outline" onClick={handleCancel}>
             取消
           </Button>
-          <Button onClick={handleSubmit}>確定新增</Button>
+          <Button onClick={handleSubmit} type="button">確定新增</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

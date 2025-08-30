@@ -117,3 +117,41 @@ export const creditTransaction = pgTable("credit_transaction", {
 	creditTransactionUserIdIdx: index("credit_transaction_user_id_idx").on(table.userId),
 	creditTransactionTypeIdx: index("credit_transaction_type_idx").on(table.type),
 }));
+
+// 公告相關表結構
+export const announcements = pgTable("announcements", {
+	id: text("id").primaryKey(),
+	title: text("title").notNull(),
+	type: text("type").notNull(), // 'general' | 'important' | 'resource' | 'training'
+	isImportant: boolean("is_important").notNull().default(false),
+	content: text("content").notNull(),
+	publishAt: timestamp("publish_at").notNull().defaultNow(),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+	announcementsTypeIdx: index("announcements_type_idx").on(table.type),
+	announcementsPublishAtIdx: index("announcements_publish_at_idx").on(table.publishAt),
+	announcementsIsImportantIdx: index("announcements_is_important_idx").on(table.isImportant),
+}));
+
+export const announcementAttachments = pgTable("announcement_attachments", {
+	id: text("id").primaryKey(),
+	announcementId: text("announcement_id").notNull().references(() => announcements.id, { onDelete: 'cascade' }),
+	fileName: text("file_name").notNull(),
+	fileUrl: text("file_url").notNull(),
+	fileSize: integer("file_size"),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+	announcementAttachmentsAnnouncementIdIdx: index("announcement_attachments_announcement_id_idx").on(table.announcementId),
+}));
+
+export const announcementReadReceipts = pgTable("announcement_read_receipts", {
+	id: text("id").primaryKey(),
+	userId: text("user_id").notNull().references(() => user.id, { onDelete: 'cascade' }),
+	announcementId: text("announcement_id").notNull().references(() => announcements.id, { onDelete: 'cascade' }),
+	readAt: timestamp("read_at").notNull().defaultNow(),
+}, (table) => ({
+	announcementReadReceiptsUserIdIdx: index("announcement_read_receipts_user_id_idx").on(table.userId),
+	announcementReadReceiptsAnnouncementIdIdx: index("announcement_read_receipts_announcement_id_idx").on(table.announcementId),
+	announcementReadReceiptsUniqueIdx: index("announcement_read_receipts_unique_idx").on(table.userId, table.announcementId),
+}));

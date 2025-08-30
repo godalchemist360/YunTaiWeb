@@ -1,4 +1,19 @@
+'use client';
+
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { Button } from '@/components/ui/button';
+import { AddAnnouncementDialog } from '@/components/announcements/add-announcement-dialog';
+import { ViewAnnouncementDialog } from '@/components/announcements/view-announcement-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   AlertTriangle,
   Bell,
@@ -8,9 +23,257 @@ import {
   FileText,
   Info,
   Megaphone,
+  Plus,
+  Trash2,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-export default async function AnnouncementsPage() {
+interface Announcement {
+  id: string;
+  title: string;
+  type: 'general' | 'important' | 'resource' | 'training';
+  isImportant: boolean;
+  publishAt: string;
+  contentPreview: string;
+  isRead: boolean;
+}
+
+interface Summary {
+  total: number;
+  unread: number;
+  important: number;
+}
+
+export default function AnnouncementsPage() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'important'>('all');
+  const [hasMarkedRead, setHasMarkedRead] = useState<Record<string, boolean>>({});
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [summary, setSummary] = useState<Summary>({ total: 0, unread: 0, important: 0 });
+  const [loading, setLoading] = useState(true);
+
+  // 刪除確認對話框狀態
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+
+  // 載入公告列表
+  const loadAnnouncements = async () => {
+    try {
+      setLoading(true);
+      const filter = activeFilter === 'all' ? 'all' : activeFilter;
+      const response = await fetch(`/api/announcements?filter=${filter}`);
+      if (response.ok) {
+        const data = await response.json();
+        setAnnouncements(data.items || []);
+      }
+    } catch (error) {
+      console.error('載入公告失敗:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 載入統計資料
+  const loadSummary = async () => {
+    try {
+      const response = await fetch('/api/announcements/summary');
+      if (response.ok) {
+        const data = await response.json();
+        setSummary(data);
+      }
+    } catch (error) {
+      console.error('載入統計資料失敗:', error);
+    }
+  };
+
+  // 初始載入
+  useEffect(() => {
+    loadAnnouncements();
+    loadSummary();
+  }, [activeFilter]);
+
+  const handleToggleRead = (id: string) => {
+    setAnnouncements(prev =>
+      prev.map(announcement =>
+        announcement.id === id
+          ? { ...announcement, isRead: !announcement.isRead }
+          : announcement
+      )
+    );
+  };
+
+  const handleDeleteAnnouncement = async (id: string, title: string) => {
+    setDeleteTarget({ id, title });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      const response = await fetch(`/api/announcements/${deleteTarget.id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        // 重新載入資料
+        loadAnnouncements();
+        loadSummary();
+      } else {
+        alert('刪除失敗，請稍後再試');
+      }
+    } catch (error) {
+      console.error('刪除公告失敗:', error);
+      alert('刪除失敗，請稍後再試');
+    } finally {
+      setDeleteDialogOpen(false);
+      setDeleteTarget(null);
+    }
+  };
+
+  const handleViewAnnouncement = (announcement: Announcement) => {
+    setSelectedAnnouncement(announcement);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleMarkAsRead = async (announcementId: string) => {
+    try {
+      const response = await fetch(`/api/announcements/${announcementId}/read`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        // Optimistic UI 更新
+        setAnnouncements(prev =>
+          prev.map(announcement =>
+            announcement.id === announcementId
+              ? { ...announcement, isRead: true }
+              : announcement
+          )
+        );
+
+        // 記錄已標記為已讀
+        setHasMarkedRead(prev => ({
+          ...prev,
+          [announcementId]: true
+        }));
+
+        // 重新載入統計資料
+        loadSummary();
+      }
+    } catch (error) {
+      console.error('標記已讀失敗:', error);
+    }
+  };
+
+  const handleAddAnnouncement = async (data: {
+    title: string;
+    type: string;
+    description: string;
+    attachments: File[];
+  }) => {
+    try {
+      const response = await fetch('/api/announcements', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: data.title,
+          type: data.type,
+          content: data.description,
+          isImportant: data.type === 'important',
+          // 暫時不處理附件，因為需要先上傳到雲端儲存
+          attachments: [],
+        }),
+      });
+
+      if (response.ok) {
+        // 重新載入資料
+        loadAnnouncements();
+        loadSummary();
+        setIsAddDialogOpen(false);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('新增公告失敗:', errorData);
+        alert(`新增公告失敗: ${errorData.error || '請稍後再試'}`);
+      }
+    } catch (error) {
+      console.error('新增公告失敗:', error);
+      alert('新增公告失敗，請稍後再試');
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'general':
+        return '一般';
+      case 'important':
+        return '重要';
+      case 'resource':
+        return '資源';
+      case 'training':
+        return '培訓';
+      default:
+        return type;
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'general':
+        return Info;
+      case 'important':
+        return AlertTriangle;
+      case 'resource':
+        return CheckCircle;
+      case 'training':
+        return Calendar;
+      default:
+        return Info;
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'general':
+        return 'from-blue-500 to-blue-600';
+      case 'important':
+        return 'from-orange-500 to-red-500';
+      case 'resource':
+        return 'from-green-500 to-emerald-500';
+      case 'training':
+        return 'from-purple-500 to-indigo-500';
+      default:
+        return 'from-blue-500 to-blue-600';
+    }
+  };
+
+  const getTypeTagColor = (type: string) => {
+    switch (type) {
+      case 'general':
+        return 'bg-blue-100 text-blue-800';
+      case 'important':
+        return 'bg-red-100 text-red-800';
+      case 'resource':
+        return 'bg-green-100 text-green-800';
+      case 'training':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('zh-TW', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
   const breadcrumbs = [
     {
       label: '公告信息',
@@ -20,193 +283,204 @@ export default async function AnnouncementsPage() {
 
   return (
     <>
-      <DashboardHeader breadcrumbs={breadcrumbs} />
-
       <div className="flex flex-1 flex-col">
-        <div className="@container/main flex flex-1 flex-col gap-2">
-          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-            <div className="px-4 lg:px-6">
-              <div className="flex flex-col gap-6">
-                {/* Header Section */}
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
-                    <Megaphone className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900">
-                      公告信息
-                    </h1>
-                    <p className="text-gray-600">查看最新的公告和重要信息</p>
-                  </div>
-                </div>
+        <DashboardHeader breadcrumbs={breadcrumbs} />
 
-                {/* Stats Cards */}
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-                        <Bell className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          總公告數
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">24</p>
-                      </div>
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <div className="px-4 lg:px-6">
+                <div className="flex flex-col gap-6">
+                  {/* Header Section */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
+                      <Megaphone className="h-6 w-6" />
                     </div>
-                  </div>
-
-                  <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          已讀公告
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">18</p>
-                      </div>
+                    <div className="flex-1">
+                      <h1 className="text-3xl font-bold text-gray-900">
+                        公告信息
+                      </h1>
+                      <p className="text-gray-600">
+                        查看最新的公告和重要信息
+                      </p>
                     </div>
+                    <Button
+                      onClick={() => setIsAddDialogOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      新增公告
+                    </Button>
                   </div>
 
-                  <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100">
-                        <AlertTriangle className="h-5 w-5 text-orange-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          重要公告
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">3</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Announcements Grid */}
-                <div className="grid gap-6">
-                  {/* System Maintenance Notice */}
-                  <div className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-blue-200">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg">
-                        <AlertTriangle className="h-6 w-6" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            系統維護通知
-                          </h3>
-                          <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
-                            重要
-                          </span>
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div
+                      className={`rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md cursor-pointer ${
+                        activeFilter === 'all' ? 'border-blue-300 bg-blue-50' : 'hover:border-blue-200'
+                      }`}
+                      onClick={() => setActiveFilter('all')}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
+                          <Bell className="h-5 w-5 text-blue-600" />
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                          <Calendar className="h-4 w-4" />
-                          <span>2024年1月15日</span>
-                          <Clock className="h-4 w-4 ml-2" />
-                          <span>14:00-16:00</span>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">
+                            總公告數
+                          </p>
+                          <p className="text-2xl font-bold text-gray-900">{summary.total}</p>
                         </div>
-                        <p className="text-gray-700 leading-relaxed">
-                          系統將進行例行維護，期間可能會有短暫的服務中斷，請提前做好準備。
-                          維護期間將無法訪問系統功能，建議提前完成重要操作。
-                        </p>
-                        <div className="mt-4 flex items-center gap-2">
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors">
-                            <FileText className="h-4 w-4" />
-                            查看詳情
-                          </button>
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
-                            <CheckCircle className="h-4 w-4" />
-                            標記已讀
-                          </button>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md cursor-pointer ${
+                        activeFilter === 'unread' ? 'border-orange-300 bg-orange-50' : 'hover:border-orange-200'
+                      }`}
+                      onClick={() => setActiveFilter('unread')}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100">
+                          <Info className="h-5 w-5 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">
+                            未讀公告
+                          </p>
+                          <p className="text-2xl font-bold text-gray-900">{summary.unread}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md cursor-pointer ${
+                        activeFilter === 'important' ? 'border-red-300 bg-red-50' : 'hover:border-red-200'
+                      }`}
+                      onClick={() => setActiveFilter('important')}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
+                          <AlertTriangle className="h-5 w-5 text-red-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">
+                            重要公告
+                          </p>
+                          <p className="text-2xl font-bold text-gray-900">{summary.important}</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* New Feature Launch */}
-                  <div className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-green-200">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-lg">
-                        <CheckCircle className="h-6 w-6" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            新功能上線
-                          </h3>
-                          <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                            新功能
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                          <Calendar className="h-4 w-4" />
-                          <span>2024年1月10日</span>
-                        </div>
-                        <p className="text-gray-700 leading-relaxed">
-                          客戶資料管理功能已全面升級，新增批量操作和進階搜尋功能。
-                          現在您可以更高效地管理客戶資料，提升工作效率。
-                        </p>
-                        <div className="mt-4 flex items-center gap-2">
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-100 transition-colors">
-                            <FileText className="h-4 w-4" />
-                            功能介紹
-                          </button>
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
-                            <CheckCircle className="h-4 w-4" />
-                            標記已讀
-                          </button>
-                        </div>
-                      </div>
+                  {/* Announcements Grid */}
+                  {loading ? (
+                    <div className="flex justify-center items-center py-12">
+                      <div className="text-gray-500">載入中...</div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {announcements.map((announcement) => {
+                        const IconComponent = getTypeIcon(announcement.type);
+                        return (
+                          <div
+                            key={announcement.id}
+                            className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-blue-200 relative cursor-pointer"
+                            onClick={() => handleViewAnnouncement(announcement)}
+                          >
+                            <div className="flex flex-col items-center text-center">
+                              <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${getTypeColor(announcement.type)} text-white shadow-lg mb-3`}>
+                                <IconComponent className="h-6 w-6" />
+                              </div>
+                              <div className="w-full">
+                                <div className="flex flex-col items-center gap-2 mb-2">
+                                  <h3 className="text-base font-semibold text-gray-900 text-center">
+                                    {announcement.title}
+                                  </h3>
+                                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getTypeTagColor(announcement.type)}`}>
+                                    {getTypeLabel(announcement.type)}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-3">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>{formatDate(announcement.publishAt)}</span>
+                                </div>
 
-                  {/* Training Course Schedule */}
-                  <div className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-purple-200">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-lg">
-                        <Calendar className="h-6 w-6" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            培訓課程安排
-                          </h3>
-                          <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
-                            培訓
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                          <Calendar className="h-4 w-4" />
-                          <span>2024年1月20日</span>
-                          <Clock className="h-4 w-4 ml-2" />
-                          <span>10:00-12:00</span>
-                        </div>
-                        <p className="text-gray-700 leading-relaxed">
-                          新系統操作培訓課程將於下週舉行，請各位同仁準時參加。
-                          課程將涵蓋系統新功能的使用方法和最佳實踐。
-                        </p>
-                        <div className="mt-4 flex items-center gap-2">
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100 transition-colors">
-                            <FileText className="h-4 w-4" />
-                            課程大綱
-                          </button>
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors">
-                            <Calendar className="h-4 w-4" />
-                            加入行事曆
-                          </button>
-                        </div>
-                      </div>
+                                <div className="flex justify-center">
+                                  <span
+                                    className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium ${
+                                      announcement.isRead
+                                        ? 'bg-green-50 text-green-700'
+                                        : 'bg-red-50 text-red-700'
+                                    }`}
+                                  >
+                                    <CheckCircle className="h-3 w-3" />
+                                    {announcement.isRead ? '已讀' : '未讀'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            {/* Delete Button */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteAnnouncement(announcement.id, announcement.title);
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        );
+                      })}
                     </div>
-                  </div>
+                  )}
+
+                  {!loading && announcements.length === 0 && (
+                    <div className="flex justify-center items-center py-12">
+                      <div className="text-gray-500">目前沒有公告</div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Add Announcement Dialog */}
+      <AddAnnouncementDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onSubmit={handleAddAnnouncement}
+      />
+
+      {/* View Announcement Dialog */}
+      <ViewAnnouncementDialog
+        open={isViewDialogOpen}
+        onOpenChange={setIsViewDialogOpen}
+        announcement={selectedAnnouncement}
+        onMarkAsRead={handleMarkAsRead}
+        hasMarkedRead={hasMarkedRead}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>系統提醒</AlertDialogTitle>
+            <AlertDialogDescription>
+              確定要刪除公告「{deleteTarget?.title}」嗎？此操作無法復原。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>刪除</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

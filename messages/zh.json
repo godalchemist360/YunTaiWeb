@@ -728,7 +728,7 @@
           "description": "永久删除您的账号和所有内容",
           "warning": "此操作是不可逆的，请谨慎操作",
           "button": "删除账号",
-          "confirmTitle": "删除账号",
+          "confirmTitle": "系统提醒",
           "confirmDescription": "您确定要删除您的账号吗？此操作无法撤销",
           "confirm": "删除",
           "cancel": "取消",

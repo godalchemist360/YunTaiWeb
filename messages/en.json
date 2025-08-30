@@ -728,7 +728,7 @@
           "description": "Permanently remove your account and all of its contents",
           "warning": "This action is not reversible, so please continue with caution",
           "button": "Delete Account",
-          "confirmTitle": "Delete Account",
+          "confirmTitle": "System Notice",
           "confirmDescription": "Are you sure you want to delete your account? This action cannot be undone.",
           "confirm": "Delete",
           "cancel": "Cancel",

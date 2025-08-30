@@ -20,11 +20,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file type (optional, based on your requirements)
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    // Validate file type - 支援更多檔案類型
+    const allowedTypes = [
+      // 圖片格式
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      // 文件格式
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      // 文字格式
+      'text/plain',
+      'text/csv',
+      // 壓縮格式
+      'application/zip',
+      'application/x-rar-compressed',
+      // 其他常用格式
+      'application/json',
+      'application/xml',
+      'text/html'
+    ];
+
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: 'File type not supported' },
+        { error: 'File type not supported. Please upload images, documents, or other supported file types.' },
         { status: 400 }
       );
     }
