@@ -52,7 +52,12 @@ export function AddAccountDialog({
 
   const handleSubmit = async () => {
     // 基本驗證
-    if (!formData.displayName || !formData.username || !formData.password || !formData.level) {
+    if (
+      !formData.displayName ||
+      !formData.username ||
+      !formData.password ||
+      !formData.level
+    ) {
       alert('請填寫所有必填欄位');
       return;
     }
@@ -152,7 +157,9 @@ export function AddAccountDialog({
           <Button variant="outline" onClick={handleCancel}>
             取消
           </Button>
-          <Button onClick={handleSubmit} type="button">確定新增</Button>
+          <Button onClick={handleSubmit} type="button">
+            確定新增
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

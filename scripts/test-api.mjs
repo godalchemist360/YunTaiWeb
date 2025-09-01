@@ -1,6 +1,6 @@
-import { config } from 'dotenv';
-import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import { config } from 'dotenv';
 
 // 載入 .env 檔案
 const __filename = fileURLToPath(import.meta.url);
@@ -23,7 +23,9 @@ async function testAPI() {
     }
 
     // 測試 GET /api/announcements/summary
-    const summaryResponse = await fetch('http://localhost:3000/api/announcements/summary');
+    const summaryResponse = await fetch(
+      'http://localhost:3000/api/announcements/summary'
+    );
     console.log('GET /api/announcements/summary 狀態:', summaryResponse.status);
 
     if (summaryResponse.ok) {
@@ -34,19 +36,22 @@ async function testAPI() {
     }
 
     // 測試 POST /api/announcements
-    const postResponse = await fetch('http://localhost:3000/api/announcements', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title: '測試公告',
-        type: 'general',
-        content: '這是一個測試公告的內容',
-        isImportant: false,
-        attachments: [],
-      }),
-    });
+    const postResponse = await fetch(
+      'http://localhost:3000/api/announcements',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: '測試公告',
+          type: 'general',
+          content: '這是一個測試公告的內容',
+          isImportant: false,
+          attachments: [],
+        }),
+      }
+    );
 
     console.log('POST /api/announcements 狀態:', postResponse.status);
 
@@ -57,7 +62,6 @@ async function testAPI() {
       const errorData = await postResponse.json().catch(() => ({}));
       console.log('新增公告失敗:', errorData);
     }
-
   } catch (error) {
     console.error('測試失敗:', error);
   }

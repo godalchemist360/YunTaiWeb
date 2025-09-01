@@ -1,7 +1,7 @@
-import { Pool } from 'pg';
-import { config } from 'dotenv';
-import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import { config } from 'dotenv';
+import { Pool } from 'pg';
 
 // 載入 .env 檔案
 const __filename = fileURLToPath(import.meta.url);
@@ -16,7 +16,10 @@ const pool = new Pool({
 async function checkAndCreateTables() {
   try {
     console.log('檢查資料庫表結構...');
-    console.log('DATABASE_URL:', process.env.DATABASE_URL ? '已設定' : '未設定');
+    console.log(
+      'DATABASE_URL:',
+      process.env.DATABASE_URL ? '已設定' : '未設定'
+    );
 
     // 檢查 announcements 表是否存在
     const announcementsCheck = await pool.query(`

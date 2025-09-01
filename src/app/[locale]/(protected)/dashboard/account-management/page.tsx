@@ -3,8 +3,6 @@
 import { AddAccountDialog } from '@/components/account-management/add-account-dialog';
 import { EditAccountDialog } from '@/components/account-management/edit-account-dialog';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +13,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -32,6 +32,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
+  createUser,
+  deleteUser,
+  fetchStats,
+  fetchUsers,
+  updateUser,
+} from '@/lib/usersClient';
+import {
   Edit,
   Filter,
   Plus,
@@ -43,8 +50,7 @@ import {
   UserX,
   Users,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { createUser, fetchStats, fetchUsers, updateUser, deleteUser } from '@/lib/usersClient';
+import { useEffect, useState } from 'react';
 
 export default function AccountManagementPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -60,7 +66,10 @@ export default function AccountManagementPage() {
 
   // 刪除確認對話框狀態
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: number; displayName: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: number;
+    displayName: string;
+  } | null>(null);
 
   const breadcrumbs = [
     {
@@ -305,7 +314,11 @@ export default function AccountManagementPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold text-purple-600">
-                        {accounts.filter((account: any) => account.role === 'management').length}
+                        {
+                          accounts.filter(
+                            (account: any) => account.role === 'management'
+                          ).length
+                        }
                       </div>
                     </CardContent>
                   </Card>
@@ -356,9 +369,7 @@ export default function AccountManagementPage() {
                               {account.display_name}
                             </TableCell>
                             <TableCell>{account.account}</TableCell>
-                            <TableCell>
-                              {getLevelBadge(account.role)}
-                            </TableCell>
+                            <TableCell>{getLevelBadge(account.role)}</TableCell>
                             <TableCell>
                               {getStatusBadge(account.status, account.id)}
                             </TableCell>
@@ -376,7 +387,12 @@ export default function AccountManagementPage() {
                                   variant="outline"
                                   size="sm"
                                   className="text-red-600 hover:text-red-700"
-                                  onClick={() => handleDeleteUser(account.id, account.display_name)}
+                                  onClick={() =>
+                                    handleDeleteUser(
+                                      account.id,
+                                      account.display_name
+                                    )
+                                  }
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -419,7 +435,9 @@ export default function AccountManagementPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>取消</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              取消
+            </AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete}>刪除</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

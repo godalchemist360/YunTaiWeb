@@ -1,7 +1,7 @@
-import { Pool } from 'pg';
-import { config } from 'dotenv';
-import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import { config } from 'dotenv';
+import { Pool } from 'pg';
 
 // 載入 .env 檔案
 const __filename = fileURLToPath(import.meta.url);
@@ -31,7 +31,7 @@ async function checkConstraints() {
     `);
 
     console.log('announcements 表約束:');
-    constraintsResult.rows.forEach(row => {
+    constraintsResult.rows.forEach((row) => {
       console.log(`  ${row.constraint_name}: ${row.constraint_type}`);
       if (row.check_clause) {
         console.log(`    檢查條件: ${row.check_clause}`);
@@ -49,7 +49,7 @@ async function checkConstraints() {
 
     if (typeCheckResult.rows.length > 0) {
       console.log('\ntype 欄位檢查約束:');
-      typeCheckResult.rows.forEach(row => {
+      typeCheckResult.rows.forEach((row) => {
         console.log(`  ${row.constraint_name}: ${row.check_clause}`);
       });
     }
@@ -60,10 +60,9 @@ async function checkConstraints() {
     `);
 
     console.log('\n現有的 type 值:');
-    existingTypesResult.rows.forEach(row => {
+    existingTypesResult.rows.forEach((row) => {
       console.log(`  ${row.type}`);
     });
-
   } catch (error) {
     console.error('檢查約束失敗:', error);
   } finally {

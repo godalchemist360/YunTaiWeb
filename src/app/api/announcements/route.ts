@@ -121,9 +121,9 @@ export async function POST(req: Request) {
       console.log('處理附件...');
       for (const f of attachments) {
         await pool.query(
-          `INSERT INTO announcement_attachments (announcement_id, file_name, file_url, file_size)
-           VALUES ($1, $2, $3, $4)`,
-          [id, f.fileName, f.fileUrl, f.fileSize ?? null]
+          `INSERT INTO announcement_attachments (announcement_id, file_name, file_size, mime_type, data)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [id, f.fileName, f.fileSize ?? null, f.mimeType, f.data]
         )
       }
     }
@@ -138,7 +138,7 @@ export async function POST(req: Request) {
 
     // 查詢附件
     const att = await pool.query<any>(
-      `SELECT id, file_name AS "fileName", file_url AS "fileUrl", file_size AS "fileSize", created_at AS "createdAt"
+      `SELECT id, file_name AS "fileName", file_size AS "fileSize", mime_type AS "mimeType", created_at AS "createdAt"
        FROM announcement_attachments WHERE announcement_id = $1 ORDER BY created_at ASC`,
       [id]
     )

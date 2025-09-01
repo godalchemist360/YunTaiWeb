@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import { websiteConfig } from '@/config/website';
 import { getDb } from '@/db';
 import { creditTransaction, userCredit } from '@/db/schema';
+import { cacheKeys, clearUserCache, dbCache } from '@/lib/db-cache';
 import { findPlanByPriceId } from '@/lib/price-plan';
 import { addDays, isAfter } from 'date-fns';
 import { and, asc, eq, gt, isNull, not, or } from 'drizzle-orm';
@@ -14,6 +15,13 @@ import { CREDIT_TRANSACTION_TYPE } from './types';
  */
 export async function getUserCredits(userId: string): Promise<number> {
   try {
+    // 嘗試從快取取得
+    const cacheKey = cacheKeys.userCredits(userId);
+    const cached = dbCache.get<number>(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+
     const db = await getDb();
 
     // Optimized query: only select the needed field
@@ -24,7 +32,12 @@ export async function getUserCredits(userId: string): Promise<number> {
       .where(eq(userCredit.userId, userId))
       .limit(1);
 
-    return record[0]?.currentCredits || 0;
+    const credits = record[0]?.currentCredits || 0;
+
+    // 快取結果（2分鐘快取時間，因為積分會頻繁變動）
+    dbCache.set(cacheKey, credits, 2 * 60 * 1000);
+
+    return credits;
   } catch (error) {
     console.error('getUserCredits, error:', error);
     // Return 0 on error to prevent UI from breaking
@@ -44,6 +57,9 @@ export async function updateUserCredits(userId: string, credits: number) {
       .update(userCredit)
       .set({ currentCredits: credits, updatedAt: new Date() })
       .where(eq(userCredit.userId, userId));
+
+    // 清除相關快取
+    dbCache.delete(cacheKeys.userCredits(userId));
   } catch (error) {
     console.error('updateUserCredits, error:', error);
   }

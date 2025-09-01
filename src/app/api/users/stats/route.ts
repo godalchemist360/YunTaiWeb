@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
@@ -17,13 +17,16 @@ export async function GET() {
     const stats = result.rows[0];
 
     return NextResponse.json({
-      total: parseInt(stats.total as string),
-      active: parseInt(stats.active as string),
-      disabled: parseInt(stats.disabled as string),
-      admin_count: parseInt(stats.admin_count as string)
+      total: Number.parseInt(stats.total as string),
+      active: Number.parseInt(stats.active as string),
+      disabled: Number.parseInt(stats.disabled as string),
+      admin_count: Number.parseInt(stats.admin_count as string),
     });
   } catch (error) {
     console.error('GET /api/users/stats error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

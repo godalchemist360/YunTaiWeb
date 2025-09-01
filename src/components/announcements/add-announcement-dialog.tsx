@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -12,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,7 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { Paperclip, X } from 'lucide-react';
+import { useState } from 'react';
 
 interface AddAnnouncementDialogProps {
   open: boolean;
@@ -68,11 +68,11 @@ export function AddAnnouncementDialog({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setAttachments(prev => [...prev, ...files]);
+    setAttachments((prev) => [...prev, ...files]);
   };
 
   const removeAttachment = (index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -142,7 +142,9 @@ export function AddAnnouncementDialog({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => document.getElementById('file-upload')?.click()}
+                  onClick={() =>
+                    document.getElementById('file-upload')?.click()
+                  }
                 >
                   <Paperclip className="mr-2 h-4 w-4" />
                   選擇檔案
@@ -171,7 +173,9 @@ export function AddAnnouncementDialog({
                       >
                         <div className="flex items-center gap-2">
                           <Paperclip className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-700">{file.name}</span>
+                          <span className="text-sm text-gray-700">
+                            {file.name}
+                          </span>
                           <span className="text-xs text-gray-500">
                             ({(file.size / 1024 / 1024).toFixed(2)} MB)
                           </span>
@@ -202,9 +206,7 @@ export function AddAnnouncementDialog({
             >
               取消
             </Button>
-            <Button type="submit">
-              新增公告
-            </Button>
+            <Button type="submit">新增公告</Button>
           </DialogFooter>
         </form>
       </DialogContent>

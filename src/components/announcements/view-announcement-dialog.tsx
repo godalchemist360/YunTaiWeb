@@ -9,8 +9,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Calendar, Clock, AlertTriangle, CheckCircle, Download, Info } from 'lucide-react';
-import { useEffect, useState, useRef } from 'react';
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Download,
+  Info,
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Announcement {
   id: string;
@@ -23,8 +30,9 @@ interface Announcement {
   attachments?: Array<{
     id: string;
     fileName: string;
-    fileUrl: string;
     fileSize?: number;
+    mimeType?: string;
+    checksumSha256?: string;
     createdAt: string;
   }>;
 }
@@ -46,7 +54,9 @@ export function ViewAnnouncementDialog({
 }: ViewAnnouncementDialogProps) {
   const [secondsVisible, setSecondsVisible] = useState(0);
   const [isPageVisible, setIsPageVisible] = useState(true);
-  const [fullAnnouncement, setFullAnnouncement] = useState<Announcement | null>(null);
+  const [fullAnnouncement, setFullAnnouncement] = useState<Announcement | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
   const readTimerIdRef = useRef<number | null>(null);
   const progressTimerIdRef = useRef<number | null>(null);
@@ -178,13 +188,18 @@ export function ViewAnnouncementDialog({
 
     // 啟動進度計時器（每250ms更新一次）
     progressTimerIdRef.current = window.setInterval(() => {
-      setSecondsVisible(prev => prev + 0.25);
+      setSecondsVisible((prev) => prev + 0.25);
     }, 250);
 
     // 啟動3秒計時器
     readTimerIdRef.current = window.setTimeout(() => {
       // 再次確認條件
-      if (open && isPageVisible && currentAnnouncementId && !hasMarkedRead[currentAnnouncementId]) {
+      if (
+        open &&
+        isPageVisible &&
+        currentAnnouncementId &&
+        !hasMarkedRead[currentAnnouncementId]
+      ) {
         // 發送標記已讀請求
         markAsRead();
       }
@@ -194,9 +209,12 @@ export function ViewAnnouncementDialog({
   const markAsRead = async () => {
     try {
       // 調用實際的API
-      const response = await fetch(`/api/announcements/${currentAnnouncementId}/read`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/announcements/${currentAnnouncementId}/read`,
+        {
+          method: 'POST',
+        }
+      );
 
       if (response.ok) {
         // 成功後調用回調函數
@@ -220,18 +238,27 @@ export function ViewAnnouncementDialog({
 
       if (!isVisible) {
         clearTimers();
-      } else if (open && currentAnnouncementId && !hasMarkedRead[currentAnnouncementId]) {
+      } else if (
+        open &&
+        currentAnnouncementId &&
+        !hasMarkedRead[currentAnnouncementId]
+      ) {
         startReadTimer();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [open, currentAnnouncementId, hasMarkedRead]);
 
   // 監聽Modal開啟/關閉
   useEffect(() => {
-    if (open && currentAnnouncementId && !hasMarkedRead[currentAnnouncementId]) {
+    if (
+      open &&
+      currentAnnouncementId &&
+      !hasMarkedRead[currentAnnouncementId]
+    ) {
       startReadTimer();
     } else {
       clearTimers();
@@ -243,15 +270,22 @@ export function ViewAnnouncementDialog({
   // 監聽公告變化
   useEffect(() => {
     clearTimers();
-    if (open && currentAnnouncementId && !hasMarkedRead[currentAnnouncementId]) {
+    if (
+      open &&
+      currentAnnouncementId &&
+      !hasMarkedRead[currentAnnouncementId]
+    ) {
       startReadTimer();
     }
   }, [currentAnnouncementId, open, hasMarkedRead]);
 
   const handleDownload = (attachment: any) => {
+    // 使用新的附件下載 API
+    const downloadUrl = `/api/announcements/attachments/${attachment.id}`;
+
     // 創建下載連結
     const link = document.createElement('a');
-    link.href = attachment.fileUrl;
+    link.href = downloadUrl;
     link.download = attachment.fileName;
     link.target = '_blank'; // 在新標籤頁開啟
     document.body.appendChild(link);
@@ -271,7 +305,9 @@ export function ViewAnnouncementDialog({
       <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${getTypeColor(displayAnnouncement.type)} text-white shadow-lg`}>
+            <div
+              className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${getTypeColor(displayAnnouncement.type)} text-white shadow-lg`}
+            >
               <IconComponent className="h-6 w-6" />
             </div>
             <div className="flex-1">
@@ -279,7 +315,9 @@ export function ViewAnnouncementDialog({
                 {displayAnnouncement.title}
               </DialogTitle>
               <div className="flex items-center gap-2 mt-1">
-                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getTypeTagColor(displayAnnouncement.type)}`}>
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getTypeTagColor(displayAnnouncement.type)}`}
+                >
                   {getTypeLabel(displayAnnouncement.type)}
                 </span>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -295,7 +333,9 @@ export function ViewAnnouncementDialog({
           {/* 公告內容 */}
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">公告內容</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                公告內容
+              </h3>
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {displayAnnouncement.content}
@@ -305,35 +345,41 @@ export function ViewAnnouncementDialog({
           </div>
 
           {/* 附件區域 */}
-          {displayAnnouncement.attachments && displayAnnouncement.attachments.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">附件 ({displayAnnouncement.attachments.length})</h3>
-              <div className="space-y-2">
-                {displayAnnouncement.attachments.map((attachment) => (
-                  <div
-                    key={attachment.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                    onClick={() => handleDownload(attachment)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Download className="h-4 w-4 text-gray-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{attachment.fileName}</p>
-                        {attachment.fileSize && (
-                          <p className="text-xs text-gray-500">
-                            {(attachment.fileSize / 1024 / 1024).toFixed(2)} MB
+          {displayAnnouncement.attachments &&
+            displayAnnouncement.attachments.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  附件 ({displayAnnouncement.attachments.length})
+                </h3>
+                <div className="space-y-2">
+                  {displayAnnouncement.attachments.map((attachment) => (
+                    <div
+                      key={attachment.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                      onClick={() => handleDownload(attachment)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Download className="h-4 w-4 text-gray-500" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {attachment.fileName}
                           </p>
-                        )}
+                          {attachment.fileSize && (
+                            <p className="text-xs text-gray-500">
+                              {(attachment.fileSize / 1024 / 1024).toFixed(2)}{' '}
+                              MB
+                            </p>
+                          )}
+                        </div>
                       </div>
+                      <Button variant="ghost" size="sm">
+                        下載
+                      </Button>
                     </div>
-                    <Button variant="ghost" size="sm">
-                      下載
-                    </Button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* 載入中狀態 */}
           {loading && (
@@ -346,19 +392,18 @@ export function ViewAnnouncementDialog({
         <DialogFooter>
           <div className="flex items-center gap-2 w-full justify-between">
             <div className="flex items-center gap-2">
-              <span className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
-                displayAnnouncement.isRead
-                  ? 'bg-green-50 text-green-700'
-                  : 'bg-red-50 text-red-700'
-              }`}>
+              <span
+                className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
+                  displayAnnouncement.isRead
+                    ? 'bg-green-50 text-green-700'
+                    : 'bg-red-50 text-red-700'
+                }`}
+              >
                 <CheckCircle className="h-4 w-4" />
                 {displayAnnouncement.isRead ? '已讀' : '未讀'}
               </span>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
               關閉
             </Button>
           </div>

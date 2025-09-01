@@ -8,7 +8,7 @@ export async function fetchUsers({
   status,
   role,
   page,
-  pageSize
+  pageSize,
 }: {
   q?: string;
   status?: string;
@@ -32,7 +32,7 @@ export async function createUser({
   display_name,
   role,
   status,
-  password
+  password,
 }: {
   account: string;
   display_name: string;
@@ -52,7 +52,12 @@ export async function createUser({
 
 export async function updateUser(
   id: number,
-  data: Partial<{ display_name: string; role: string; status: string; password: string }>
+  data: Partial<{
+    display_name: string;
+    role: string;
+    status: string;
+    password: string;
+  }>
 ) {
   const response = await fetch(`/api/users/${id}`, {
     method: 'PUT',

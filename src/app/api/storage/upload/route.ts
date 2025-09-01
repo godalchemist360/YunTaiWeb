@@ -44,12 +44,15 @@ export async function POST(request: NextRequest) {
       // 其他常用格式
       'application/json',
       'application/xml',
-      'text/html'
+      'text/html',
     ];
 
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: 'File type not supported. Please upload images, documents, or other supported file types.' },
+        {
+          error:
+            'File type not supported. Please upload images, documents, or other supported file types.',
+        },
         { status: 400 }
       );
     }

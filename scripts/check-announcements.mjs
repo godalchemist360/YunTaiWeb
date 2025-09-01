@@ -22,7 +22,9 @@ async function checkAnnouncements() {
 
     // 檢查公告數量
     console.log('2. 檢查公告總數:');
-    const countResult = await pool.query('SELECT COUNT(*) as count FROM announcements');
+    const countResult = await pool.query(
+      'SELECT COUNT(*) as count FROM announcements'
+    );
     console.log(`總公告數: ${countResult.rows[0].count}`);
     console.log('');
 
@@ -46,7 +48,9 @@ async function checkAnnouncements() {
     } else {
       console.log(`✅ 找到 ${announcements.rows.length} 個公告:`);
       announcements.rows.forEach((announcement, index) => {
-        console.log(`  ${index + 1}. ${announcement.title} (${announcement.type}) - ${announcement.publish_at}`);
+        console.log(
+          `  ${index + 1}. ${announcement.title} (${announcement.type}) - ${announcement.publish_at}`
+        );
       });
     }
     console.log('');
@@ -71,7 +75,9 @@ async function checkAnnouncements() {
     } else {
       console.log(`✅ 找到 ${attachments.rows.length} 個附件:`);
       attachments.rows.forEach((attachment, index) => {
-        console.log(`  ${index + 1}. ${attachment.file_name} (${attachment.announcement_title})`);
+        console.log(
+          `  ${index + 1}. ${attachment.file_name} (${attachment.announcement_title})`
+        );
       });
     }
     console.log('');
@@ -121,9 +127,10 @@ async function checkAnnouncements() {
     const apiResult = await pool.query(apiQuery, [userId]);
     console.log(`API 查詢結果: ${apiResult.rows.length} 個公告`);
     apiResult.rows.forEach((row, index) => {
-      console.log(`  ${index + 1}. ${row.title} (${row.type}) - 已讀: ${row.isRead} - 附件: ${row.attachmentCount}`);
+      console.log(
+        `  ${index + 1}. ${row.title} (${row.type}) - 已讀: ${row.isRead} - 附件: ${row.attachmentCount}`
+      );
     });
-
   } catch (error) {
     console.error('❌ 檢查失敗:', error);
   } finally {

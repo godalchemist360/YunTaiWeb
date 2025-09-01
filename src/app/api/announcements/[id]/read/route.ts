@@ -1,15 +1,18 @@
 export const runtime = 'nodejs';
 
+import { getUserId } from '@/lib/user'; // 若沒別名就用相對路徑
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
-import { getUserId } from '@/lib/user'; // 若沒別名就用相對路徑
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   const userId = getUserId(req);
   const announcementId = params.id;
 
@@ -26,6 +29,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('Error marking announcement as read:', e);
-    return NextResponse.json({ error: 'INTERNAL_SERVER_ERROR' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'INTERNAL_SERVER_ERROR' },
+      { status: 500 }
+    );
   }
 }

@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
+import bcrypt from 'bcryptjs';
 import { sql } from 'drizzle-orm';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
@@ -11,7 +11,7 @@ export async function PUT(
 ) {
   try {
     const { id: idStr } = await params;
-    const id = parseInt(idStr);
+    const id = Number.parseInt(idStr);
     if (isNaN(id)) {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
@@ -20,7 +20,9 @@ export async function PUT(
     const { display_name, role, status, password } = body;
 
     // 檢查用戶是否存在
-    const checkResult = await db.execute(sql`SELECT id FROM app_users WHERE id = ${id}`);
+    const checkResult = await db.execute(
+      sql`SELECT id FROM app_users WHERE id = ${id}`
+    );
 
     if (checkResult.rows.length === 0) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -57,7 +59,10 @@ export async function PUT(
     }
 
     if (updateFields.length === 0) {
-      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'No fields to update' },
+        { status: 400 }
+      );
     }
 
     queryParams.push(id);
@@ -72,7 +77,10 @@ export async function PUT(
     return NextResponse.json(result.rows[0]);
   } catch (error) {
     console.error('PUT /api/users/[id] error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -82,12 +90,14 @@ export async function DELETE(
 ) {
   try {
     const { id: idStr } = await params;
-    const id = parseInt(idStr);
+    const id = Number.parseInt(idStr);
     if (isNaN(id)) {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
 
-    const result = await db.execute(sql`DELETE FROM app_users WHERE id = ${id} RETURNING id`);
+    const result = await db.execute(
+      sql`DELETE FROM app_users WHERE id = ${id} RETURNING id`
+    );
 
     if (result.rows.length === 0) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -96,6 +106,9 @@ export async function DELETE(
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('DELETE /api/users/[id] error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

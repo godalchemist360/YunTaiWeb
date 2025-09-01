@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Eye, EyeOff } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface EditAccountDialogProps {
   open: boolean;
@@ -125,7 +125,10 @@ export function EditAccountDialog({
       };
 
       // 如果有輸入新密碼且驗證通過，則加入密碼欄位
-      if (formData.newPassword && formData.newPassword === formData.confirmPassword) {
+      if (
+        formData.newPassword &&
+        formData.newPassword === formData.confirmPassword
+      ) {
         payload.password = formData.newPassword;
       }
 
@@ -153,7 +156,10 @@ export function EditAccountDialog({
       console.error('編輯帳號失敗:', error);
 
       // 如果是密碼相關錯誤，清空密碼欄位
-      if (error.message?.includes('密碼') || error.message?.includes('password')) {
+      if (
+        error.message?.includes('密碼') ||
+        error.message?.includes('password')
+      ) {
         setFormData((prev) => ({
           ...prev,
           newPassword: '',
@@ -213,7 +219,9 @@ export function EditAccountDialog({
             <Input
               id="displayName"
               value={formData.display_name}
-              onChange={(e) => handleInputChange('display_name', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('display_name', e.target.value)
+              }
               placeholder="請輸入使用者姓名"
               className={errors.display_name ? 'border-red-500' : ''}
             />
@@ -248,9 +256,13 @@ export function EditAccountDialog({
                 id="newPassword"
                 type={showPassword ? 'text' : 'password'}
                 value={formData.newPassword}
-                onChange={(e) => handleInputChange('newPassword', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange('newPassword', e.target.value)
+                }
                 placeholder="請輸入新密碼"
-                className={errors.newPassword ? 'border-red-500 pr-10' : 'pr-10'}
+                className={
+                  errors.newPassword ? 'border-red-500 pr-10' : 'pr-10'
+                }
               />
               <Button
                 type="button"
@@ -278,9 +290,13 @@ export function EditAccountDialog({
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={formData.confirmPassword}
-                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange('confirmPassword', e.target.value)
+                }
                 placeholder="請再次輸入新密碼"
-                className={errors.confirmPassword ? 'border-red-500 pr-10' : 'pr-10'}
+                className={
+                  errors.confirmPassword ? 'border-red-500 pr-10' : 'pr-10'
+                }
               />
               <Button
                 type="button"

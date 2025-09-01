@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
+import bcrypt from 'bcryptjs';
 import { sql } from 'drizzle-orm';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
@@ -11,16 +11,18 @@ export async function GET(request: NextRequest) {
     const q = searchParams.get('q') || '';
     const status = searchParams.get('status') || '';
     const role = searchParams.get('role') || '';
-    const page = parseInt(searchParams.get('page') || '1');
-    const pageSize = parseInt(searchParams.get('pageSize') || '10');
+    const page = Number.parseInt(searchParams.get('page') || '1');
+    const pageSize = Number.parseInt(searchParams.get('pageSize') || '10');
     const offset = (page - 1) * pageSize;
 
-    let whereConditions = [];
-    let queryParams = [];
+    const whereConditions = [];
+    const queryParams = [];
     let paramIndex = 1;
 
     if (q) {
-      whereConditions.push(`(lower(account) like lower($${paramIndex}) OR lower(display_name) like lower($${paramIndex}))`);
+      whereConditions.push(
+        `(lower(account) like lower($${paramIndex}) OR lower(display_name) like lower($${paramIndex}))`
+      );
       queryParams.push(`%${q}%`);
       paramIndex++;
     }
@@ -37,11 +39,16 @@ export async function GET(request: NextRequest) {
       paramIndex++;
     }
 
-    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    const whereClause =
+      whereConditions.length > 0
+        ? `WHERE ${whereConditions.join(' AND ')}`
+        : '';
 
     // 查詢總數
-    const countResult = await db.execute(sql`SELECT COUNT(*) FROM app_users ${sql.raw(whereClause)}`);
-    const total = parseInt(countResult.rows[0].count as string);
+    const countResult = await db.execute(
+      sql`SELECT COUNT(*) FROM app_users ${sql.raw(whereClause)}`
+    );
+    const total = Number.parseInt(countResult.rows[0].count as string);
 
     // 查詢資料
     const dataResult = await db.execute(sql`
@@ -62,11 +69,14 @@ export async function GET(request: NextRequest) {
       items: dataResult.rows,
       total,
       page,
-      pageSize
+      pageSize,
     });
   } catch (error) {
     console.error('GET /api/users error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -76,7 +86,10 @@ export async function POST(request: NextRequest) {
     const { account, display_name, role, status = 'active', password } = body;
 
     if (!account || !display_name || !role || !password) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
     }
 
     const password_hash = await bcrypt.hash(password, 10);
@@ -90,6 +103,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result.rows[0]);
   } catch (error) {
     console.error('POST /api/users error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

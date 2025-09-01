@@ -1,22 +1,29 @@
 export const runtime = 'nodejs';
 
+import { dbMonitor } from '@/lib/db-monitor';
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
 
+/**
+ * 資料庫健康檢查 API
+ * 提供資料庫連線狀態、效能統計和系統健康狀況
+ */
 export async function GET() {
   try {
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }, // Neon 需要
+    const health = await dbMonitor.getSystemHealth();
+
+    return NextResponse.json({
+      success: true,
+      data: health,
     });
+  } catch (error) {
+    console.error('Database health check failed:', error);
 
-    const r = await pool.query<{ now: string }>('SELECT now() AS now');
-    await pool.end();
-
-    return NextResponse.json({ ok: true, now: r.rows[0].now });
-  } catch (e: any) {
     return NextResponse.json(
-      { ok: false, error: String(e) },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      },
       { status: 500 }
     );
   }
