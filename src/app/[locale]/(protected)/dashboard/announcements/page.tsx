@@ -1,9 +1,9 @@
 'use client';
 
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { Button } from '@/components/ui/button';
 import { AddAnnouncementDialog } from '@/components/announcements/add-announcement-dialog';
 import { ViewAnnouncementDialog } from '@/components/announcements/view-announcement-dialog';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { UserAvatar } from '@/components/layout/user-avatar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +14,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { useCurrentUser } from '@/hooks/use-current-user';
 import {
   AlertTriangle,
   Bell,
@@ -26,7 +28,7 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Announcement {
   id: string;
@@ -48,22 +50,37 @@ export default function AnnouncementsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'important'>('all');
-  const [hasMarkedRead, setHasMarkedRead] = useState<Record<string, boolean>>({});
+  const [activeFilter, setActiveFilter] = useState<
+    'all' | 'unread' | 'important'
+  >('all');
+  const [hasMarkedRead, setHasMarkedRead] = useState<Record<string, boolean>>(
+    {}
+  );
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [summary, setSummary] = useState<Summary>({ total: 0, unread: 0, important: 0 });
+  const [summary, setSummary] = useState<Summary>({
+    total: 0,
+    unread: 0,
+    important: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   // 刪除確認對話框狀態
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
 
   // 載入公告列表
   const loadAnnouncements = async () => {
     try {
       setLoading(true);
       const filter = activeFilter === 'all' ? 'all' : activeFilter;
-      const response = await fetch(`/api/announcements?filter=${filter}`);
+      const response = await fetch(`/api/announcements?filter=${filter}`, {
+        headers: {
+          'x-user-id': '00000000-0000-0000-0000-000000000001', // 開發用測試 ID
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setAnnouncements(data.items || []);
@@ -78,7 +95,11 @@ export default function AnnouncementsPage() {
   // 載入統計資料
   const loadSummary = async () => {
     try {
-      const response = await fetch('/api/announcements/summary');
+      const response = await fetch('/api/announcements/summary', {
+        headers: {
+          'x-user-id': '00000000-0000-0000-0000-000000000001', // 開發用測試 ID
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setSummary(data);
@@ -95,8 +116,8 @@ export default function AnnouncementsPage() {
   }, [activeFilter]);
 
   const handleToggleRead = (id: string) => {
-    setAnnouncements(prev =>
-      prev.map(announcement =>
+    setAnnouncements((prev) =>
+      prev.map((announcement) =>
         announcement.id === id
           ? { ...announcement, isRead: !announcement.isRead }
           : announcement
@@ -115,6 +136,9 @@ export default function AnnouncementsPage() {
     try {
       const response = await fetch(`/api/announcements/${deleteTarget.id}`, {
         method: 'DELETE',
+        headers: {
+          'x-user-id': '00000000-0000-0000-0000-000000000001', // 開發用測試 ID
+        },
       });
       if (response.ok) {
         // 重新載入資料
@@ -139,14 +163,20 @@ export default function AnnouncementsPage() {
 
   const handleMarkAsRead = async (announcementId: string) => {
     try {
-      const response = await fetch(`/api/announcements/${announcementId}/read`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/announcements/${announcementId}/read`,
+        {
+          method: 'POST',
+          headers: {
+            'x-user-id': '00000000-0000-0000-0000-000000000001', // 開發用測試 ID
+          },
+        }
+      );
 
       if (response.ok) {
         // Optimistic UI 更新
-        setAnnouncements(prev =>
-          prev.map(announcement =>
+        setAnnouncements((prev) =>
+          prev.map((announcement) =>
             announcement.id === announcementId
               ? { ...announcement, isRead: true }
               : announcement
@@ -154,9 +184,9 @@ export default function AnnouncementsPage() {
         );
 
         // 記錄已標記為已讀
-        setHasMarkedRead(prev => ({
+        setHasMarkedRead((prev) => ({
           ...prev,
-          [announcementId]: true
+          [announcementId]: true,
         }));
 
         // 重新載入統計資料
@@ -178,6 +208,7 @@ export default function AnnouncementsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': '00000000-0000-0000-0000-000000000001', // 開發用測試 ID
         },
         body: JSON.stringify({
           title: data.title,
@@ -281,10 +312,29 @@ export default function AnnouncementsPage() {
     },
   ];
 
+  // 獲取當前用戶信息
+  const currentUser = useCurrentUser();
+
   return (
     <>
       <div className="flex flex-1 flex-col">
-        <DashboardHeader breadcrumbs={breadcrumbs} />
+        <DashboardHeader
+          breadcrumbs={breadcrumbs}
+          actions={
+            currentUser && (
+              <div className="flex items-center gap-2">
+                <UserAvatar
+                  name={currentUser.name}
+                  image={currentUser.image}
+                  className="size-6"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  {currentUser.name}
+                </span>
+              </div>
+            )
+          }
+        />
 
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
@@ -300,9 +350,7 @@ export default function AnnouncementsPage() {
                       <h1 className="text-3xl font-bold text-gray-900">
                         公告信息
                       </h1>
-                      <p className="text-gray-600">
-                        查看最新的公告和重要信息
-                      </p>
+                      <p className="text-gray-600">查看最新的公告和重要信息</p>
                     </div>
                     <Button
                       onClick={() => setIsAddDialogOpen(true)}
@@ -317,7 +365,9 @@ export default function AnnouncementsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div
                       className={`rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md cursor-pointer ${
-                        activeFilter === 'all' ? 'border-blue-300 bg-blue-50' : 'hover:border-blue-200'
+                        activeFilter === 'all'
+                          ? 'border-blue-300 bg-blue-50'
+                          : 'hover:border-blue-200'
                       }`}
                       onClick={() => setActiveFilter('all')}
                     >
@@ -329,14 +379,18 @@ export default function AnnouncementsPage() {
                           <p className="text-sm font-medium text-gray-600">
                             總公告數
                           </p>
-                          <p className="text-2xl font-bold text-gray-900">{summary.total}</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {summary.total}
+                          </p>
                         </div>
                       </div>
                     </div>
 
                     <div
                       className={`rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md cursor-pointer ${
-                        activeFilter === 'unread' ? 'border-orange-300 bg-orange-50' : 'hover:border-orange-200'
+                        activeFilter === 'unread'
+                          ? 'border-orange-300 bg-orange-50'
+                          : 'hover:border-orange-200'
                       }`}
                       onClick={() => setActiveFilter('unread')}
                     >
@@ -348,14 +402,18 @@ export default function AnnouncementsPage() {
                           <p className="text-sm font-medium text-gray-600">
                             未讀公告
                           </p>
-                          <p className="text-2xl font-bold text-gray-900">{summary.unread}</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {summary.unread}
+                          </p>
                         </div>
                       </div>
                     </div>
 
                     <div
                       className={`rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md cursor-pointer ${
-                        activeFilter === 'important' ? 'border-red-300 bg-red-50' : 'hover:border-red-200'
+                        activeFilter === 'important'
+                          ? 'border-red-300 bg-red-50'
+                          : 'hover:border-red-200'
                       }`}
                       onClick={() => setActiveFilter('important')}
                     >
@@ -367,7 +425,9 @@ export default function AnnouncementsPage() {
                           <p className="text-sm font-medium text-gray-600">
                             重要公告
                           </p>
-                          <p className="text-2xl font-bold text-gray-900">{summary.important}</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {summary.important}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -389,7 +449,9 @@ export default function AnnouncementsPage() {
                             onClick={() => handleViewAnnouncement(announcement)}
                           >
                             <div className="flex flex-col items-center text-center">
-                              <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${getTypeColor(announcement.type)} text-white shadow-lg mb-3`}>
+                              <div
+                                className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${getTypeColor(announcement.type)} text-white shadow-lg mb-3`}
+                              >
                                 <IconComponent className="h-6 w-6" />
                               </div>
                               <div className="w-full">
@@ -397,13 +459,17 @@ export default function AnnouncementsPage() {
                                   <h3 className="text-base font-semibold text-gray-900 text-center">
                                     {announcement.title}
                                   </h3>
-                                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getTypeTagColor(announcement.type)}`}>
+                                  <span
+                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getTypeTagColor(announcement.type)}`}
+                                  >
                                     {getTypeLabel(announcement.type)}
                                   </span>
                                 </div>
                                 <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-3">
                                   <Calendar className="h-3 w-3" />
-                                  <span>{formatDate(announcement.publishAt)}</span>
+                                  <span>
+                                    {formatDate(announcement.publishAt)}
+                                  </span>
                                 </div>
 
                                 <div className="flex justify-center">
@@ -427,7 +493,10 @@ export default function AnnouncementsPage() {
                               className="absolute top-2 right-2 text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeleteAnnouncement(announcement.id, announcement.title);
+                                handleDeleteAnnouncement(
+                                  announcement.id,
+                                  announcement.title
+                                );
                               }}
                             >
                               <Trash2 className="h-3 w-3" />
@@ -476,7 +545,9 @@ export default function AnnouncementsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>取消</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              取消
+            </AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete}>刪除</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -217,3 +217,13 @@ async function onCreateUser(user: User) {
     }
   }
 }
+
+/**
+ * 以 session cookie 取得 userId（請依你的登入實作調整）
+ * - 若尚未串接登入，開發階段可在請求 header 帶入 x-user-id 模擬
+ */
+export async function getCurrentUserId(): Promise<string> {
+  // 開發階段使用預設測試 ID
+  // 實際部署時請實作正確的 session 驗證邏輯
+  return '00000000-0000-0000-0000-000000000001';
+}

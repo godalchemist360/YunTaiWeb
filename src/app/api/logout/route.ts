@@ -3,7 +3,7 @@ export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const response = NextResponse.json({ ok: true });
 
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       maxAge: 0, // 立即過期
     });
 
-    // 清除用戶信息 cookie
+    // 清除使用者帳號 cookie
     response.cookies.set('user-account', '', {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',

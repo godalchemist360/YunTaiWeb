@@ -10,10 +10,10 @@ const pool = new Pool({
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // 查詢附件資料
     const attachmentRes = await pool.query<any>(
@@ -47,8 +47,14 @@ export async function GET(
 
     // 設定適當的 headers
     response.headers.set('Content-Type', attachment.mime_type);
-    response.headers.set('Content-Disposition', `attachment; filename="${attachment.file_name}"`);
-    response.headers.set('Content-Length', attachment.file_size?.toString() || fileBuffer.length.toString());
+    response.headers.set(
+      'Content-Disposition',
+      `attachment; filename="${attachment.file_name}"`
+    );
+    response.headers.set(
+      'Content-Length',
+      attachment.file_size?.toString() || fileBuffer.length.toString()
+    );
 
     return response;
   } catch (error) {

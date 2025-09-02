@@ -4,7 +4,7 @@
  */
 
 import { checkDbHealth, getDb, getDbStats } from '@/db';
-import { dbCache } from '@/db-cache';
+import { dbCache } from '@/lib/db-cache';
 
 interface SystemHealth {
   database: {

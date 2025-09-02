@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,6 +15,11 @@ import { CreditsBalanceButton } from '../layout/credits-balance-button';
 import LocaleSwitcher from '../layout/locale-switcher';
 import { ModeSwitcher } from '../layout/mode-switcher';
 import { ThemeSelector } from '../layout/theme-selector';
+import { CustomUserButton } from '../layout/custom-user-button';
+import { UserButton } from '../layout/user-button';
+import { useCustomUser } from '@/hooks/use-custom-user';
+import { authClient } from '@/lib/auth-client';
+import { Skeleton } from '../ui/skeleton';
 
 interface DashboardBreadcrumbItem {
   label: string;
@@ -32,6 +39,12 @@ export function DashboardHeader({
   actions,
 }: DashboardHeaderProps) {
   const isDemo = isDemoWebsite();
+  const { data: session, isPending } = authClient.useSession();
+  const currentUser = session?.user;
+  const { user: customUser, isLoading: customUserLoading } = useCustomUser();
+
+  // 檢查是否有自定義登入的使用者
+  const hasCustomUser = customUser && !customUserLoading;
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -72,6 +85,17 @@ export function DashboardHeader({
         {/* dashboard header actions on the right side */}
         <div className="ml-auto flex items-center gap-3 pl-4">
           {actions}
+
+          {/* 使用者資訊顯示 */}
+          {isPending || customUserLoading ? (
+            <Skeleton className="size-8 border rounded-full" />
+          ) : hasCustomUser ? (
+            // 顯示自定義使用者
+            <CustomUserButton user={customUser} />
+          ) : currentUser ? (
+            // 顯示 Better Auth 使用者
+            <UserButton user={currentUser} />
+          ) : null}
 
           <CreditsBalanceButton />
           <ModeSwitcher />

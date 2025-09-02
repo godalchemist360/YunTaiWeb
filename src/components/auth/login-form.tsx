@@ -71,10 +71,10 @@ export const LoginForm = ({
 
   const LoginSchema = z.object({
     account: z.string().min(1, {
-      message: t('accountRequired'),
+      message: '請輸入帳號',
     }),
     password: z.string().min(1, {
-      message: t('passwordRequired'),
+      message: '請輸入密碼',
     }),
     captchaToken: captchaSchema,
   });
@@ -140,11 +140,11 @@ export const LoginForm = ({
           window.location.href = callbackUrl;
         }
       } else {
-        setError(data.error || t('loginFailed')); // 例如：帳號不存在/密碼錯誤
+        setError(data.error || '登入失敗'); // 例如：帳號不存在/密碼錯誤
       }
     } catch (err) {
       setIsPending(false);
-      setError(t('serverError') || '伺服器錯誤');
+      setError('伺服器錯誤');
       console.error('login, fetch error:', err);
     }
   };
@@ -208,9 +208,9 @@ export const LoginForm = ({
 
   return (
     <AuthCard
-      headerLabel={t('welcomeBack')}
+      headerLabel="歡迎回來"
       bottomButtonLabel={
-        websiteConfig.auth.enableRegistration ? t('signUpHint') : ''
+        websiteConfig.auth.enableRegistration ? '沒有賬號？註冊' : ''
       }
       bottomButtonHref={
         websiteConfig.auth.enableRegistration
@@ -228,7 +228,7 @@ export const LoginForm = ({
                 name="account"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('account')}</FormLabel>
+                    <FormLabel>帳號</FormLabel>
                     <FormControl>
                       <Input {...field} disabled={isPending} type="text" />
                     </FormControl>
@@ -241,7 +241,7 @@ export const LoginForm = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('password')}</FormLabel>
+                    <FormLabel>密碼</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
@@ -264,9 +264,7 @@ export const LoginForm = ({
                             <EyeIcon className="size-4 text-muted-foreground" />
                           )}
                           <span className="sr-only">
-                            {showPassword
-                              ? t('hidePassword')
-                              : t('showPassword')}
+                            {showPassword ? '隱藏密碼' : '顯示密碼'}
                           </span>
                         </Button>
                       </div>
@@ -293,7 +291,7 @@ export const LoginForm = ({
               {isPending && (
                 <Loader2Icon className="mr-2 size-4 animate-spin" />
               )}
-              <span>{t('signIn')}</span>
+              <span>登入</span>
             </Button>
           </form>
         </Form>

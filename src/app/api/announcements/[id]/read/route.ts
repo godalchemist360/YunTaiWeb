@@ -1,32 +1,45 @@
 export const runtime = 'nodejs';
 
-import { getUserId } from '@/lib/user'; // 若沒別名就用相對路徑
+import { getCurrentUserId } from '@/lib/auth';
+import { query } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-});
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = getUserId(req);
-  const announcementId = params.id;
-
   try {
-    // ✅ receipts 沒有 id 欄，僅插入 (user_id, announcement_id)
-    await pool.query(
-      `INSERT INTO announcement_read_receipts (user_id, announcement_id)
-       VALUES ($1, $2)
-       ON CONFLICT (user_id, announcement_id)
-       DO UPDATE SET read_at = NOW()`,
-      [userId, announcementId]
+    const userId = await getCurrentUserId();
+    const announcementId = (await params).id;
+
+    // 確認公告存在
+    const chk = await query(`SELECT 1 FROM announcements WHERE id=$1 LIMIT 1`, [
+      announcementId,
+    ]);
+    if (chk.rowCount === 0)
+      return NextResponse.json({ error: 'not found' }, { status: 404 });
+
+    // 以唯一鍵去重（同一人同一公告最多一筆）
+    // 暫時不使用 RETURNING id，因為 id 欄位可能不存在
+    const sql = `
+      INSERT INTO announcement_read_receipts (announcement_id, user_id)
+      VALUES ($1, $2)
+      ON CONFLICT (announcement_id, user_id) DO UPDATE
+      SET read_at = EXCLUDED.read_at
+    `;
+    await query(sql, [announcementId, userId]);
+
+    // 查詢剛插入或更新的記錄
+    const result = await query(
+      `SELECT read_at FROM announcement_read_receipts
+       WHERE announcement_id=$1 AND user_id=$2 LIMIT 1`,
+      [announcementId, userId]
     );
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      read_at: result.rows[0]?.read_at,
+    });
   } catch (e) {
     console.error('Error marking announcement as read:', e);
     return NextResponse.json(

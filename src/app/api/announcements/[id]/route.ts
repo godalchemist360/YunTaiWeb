@@ -1,39 +1,23 @@
 export const runtime = 'nodejs';
 
+import { getCurrentUserId } from '@/lib/auth';
+import { query } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }, // Neon 需要
-});
-
-const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000001';
-
-function isUuid(v?: string | null) {
-  return (
-    !!v &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      v
-    )
-  );
-}
-
-function getUserId(req: Request) {
-  const h = req.headers.get('x-user-id');
-  return isUuid(h) ? (h as string) : DEFAULT_USER_ID;
-}
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
-    const userId = getUserId(req);
+    const { id } = await params;
+    const userId = await getCurrentUserId();
 
     // 驗證 ID 格式
-    if (!isUuid(id)) {
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        id
+      )
+    ) {
       return NextResponse.json(
         { error: 'Invalid announcement ID' },
         { status: 400 }
@@ -41,7 +25,7 @@ export async function GET(
     }
 
     // 查詢公告詳情
-    const announcementRes = await pool.query<any>(
+    const announcementRes = await query(
       `
       SELECT
         a.id,
@@ -52,7 +36,8 @@ export async function GET(
         a.publish_at AS "publishAt",
         a.created_at AS "createdAt",
         a.updated_at AS "updatedAt",
-        (rr.user_id IS NOT NULL) AS "isRead"
+        (rr.user_id IS NOT NULL) AS "isRead",
+        rr.read_at AS "readAt"
       FROM announcements a
       LEFT JOIN announcement_read_receipts rr
         ON rr.announcement_id = a.id AND rr.user_id = $1
@@ -71,7 +56,7 @@ export async function GET(
     const announcement = announcementRes.rows[0];
 
     // 查詢附件
-    const attachmentsRes = await pool.query<any>(
+    const attachmentsRes = await query(
       `
       SELECT
         id,
@@ -102,13 +87,17 @@ export async function GET(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // 驗證 ID 格式
-    if (!isUuid(id)) {
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        id
+      )
+    ) {
       return NextResponse.json(
         { error: 'Invalid announcement ID' },
         { status: 400 }
@@ -116,7 +105,7 @@ export async function DELETE(
     }
 
     // 先查詢附件資訊，以便後續刪除檔案
-    const attachmentsRes = await pool.query<any>(
+    const attachmentsRes = await query(
       `
       SELECT id, file_name FROM announcement_attachments WHERE announcement_id = $1
     `,
@@ -124,7 +113,7 @@ export async function DELETE(
     );
 
     // 刪除公告（會級聯刪除附件記錄）
-    const result = await pool.query(
+    const result = await query(
       `
       DELETE FROM announcements WHERE id = $1
     `,
