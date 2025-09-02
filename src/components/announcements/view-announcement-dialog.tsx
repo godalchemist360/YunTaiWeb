@@ -22,10 +22,9 @@ import { useEffect, useRef, useState } from 'react';
 interface Announcement {
   id: string;
   title: string;
-  type: 'general' | 'important' | 'resource' | 'training';
-  isImportant: boolean;
-  publishAt: string;
+  type: string;
   content: string;
+  publishAt: string;
   isRead: boolean;
   attachments?: Array<{
     id: string;
@@ -52,14 +51,11 @@ export function ViewAnnouncementDialog({
   onMarkAsRead,
   hasMarkedRead = {},
 }: ViewAnnouncementDialogProps) {
-  const [secondsVisible, setSecondsVisible] = useState(0);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [fullAnnouncement, setFullAnnouncement] = useState<Announcement | null>(
     null
   );
   const [loading, setLoading] = useState(false);
-  const readTimerIdRef = useRef<number | null>(null);
-  const progressTimerIdRef = useRef<number | null>(null);
 
   // 計算當前公告的ID，如果沒有公告則為null
   const currentAnnouncementId = announcement?.id || null;
@@ -161,17 +157,7 @@ export function ViewAnnouncementDialog({
     });
   };
 
-  const clearTimers = () => {
-    if (readTimerIdRef.current) {
-      clearTimeout(readTimerIdRef.current);
-      readTimerIdRef.current = null;
-    }
-    if (progressTimerIdRef.current) {
-      clearInterval(progressTimerIdRef.current);
-      progressTimerIdRef.current = null;
-    }
-    setSecondsVisible(0);
-  };
+
 
   const startReadTimer = () => {
     // 如果沒有公告ID或已經標記為已讀，不啟動計時器
@@ -184,26 +170,8 @@ export function ViewAnnouncementDialog({
       return;
     }
 
-    clearTimers();
-
-    // 啟動進度計時器（每250ms更新一次）
-    progressTimerIdRef.current = window.setInterval(() => {
-      setSecondsVisible((prev) => prev + 0.25);
-    }, 250);
-
-    // 啟動3秒計時器
-    readTimerIdRef.current = window.setTimeout(() => {
-      // 再次確認條件
-      if (
-        open &&
-        isPageVisible &&
-        currentAnnouncementId &&
-        !hasMarkedRead[currentAnnouncementId]
-      ) {
-        // 發送標記已讀請求
-        markAsRead();
-      }
-    }, 3000);
+    // 立即標記為已讀，不需要等待3秒
+    markAsRead();
   };
 
   const markAsRead = async () => {
@@ -236,12 +204,10 @@ export function ViewAnnouncementDialog({
       const isVisible = document.visibilityState === 'visible';
       setIsPageVisible(isVisible);
 
-      if (!isVisible) {
-        clearTimers();
-      } else if (
-        open &&
-        currentAnnouncementId &&
-        !hasMarkedRead[currentAnnouncementId]
+      if (isVisible &&
+          open &&
+          currentAnnouncementId &&
+          !hasMarkedRead[currentAnnouncementId]
       ) {
         startReadTimer();
       }
@@ -260,16 +226,11 @@ export function ViewAnnouncementDialog({
       !hasMarkedRead[currentAnnouncementId]
     ) {
       startReadTimer();
-    } else {
-      clearTimers();
     }
-
-    return () => clearTimers();
   }, [open, currentAnnouncementId, hasMarkedRead]);
 
   // 監聽公告變化
   useEffect(() => {
-    clearTimers();
     if (
       open &&
       currentAnnouncementId &&

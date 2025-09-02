@@ -94,7 +94,6 @@ export async function getAnnouncements(params?: {
     id: string;
     title: string;
     type: string;
-    isImportant: boolean;
     publishAt: string;
     isRead: boolean;
     readAt?: string;
@@ -132,7 +131,6 @@ export async function getAnnouncement(id: string): Promise<{
   title: string;
   content: string;
   type: string;
-  isImportant: boolean;
   publishAt: string;
   createdAt: string;
   updatedAt: string;

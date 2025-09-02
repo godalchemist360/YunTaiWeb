@@ -44,7 +44,7 @@ export async function GET(req: Request) {
     where.push(`a.type = $${i++}`);
     params.push(type);
   }
-  if (filter === 'important') where.push(`a.is_important = true`);
+  if (filter === 'important') where.push(`a.type = 'important'`);
   if (filter === 'unread') where.push(`rr.announcement_id IS NULL`);
   if (q) {
     where.push(`(a.title ILIKE $${i} OR a.content ILIKE $${i})`);
@@ -69,7 +69,7 @@ export async function GET(req: Request) {
       a.id,
       a.title,
       a.type,
-      a.is_important AS "isImportant",
+
       a.publish_at   AS "publishAt",
       (rr.user_id IS NOT NULL) AS "isRead",
       rr.read_at AS "readAt",
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
       title,
       type,
       content,
-      isImportant = false,
+
       publishAt = null,
       attachments = [],
     } = body ?? {};
@@ -128,11 +128,11 @@ export async function POST(req: Request) {
     console.log('開始插入公告到資料庫...');
     const insertResult = await query(
       `
-      INSERT INTO announcements (title, content, type, is_important, publish_at)
-      VALUES ($1, $2, $3, $4, COALESCE($5, now()))
+      INSERT INTO announcements (title, content, type, publish_at)
+      VALUES ($1, $2, $3, COALESCE($4, now()))
       RETURNING id
     `,
-      [title, content, type, !!isImportant, publishAt]
+      [title, content, type, publishAt]
     );
 
     const id = insertResult.rows[0].id;
@@ -153,7 +153,7 @@ export async function POST(req: Request) {
     // 查詢新增的公告詳情
     console.log('查詢新增的公告詳情...');
     const detail = await query(
-      `SELECT id, title, content, type, is_important AS "isImportant", publish_at AS "publishAt"
+      `SELECT id, title, content, type, publish_at AS "publishAt"
        FROM announcements WHERE id = $1`,
       [id]
     );

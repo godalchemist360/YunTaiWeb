@@ -34,7 +34,6 @@ interface Announcement {
   id: string;
   title: string;
   type: 'general' | 'important' | 'resource' | 'training';
-  isImportant: boolean;
   publishAt: string;
   contentPreview: string;
   isRead: boolean;
@@ -214,7 +213,6 @@ export default function AnnouncementsPage() {
           title: data.title,
           type: data.type,
           content: data.description,
-          isImportant: data.type === 'important',
           // 暫時不處理附件，因為需要先上傳到雲端儲存
           attachments: [],
         }),

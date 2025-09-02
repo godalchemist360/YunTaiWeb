@@ -32,7 +32,6 @@ export async function GET(
         a.title,
         a.content,
         a.type,
-        a.is_important AS "isImportant",
         a.publish_at AS "publishAt",
         a.created_at AS "createdAt",
         a.updated_at AS "updatedAt",

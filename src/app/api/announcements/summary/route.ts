@@ -27,7 +27,8 @@ export async function GET(req: Request) {
 
     // 查詢重要公告數量
     const importantRes = await query(
-      'SELECT COUNT(*) FROM announcements WHERE is_important = true'
+      'SELECT COUNT(*) FROM announcements WHERE type = $1',
+      ['important']
     );
     const important = Number(importantRes.rows[0].count);
 

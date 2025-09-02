@@ -123,7 +123,6 @@ export const announcements = pgTable("announcements", {
 	id: text("id").primaryKey(),
 	title: text("title").notNull(),
 	type: text("type").notNull(), // 'general' | 'important' | 'resource' | 'training'
-	isImportant: boolean("is_important").notNull().default(false),
 	content: text("content").notNull(),
 	publishAt: timestamp("publish_at").notNull().defaultNow(),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -131,7 +130,6 @@ export const announcements = pgTable("announcements", {
 }, (table) => ({
 	announcementsTypeIdx: index("announcements_type_idx").on(table.type),
 	announcementsPublishAtIdx: index("announcements_publish_at_idx").on(table.publishAt),
-	announcementsIsImportantIdx: index("announcements_is_important_idx").on(table.isImportant),
 }));
 
 export const announcementAttachments = pgTable("announcement_attachments", {
