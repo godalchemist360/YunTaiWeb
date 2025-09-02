@@ -3,9 +3,9 @@ import { getCurrentUserId } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
-    const userId = await getCurrentUserId();
+    const userId = await getCurrentUserId(req);
 
     // 一次把所有公告（必要時可加篩選條件）標記已讀
     const sql = `

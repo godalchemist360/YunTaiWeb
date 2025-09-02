@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const userId = await getCurrentUserId();
+    const userId = await getCurrentUserId(req);
 
     // 驗證 ID 格式
     if (

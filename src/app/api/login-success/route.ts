@@ -12,8 +12,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '缺少參數' }, { status: 400 });
     }
 
+    // 生成唯一的 session ID
+    const sessionId = crypto.randomUUID();
+
     // 創建一個簡單的 session 或設置必要的 cookie
-    // 這裡我們設置一個自定義的認證 cookie
     const response = NextResponse.json({
       ok: true,
       redirectUrl: callbackUrl || '/settings/profile',
@@ -27,9 +29,17 @@ export async function POST(req: Request) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
-    // 設置用戶信息 cookie
-    response.cookies.set('user-account', account, {
-      httpOnly: false, // 讓客戶端可以讀取
+    // 設置 session ID cookie
+    response.cookies.set('session-id', sessionId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+
+    // 設置用戶信息 cookie（使用 session ID 作為 key）
+    response.cookies.set(`user-account-${sessionId}`, account, {
+      httpOnly: true, // 改為 httpOnly 更安全
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days

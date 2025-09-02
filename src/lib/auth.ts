@@ -219,11 +219,69 @@ async function onCreateUser(user: User) {
 }
 
 /**
- * 以 session cookie 取得 userId（請依你的登入實作調整）
- * - 若尚未串接登入，開發階段可在請求 header 帶入 x-user-id 模擬
+ * 獲取當前登入用戶的ID
+ * - 從自定義認證 cookie 中獲取用戶帳號
+ * - 查詢 app_users 表獲取真實用戶ID
+ * - 如果無法獲取，則回退到測試ID（開發階段）
+ *
+ * @param req 可選的 Request 物件，用於從特定請求中獲取 cookie
  */
-export async function getCurrentUserId(): Promise<string> {
-  // 開發階段使用預設測試 ID
-  // 實際部署時請實作正確的 session 驗證邏輯
+export async function getCurrentUserId(req?: Request): Promise<string> {
+  try {
+    let cookieHeader: string | null = null;
+
+    if (req) {
+      // 如果有 Request 物件，直接從中獲取 cookie
+      cookieHeader = req.headers.get('cookie');
+    } else {
+      // 否則使用 headers() 函數（用於沒有 Request 的場合）
+      const { headers } = await import('next/headers');
+      const headersList = await headers();
+      cookieHeader = headersList.get('cookie');
+    }
+
+    if (cookieHeader) {
+      // 解析 cookie 字符串
+      const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+        const [key, value] = cookie.trim().split('=');
+        if (key && value) {
+          acc[key] = decodeURIComponent(value);
+        }
+        return acc;
+      }, {} as Record<string, string>);
+
+      // 先獲取 session ID
+      const sessionId = cookies['session-id'];
+      if (!sessionId) {
+        console.warn('沒有找到 session ID');
+        return '00000000-0000-0000-0000-000000000001';
+      }
+
+      // 使用 session ID 獲取對應的用戶帳號
+      const userAccountKey = `user-account-${sessionId}`;
+      const userAccount = cookies[userAccountKey];
+
+      if (userAccount) {
+        // 查詢 app_users 表獲取用戶ID
+        const { query } = await import('./db');
+        const result = await query(
+          'SELECT id FROM app_users WHERE account = $1 LIMIT 1',
+          [userAccount]
+        );
+
+        if (result.rows.length > 0) {
+          // 將數字ID轉換為UUID格式，因為資料庫期望UUID
+          const numericId = result.rows[0].id;
+          // 創建一個基於數字ID的UUID（保持一致性）
+          return `00000000-0000-0000-0000-${numericId.toString().padStart(12, '0')}`;
+        }
+      }
+    }
+  } catch (error) {
+    // 如果獲取用戶ID失敗，記錄錯誤但不中斷程序
+    console.warn('無法獲取當前用戶ID，使用測試ID:', error);
+  }
+
+  // 回退到測試ID（開發階段使用）
   return '00000000-0000-0000-0000-000000000001';
 }

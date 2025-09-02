@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
   try {
-    const userId = await getCurrentUserId();
+    const userId = await getCurrentUserId(req);
 
     // 查詢總數
     const totalRes = await query('SELECT COUNT(*) FROM announcements');

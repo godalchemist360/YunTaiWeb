@@ -58,7 +58,8 @@ export default async function middleware(req: NextRequest) {
 
   // 檢查自定義認證 cookie
   const customAuthCookie = req.cookies.get('custom-auth');
-  const isCustomLoggedIn = customAuthCookie?.value === 'true';
+  const sessionIdCookie = req.cookies.get('session-id');
+  const isCustomLoggedIn = customAuthCookie?.value === 'true' && sessionIdCookie?.value;
 
   // 如果沒有自定義認證，則檢查 Better Auth session
   let isLoggedIn = isCustomLoggedIn;

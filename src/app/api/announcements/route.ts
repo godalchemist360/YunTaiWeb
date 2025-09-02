@@ -5,7 +5,7 @@ import { query } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
-  const userId = await getCurrentUserId();
+  const userId = await getCurrentUserId(req);
 
   const url = new URL(req.url);
   const rawFilter = url.searchParams.get('filter') ?? 'all';

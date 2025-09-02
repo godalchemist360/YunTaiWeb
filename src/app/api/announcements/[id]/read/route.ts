@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await getCurrentUserId();
+    const userId = await getCurrentUserId(req);
     const announcementId = (await params).id;
 
     // 確認公告存在

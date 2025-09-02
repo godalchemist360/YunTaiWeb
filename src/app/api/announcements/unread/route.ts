@@ -3,9 +3,9 @@ import { getCurrentUserId } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const userId = await getCurrentUserId();
+    const userId = await getCurrentUserId(req);
     const sql = `
       SELECT a.id, a.title, a.publish_at
       FROM announcements a

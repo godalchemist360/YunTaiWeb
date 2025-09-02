@@ -75,11 +75,7 @@ export default function AnnouncementsPage() {
     try {
       setLoading(true);
       const filter = activeFilter === 'all' ? 'all' : activeFilter;
-      const response = await fetch(`/api/announcements?filter=${filter}`, {
-        headers: {
-          'x-user-id': '00000000-0000-0000-0000-000000000001', // 開發用測試 ID
-        },
-      });
+      const response = await fetch(`/api/announcements?filter=${filter}`);
       if (response.ok) {
         const data = await response.json();
         setAnnouncements(data.items || []);
@@ -94,11 +90,7 @@ export default function AnnouncementsPage() {
   // 載入統計資料
   const loadSummary = async () => {
     try {
-      const response = await fetch('/api/announcements/summary', {
-        headers: {
-          'x-user-id': '00000000-0000-0000-0000-000000000001', // 開發用測試 ID
-        },
-      });
+      const response = await fetch('/api/announcements/summary');
       if (response.ok) {
         const data = await response.json();
         setSummary(data);
@@ -135,9 +127,6 @@ export default function AnnouncementsPage() {
     try {
       const response = await fetch(`/api/announcements/${deleteTarget.id}`, {
         method: 'DELETE',
-        headers: {
-          'x-user-id': '00000000-0000-0000-0000-000000000001', // 開發用測試 ID
-        },
       });
       if (response.ok) {
         // 重新載入資料
@@ -166,9 +155,6 @@ export default function AnnouncementsPage() {
         `/api/announcements/${announcementId}/read`,
         {
           method: 'POST',
-          headers: {
-            'x-user-id': '00000000-0000-0000-0000-000000000001', // 開發用測試 ID
-          },
         }
       );
 
@@ -207,7 +193,6 @@ export default function AnnouncementsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': '00000000-0000-0000-0000-000000000001', // 開發用測試 ID
         },
         body: JSON.stringify({
           title: data.title,
