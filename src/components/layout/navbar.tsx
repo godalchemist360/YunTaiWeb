@@ -41,6 +41,16 @@ export function Navbar({ scroll }: NavBarProps) {
   // 檢查是否有自定義登入的使用者
   const hasCustomUser = customUser && !customUserLoading;
 
+  // 添加調試日誌
+  console.log('Navbar: 調試資訊', {
+    mounted,
+    isPending,
+    currentUser,
+    customUser,
+    customUserLoading,
+    hasCustomUser
+  });
+
   return (
     <section
       className={cn(

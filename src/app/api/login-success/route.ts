@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
     // 設置 session ID cookie
     response.cookies.set('session-id', sessionId, {
-      httpOnly: true,
+      httpOnly: false, // 改為 false，讓客戶端 JavaScript 可以讀取
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     // 設置用戶信息 cookie（使用 session ID 作為 key）
     response.cookies.set(`user-account-${sessionId}`, account, {
-      httpOnly: true, // 改為 httpOnly 更安全
+      httpOnly: false, // 改為 false，讓客戶端 JavaScript 可以讀取
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days

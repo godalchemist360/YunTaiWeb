@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Paperclip, X } from 'lucide-react';
+import { uploadFileFromBrowser } from '@/storage/client';
+import { Paperclip, X, Upload, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 
 interface AddAnnouncementDialogProps {
@@ -29,7 +30,16 @@ interface AddAnnouncementDialogProps {
     title: string;
     type: string;
     description: string;
-    attachments: File[];
+    attachments: Array<{
+      fileName: string;
+      fileSize: number;
+      mimeType: string;
+      storageType: 'cloud' | 'database';
+      fileUrl?: string;
+      cloudKey?: string;
+      cloudProvider?: string;
+      data?: Buffer;
+    }>;
   }) => void;
 }
 
@@ -42,8 +52,19 @@ export function AddAnnouncementDialog({
   const [type, setType] = useState('');
   const [description, setDescription] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [uploadingAttachments, setUploadingAttachments] = useState<Array<{
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    storageType: 'cloud' | 'database';
+    fileUrl?: string;
+    cloudKey?: string;
+    cloudProvider?: string;
+    data?: Buffer;
+  }>>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim() || !type || !description.trim()) {
@@ -51,28 +72,95 @@ export function AddAnnouncementDialog({
       return;
     }
 
-    onSubmit({
-      title: title.trim(),
-      type,
-      description: description.trim(),
-      attachments,
-    });
+    try {
+      setIsUploading(true);
 
-    // 重置表單
-    setTitle('');
-    setType('');
-    setDescription('');
-    setAttachments([]);
-    onOpenChange(false);
+      // 處理附件上傳
+      const processedAttachments = [];
+
+      for (const file of attachments) {
+        try {
+          // 所有檔案都上傳到雲端儲存
+          console.log(`正在上傳檔案 ${file.name} 到雲端...`);
+          const result = await uploadFileFromBrowser(file, 'announcements');
+
+          processedAttachments.push({
+            fileName: file.name,
+            fileSize: file.size,
+            mimeType: file.type,
+            storageType: 'cloud' as const,
+            fileUrl: result.url,
+            cloudKey: result.key,
+            cloudProvider: 's3'
+          });
+
+          console.log(`檔案 ${file.name} 上傳成功`);
+        } catch (error) {
+          console.error(`檔案 ${file.name} 處理失敗:`, error);
+          alert(`檔案 ${file.name} 處理失敗，請稍後再試`);
+          return;
+        }
+      }
+
+      // 提交表單
+      onSubmit({
+        title: title.trim(),
+        type,
+        description: description.trim(),
+        attachments: processedAttachments,
+      });
+
+      // 重置表單
+      setTitle('');
+      setType('');
+      setDescription('');
+      setAttachments([]);
+      setUploadingAttachments([]);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('提交失敗:', error);
+      alert('提交失敗，請稍後再試');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setAttachments((prev) => [...prev, ...files]);
+
+    // 驗證檔案類型和大小
+    const validFiles = files.filter(file => {
+      const maxSize = file.type.startsWith('audio/') ? 100 * 1024 * 1024 :
+                     file.type.startsWith('video/') ? 500 * 1024 * 1024 :
+                     file.type.startsWith('image/') ? 10 * 1024 * 1024 : 50 * 1024 * 1024;
+
+      if (file.size > maxSize) {
+        const maxSizeMB = (maxSize / 1024 / 1024).toFixed(0);
+        alert(`檔案 ${file.name} 超過大小限制：${maxSizeMB}MB`);
+        return false;
+      }
+
+      return true;
+    });
+
+    setAttachments((prev) => [...prev, ...validFiles]);
   };
 
   const removeAttachment = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileSizeText = (size: number) => {
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)} KB`;
+    } else {
+      return `${(size / 1024 / 1024).toFixed(1)} MB`;
+    }
+  };
+
+  const getStorageTypeText = (file: File) => {
+    // 所有檔案都使用雲端儲存
+    return '雲端儲存';
   };
 
   return (
@@ -157,7 +245,7 @@ export function AddAnnouncementDialog({
                   className="hidden"
                 />
                 <span className="text-sm text-gray-500">
-                  支援 PDF、Word、Excel、圖片等格式
+                  支援圖片、音檔、影片、文件等格式
                 </span>
               </div>
 
@@ -169,16 +257,21 @@ export function AddAnnouncementDialog({
                     {attachments.map((file, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           <Paperclip className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-700">
-                            {file.name}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                          </span>
+                          <div>
+                            <p className="text-sm font-medium text-gray-700">
+                              {file.name}
+                            </p>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <span>{getFileSizeText(file.size)}</span>
+                              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                                {getStorageTypeText(file)}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                         <Button
                           type="button"
@@ -203,10 +296,23 @@ export function AddAnnouncementDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={isUploading}
             >
               取消
             </Button>
-            <Button type="submit">新增公告</Button>
+            <Button type="submit" disabled={isUploading}>
+              {isUploading ? (
+                <>
+                  <Upload className="mr-2 h-4 w-4 animate-spin" />
+                  處理中...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  新增公告
+                </>
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

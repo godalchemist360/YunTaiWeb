@@ -46,6 +46,17 @@ export function DashboardHeader({
   // 檢查是否有自定義登入的使用者
   const hasCustomUser = customUser && !customUserLoading;
 
+  // 添加調試日誌
+  console.log('DashboardHeader: 調試資訊', {
+    isDemo,
+    session,
+    isPending,
+    currentUser,
+    customUser,
+    customUserLoading,
+    hasCustomUser
+  });
+
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">

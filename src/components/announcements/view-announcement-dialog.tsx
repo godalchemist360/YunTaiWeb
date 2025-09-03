@@ -16,6 +16,8 @@ import {
   Clock,
   Download,
   Info,
+  Play,
+  FileText,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -31,6 +33,9 @@ interface Announcement {
     fileName: string;
     fileSize?: number;
     mimeType?: string;
+    storageType?: string;
+    fileUrl?: string;
+    cloudKey?: string;
     checksumSha256?: string;
     createdAt: string;
   }>;
@@ -144,7 +149,7 @@ export function ViewAnnouncementDialog({
       case 'training':
         return 'bg-purple-100 text-purple-800';
       default:
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -157,7 +162,36 @@ export function ViewAnnouncementDialog({
     });
   };
 
+  const getFileSizeText = (size?: number) => {
+    if (!size) return '';
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)} KB`;
+    } else {
+      return `${(size / 1024 / 1024).toFixed(1)} MB`;
+    }
+  };
 
+  const getFileIcon = (mimeType?: string) => {
+    if (!mimeType) return FileText;
+
+    if (mimeType.startsWith('image/')) return FileText;
+    if (mimeType.startsWith('audio/')) return Play;
+    if (mimeType.startsWith('video/')) return Play;
+    if (mimeType.startsWith('application/pdf')) return FileText;
+    if (mimeType.startsWith('application/')) return FileText;
+
+    return FileText;
+  };
+
+  const getStorageTypeText = (storageType?: string) => {
+    // 所有附件都是雲端儲存
+    return '雲端儲存';
+  };
+
+  const getStorageTypeColor = (storageType?: string) => {
+    // 所有附件都是雲端儲存
+    return 'bg-green-100 text-green-700';
+  };
 
   const startReadTimer = () => {
     // 如果沒有公告ID或已經標記為已讀，不啟動計時器
@@ -241,17 +275,36 @@ export function ViewAnnouncementDialog({
   }, [currentAnnouncementId, open, hasMarkedRead]);
 
   const handleDownload = (attachment: any) => {
-    // 使用新的附件下載 API
-    const downloadUrl = `/api/announcements/attachments/${attachment.id}`;
+    // 所有附件都是雲端儲存，直接下載
+    if (attachment.fileUrl) {
+      window.open(attachment.fileUrl, '_blank');
+    } else {
+      console.error('附件 URL 不存在:', attachment);
+    }
+  };
 
-    // 創建下載連結
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = attachment.fileName;
-    link.target = '_blank'; // 在新標籤頁開啟
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const renderMediaPlayer = (attachment: any) => {
+    if (!attachment.mimeType) return null;
+
+    if (attachment.mimeType.startsWith('audio/')) {
+      return (
+        <audio controls className="w-full mt-2">
+          <source src={attachment.storageType === 'cloud' ? attachment.fileUrl : `/api/announcements/attachments/${attachment.id}`} type={attachment.mimeType} />
+          您的瀏覽器不支援音檔播放
+        </audio>
+      );
+    }
+
+    if (attachment.mimeType.startsWith('video/')) {
+      return (
+        <video controls className="w-full max-h-96 mt-2">
+          <source src={attachment.storageType === 'cloud' ? attachment.fileUrl : `/api/announcements/attachments/${attachment.id}`} type={attachment.mimeType} />
+          您的瀏覽器不支援影片播放
+        </video>
+      );
+    }
+
+    return null;
   };
 
   // 如果沒有公告，不渲染對話框
@@ -312,32 +365,47 @@ export function ViewAnnouncementDialog({
                 <h3 className="text-lg font-medium text-gray-900">
                   附件 ({displayAnnouncement.attachments.length})
                 </h3>
-                <div className="space-y-2">
-                  {displayAnnouncement.attachments.map((attachment) => (
-                    <div
-                      key={attachment.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                      onClick={() => handleDownload(attachment)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Download className="h-4 w-4 text-gray-500" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {attachment.fileName}
-                          </p>
-                          {attachment.fileSize && (
-                            <p className="text-xs text-gray-500">
-                              {(attachment.fileSize / 1024 / 1024).toFixed(2)}{' '}
-                              MB
-                            </p>
-                          )}
+                <div className="space-y-3">
+                  {displayAnnouncement.attachments.map((attachment) => {
+                    const FileIcon = getFileIcon(attachment.mimeType);
+                    return (
+                      <div
+                        key={attachment.id}
+                        className="space-y-2"
+                      >
+                        <div
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                          onClick={() => handleDownload(attachment)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <FileIcon className="h-4 w-4 text-gray-500" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {attachment.fileName}
+                              </p>
+                              <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                {attachment.fileSize && (
+                                  <span>{getFileSizeText(attachment.fileSize)}</span>
+                                )}
+                                <span
+                                  className={`px-2 py-1 rounded ${getStorageTypeColor(attachment.storageType)}`}
+                                >
+                                  {getStorageTypeText(attachment.storageType)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            <Download className="h-4 w-4 mr-1" />
+                            下載
+                          </Button>
                         </div>
+
+                        {/* 媒體播放器 */}
+                        {renderMediaPlayer(attachment)}
                       </div>
-                      <Button variant="ghost" size="sm">
-                        下載
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

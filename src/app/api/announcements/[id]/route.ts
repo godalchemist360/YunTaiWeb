@@ -2,6 +2,7 @@ export const runtime = 'nodejs';
 
 import { getCurrentUserId } from '@/lib/auth';
 import { query } from '@/lib/db';
+import { deleteFile } from '@/storage';
 import { NextResponse } from 'next/server';
 
 export async function GET(
@@ -54,7 +55,7 @@ export async function GET(
 
     const announcement = announcementRes.rows[0];
 
-    // 查詢附件
+    // 查詢附件，包括儲存類型
     const attachmentsRes = await query(
       `
       SELECT
@@ -62,6 +63,9 @@ export async function GET(
         file_name AS "fileName",
         file_size AS "fileSize",
         mime_type AS "mimeType",
+        storage_type AS "storageType",
+        file_url AS "fileUrl",
+        cloud_key AS "cloudKey",
         checksum_sha256 AS "checksumSha256",
         created_at AS "createdAt"
       FROM announcement_attachments
@@ -106,10 +110,30 @@ export async function DELETE(
     // 先查詢附件資訊，以便後續刪除檔案
     const attachmentsRes = await query(
       `
-      SELECT id, file_name FROM announcement_attachments WHERE announcement_id = $1
+      SELECT id, file_name, storage_type, cloud_key, cloud_provider FROM announcement_attachments WHERE announcement_id = $1
     `,
       [id]
     );
+
+    // 刪除雲端儲存的檔案
+    const cloudDeletionPromises = attachmentsRes.rows
+      .filter(attachment => attachment.storage_type === 'cloud' && attachment.cloud_key)
+      .map(async (attachment) => {
+        try {
+          console.log(`正在刪除雲端檔案: ${attachment.cloud_key}`);
+          await deleteFile(attachment.cloud_key);
+          console.log(`成功刪除雲端檔案: ${attachment.cloud_key}`);
+        } catch (error) {
+          console.error(`刪除雲端檔案失敗: ${attachment.cloud_key}`, error);
+          // 不中斷刪除流程，繼續處理其他檔案
+        }
+      });
+
+    // 等待所有雲端檔案刪除完成
+    if (cloudDeletionPromises.length > 0) {
+      await Promise.allSettled(cloudDeletionPromises);
+      console.log(`已處理 ${cloudDeletionPromises.length} 個雲端檔案`);
+    }
 
     // 刪除公告（會級聯刪除附件記錄）
     const result = await query(
@@ -126,10 +150,13 @@ export async function DELETE(
       );
     }
 
-    // TODO: 這裡可以添加刪除雲端儲存檔案的邏輯
-    // 目前先保留檔案，避免誤刪
+    console.log(`成功刪除公告 ${id} 及其 ${attachmentsRes.rows.length} 個附件`);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      deletedAttachments: attachmentsRes.rows.length,
+      deletedCloudFiles: cloudDeletionPromises.length
+    });
   } catch (error) {
     console.error('刪除公告失敗:', error);
     return NextResponse.json(

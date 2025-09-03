@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie 狀態測試</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .cookie-info { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .cookie-value { background: #e0e0e0; padding: 5px; border-radius: 3px; font-family: monospace; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Cookie 狀態測試</h1>
+
+    <div class="cookie-info">
+        <h3>當前所有 Cookies:</h3>
+        <div id="all-cookies"></div>
+    </div>
+
+    <div class="cookie-info">
+        <h3>認證狀態檢查:</h3>
+        <div id="auth-status"></div>
+    </div>
+
+    <div class="cookie-info">
+        <h3>使用者資訊:</h3>
+        <div id="user-info"></div>
+    </div>
+
+    <div class="cookie-info">
+        <h3>測試功能:</h3>
+        <button onclick="setTestCookies()">設置測試 Cookies</button>
+        <button onclick="clearTestCookies()">清除測試 Cookies</button>
+        <button onclick="checkCookies()">重新檢查</button>
+    </div>
+
+    <script>
+        function checkCookies() {
+            const cookies = document.cookie.split(';');
+            const allCookiesDiv = document.getElementById('all-cookies');
+            const authStatusDiv = document.getElementById('auth-status');
+            const userInfoDiv = document.getElementById('user-info');
+
+            // 顯示所有 cookies
+            allCookiesDiv.innerHTML = cookies.length > 0
+                ? cookies.map(c => `<div class="cookie-value">${c.trim()}</div>`).join('')
+                : '<div class="error">沒有找到任何 cookies</div>';
+
+            // 檢查認證狀態
+            const customAuthCookie = cookies.find(c => c.trim().startsWith('custom-auth='));
+            const sessionIdCookie = cookies.find(c => c.trim().startsWith('session-id='));
+
+            if (customAuthCookie && sessionIdCookie) {
+                const customAuthValue = customAuthCookie.split('=')[1];
+                const sessionIdValue = sessionIdCookie.split('=')[1];
+
+                authStatusDiv.innerHTML = `
+                    <div class="success">✓ 自定義認證: ${customAuthValue}</div>
+                    <div class="success">✓ Session ID: ${sessionIdValue}</div>
+                `;
+
+                // 檢查使用者帳號
+                const userAccountCookie = cookies.find(c => c.trim().startsWith(`user-account-${sessionIdValue}=`));
+                if (userAccountCookie) {
+                    const account = userAccountCookie.split('=')[1];
+                    userInfoDiv.innerHTML = `<div class="success">✓ 使用者帳號: ${account}</div>`;
+                } else {
+                    userInfoDiv.innerHTML = '<div class="error">✗ 找不到使用者帳號 cookie</div>';
+                }
+            } else {
+                authStatusDiv.innerHTML = '<div class="error">✗ 未找到認證 cookies</div>';
+                userInfoDiv.innerHTML = '<div class="error">✗ 無法檢查使用者資訊</div>';
+            }
+        }
+
+        function setTestCookies() {
+            const sessionId = 'test-session-' + Date.now();
+            const account = 'testuser';
+
+            // 設置測試 cookies
+            document.cookie = `custom-auth=true; path=/; max-age=${60 * 60 * 24 * 7}`;
+            document.cookie = `session-id=${sessionId}; path=/; max-age=${60 * 60 * 24 * 7}`;
+            document.cookie = `user-account-${sessionId}=${account}; path=/; max-age=${60 * 60 * 24 * 7}`;
+
+            alert('已設置測試 cookies，請點擊「重新檢查」按鈕');
+        }
+
+        function clearTestCookies() {
+            // 清除所有測試 cookies
+            document.cookie = 'custom-auth=; path=/; max-age=0';
+            document.cookie = 'session-id=; path=/; max-age=0';
+
+            // 清除所有 user-account cookies
+            const cookies = document.cookie.split(';');
+            cookies.forEach(cookie => {
+                if (cookie.trim().startsWith('user-account-')) {
+                    const name = cookie.trim().split('=')[0];
+                    document.cookie = `${name}=; path=/; max-age=0`;
+                }
+            });
+
+            alert('已清除測試 cookies，請點擊「重新檢查」按鈕');
+        }
+
+        // 頁面載入時自動檢查
+        window.onload = checkCookies;
+    </script>
+</body>
+</html>

@@ -136,8 +136,14 @@ export const announcementAttachments = pgTable("announcement_attachments", {
 	id: text("id").primaryKey(),
 	announcementId: text("announcement_id").notNull().references(() => announcements.id, { onDelete: 'cascade' }),
 	fileName: text("file_name").notNull(),
-	fileUrl: text("file_url").notNull(),
 	fileSize: integer("file_size"),
+	mimeType: text("mime_type").notNull(),
+	data: text("data"), // bytea 資料，用於小檔案
+	fileUrl: text("file_url"), // 雲端儲存 URL
+	cloudKey: text("cloud_key"), // 雲端儲存金鑰
+	storageType: text("storage_type"), // 'cloud' | 'database'
+	cloudProvider: text("cloud_provider"), // 's3', 'r2' 等
+	checksumSha256: text("checksum_sha256"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => ({
 	announcementAttachmentsAnnouncementIdIdx: index("announcement_attachments_announcement_id_idx").on(table.announcementId),

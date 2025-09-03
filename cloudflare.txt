@@ -1,0 +1,5 @@
+權杖值:ctVKtF68ZNx4LP8tBFzJ3P_VlXPNm9e_5vRCYRmF
+存取金鑰識別碼:6332a22c6b70f3bc317f4f620d9b9710
+秘密存取金鑰:c4345601aa15175be72d88f03cc6c4586baac185d892b973ffbf7d8ebb63b328
+https://e2a6aec53f263e4132a2c719a04718e2.r2.cloudflarestorage.com
+e2a6aec53f263e4132a2c719a04718e2

@@ -186,7 +186,16 @@ export default function AnnouncementsPage() {
     title: string;
     type: string;
     description: string;
-    attachments: File[];
+    attachments: Array<{
+      fileName: string;
+      fileSize: number;
+      mimeType: string;
+      storageType: 'cloud' | 'database';
+      fileUrl?: string;
+      cloudKey?: string;
+      cloudProvider?: string;
+      data?: Buffer;
+    }>;
   }) => {
     try {
       const response = await fetch('/api/announcements', {
@@ -198,8 +207,7 @@ export default function AnnouncementsPage() {
           title: data.title,
           type: data.type,
           content: data.description,
-          // 暫時不處理附件，因為需要先上傳到雲端儲存
-          attachments: [],
+          attachments: data.attachments, // 傳遞處理後的附件
         }),
       });
 

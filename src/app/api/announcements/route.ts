@@ -2,6 +2,7 @@ export const runtime = 'nodejs';
 
 import { getCurrentUserId } from '@/lib/auth';
 import { query } from '@/lib/db';
+import { uploadFile } from '@/storage';
 import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
@@ -69,7 +70,6 @@ export async function GET(req: Request) {
       a.id,
       a.title,
       a.type,
-
       a.publish_at   AS "publishAt",
       (rr.user_id IS NOT NULL) AS "isRead",
       rr.read_at AS "readAt",
@@ -94,7 +94,6 @@ export async function POST(req: Request) {
       title,
       type,
       content,
-
       publishAt = null,
       attachments = [],
     } = body ?? {};
@@ -138,15 +137,27 @@ export async function POST(req: Request) {
     const id = insertResult.rows[0].id;
     console.log('公告插入成功，ID:', id);
 
-    // 附件（可留空）
+    // 處理附件
     if (attachments && attachments.length > 0) {
       console.log('處理附件...');
-      for (const f of attachments) {
+      for (const attachment of attachments) {
+        // 所有附件都是雲端儲存
         await query(
-          `INSERT INTO announcement_attachments (announcement_id, file_name, file_size, mime_type, data)
-           VALUES ($1, $2, $3, $4, $5)`,
-          [id, f.fileName, f.fileSize ?? null, f.mimeType, f.data]
+          `INSERT INTO announcement_attachments
+           (announcement_id, file_name, file_size, mime_type, file_url, cloud_key, storage_type, cloud_provider)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [
+            id,
+            attachment.fileName,
+            attachment.fileSize,
+            attachment.mimeType,
+            attachment.fileUrl,
+            attachment.cloudKey,
+            'cloud',
+            attachment.cloudProvider || 's3'
+          ]
         );
+        console.log(`附件 ${attachment.fileName} 儲存成功`);
       }
     }
 
@@ -160,7 +171,9 @@ export async function POST(req: Request) {
 
     // 查詢附件
     const att = await query(
-      `SELECT id, file_name AS "fileName", file_size AS "fileSize", mime_type AS "mimeType", created_at AS "createdAt"
+      `SELECT id, file_name AS "fileName", file_size AS "fileSize", mime_type AS "mimeType",
+              storage_type AS "storageType", file_url AS "fileUrl", cloud_key AS "cloudKey",
+              created_at AS "createdAt"
        FROM announcement_attachments WHERE announcement_id = $1 ORDER BY created_at ASC`,
       [id]
     );

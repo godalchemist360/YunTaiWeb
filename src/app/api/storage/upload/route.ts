@@ -12,46 +12,68 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // 增加除錯日誌
+    console.log('檔案上傳請求:', {
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.type,
+      fileExtension: file.name.split('.').pop()
+    });
+
+    // 根據檔案類型設定不同的大小限制
+    const getFileSizeLimit = (mimeType: string) => {
+      if (mimeType.startsWith('audio/')) {
+        return 100 * 1024 * 1024;        // 音檔：100MB
+      } else if (mimeType.startsWith('video/')) {
+        return 500 * 1024 * 1024;        // 影片：500MB
+      } else if (mimeType.startsWith('image/')) {
+        return 10 * 1024 * 1024;         // 圖片：10MB
+      } else {
+        return 50 * 1024 * 1024;         // 其他：50MB
+      }
+    };
+
+    const fileSizeLimit = getFileSizeLimit(file.type);
+    if (file.size > fileSizeLimit) {
+      const limitMB = (fileSizeLimit / 1024 / 1024).toFixed(0);
       return NextResponse.json(
-        { error: 'File size exceeds the 10MB limit' },
+        { error: `File size exceeds the ${limitMB}MB limit for this file type` },
         { status: 400 }
       );
     }
 
-    // Validate file type - 支援更多檔案類型
+    // 支援更多檔案類型，包括音檔和影片
     const allowedTypes = [
       // 圖片格式
-      'image/jpeg',
-      'image/png',
-      'image/webp',
-      'image/gif',
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+
+      // 音檔格式
+      'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/flac', 'audio/m4a', 'audio/x-m4a', 'audio/webm',
+
+      // 影片格式
+      'video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/mkv',
+
       // 文件格式
-      'application/pdf',
-      'application/msword',
+      'application/pdf', 'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-powerpoint',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+
       // 文字格式
-      'text/plain',
-      'text/csv',
+      'text/plain', 'text/csv',
+
       // 壓縮格式
-      'application/zip',
-      'application/x-rar-compressed',
+      'application/zip', 'application/x-rar-compressed',
+
       // 其他常用格式
-      'application/json',
-      'application/xml',
-      'text/html',
+      'application/json', 'application/xml', 'text/html',
     ];
 
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         {
           error:
-            'File type not supported. Please upload images, documents, or other supported file types.',
+            'File type not supported. Please upload images, audio, video, documents, or other supported file types.',
         },
         { status: 400 }
       );
@@ -88,7 +110,7 @@ export async function POST(request: NextRequest) {
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '10mb',
+      sizeLimit: '500mb',  // 增加到 500MB 以支援影片
     },
   },
 };

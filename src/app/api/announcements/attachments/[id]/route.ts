@@ -1,12 +1,7 @@
 export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-});
+import { query } from '@/lib/db';
 
 export async function GET(
   req: Request,
@@ -15,15 +10,18 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // 查詢附件資料
-    const attachmentRes = await pool.query<any>(
+    // 查詢附件資料，包括儲存類型
+    const attachmentRes = await query(
       `
       SELECT
         id,
         file_name,
         mime_type,
         data,
-        file_size
+        file_size,
+        storage_type,
+        file_url,
+        cloud_key
       FROM announcement_attachments
       WHERE id = $1
     `,
@@ -39,24 +37,15 @@ export async function GET(
 
     const attachment = attachmentRes.rows[0];
 
-    // 將 bytea 資料轉換為 Buffer
-    const fileBuffer = Buffer.from(attachment.data);
-
-    // 創建 Response 物件
-    const response = new NextResponse(fileBuffer);
-
-    // 設定適當的 headers
-    response.headers.set('Content-Type', attachment.mime_type);
-    response.headers.set(
-      'Content-Disposition',
-      `attachment; filename="${attachment.file_name}"`
-    );
-    response.headers.set(
-      'Content-Length',
-      attachment.file_size?.toString() || fileBuffer.length.toString()
-    );
-
-    return response;
+    // 所有附件都是雲端儲存，直接重定向到雲端 URL
+    if (attachment.file_url) {
+      return NextResponse.redirect(attachment.file_url);
+    } else {
+      return NextResponse.json(
+        { error: 'Attachment URL not found' },
+        { status: 404 }
+      );
+    }
   } catch (error) {
     console.error('獲取附件失敗:', error);
     return NextResponse.json(
