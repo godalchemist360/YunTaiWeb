@@ -11,7 +11,8 @@ export async function GET() {
         COUNT(*) as total,
         COUNT(CASE WHEN status = 'active' THEN 1 END) as active,
         COUNT(CASE WHEN status = 'disabled' THEN 1 END) as disabled,
-        COUNT(CASE WHEN role = 'admin' THEN 1 END) as admin_count
+        COUNT(CASE WHEN role = 'admin' THEN 1 END) as admin_count,
+        COUNT(CASE WHEN role = 'management' THEN 1 END) as management_count
       FROM app_users
     `);
     const stats = result.rows[0];
@@ -21,6 +22,7 @@ export async function GET() {
       active: Number.parseInt(stats.active as string),
       disabled: Number.parseInt(stats.disabled as string),
       admin_count: Number.parseInt(stats.admin_count as string),
+      management_count: Number.parseInt(stats.management_count as string),
     });
   } catch (error) {
     console.error('GET /api/users/stats error:', error);

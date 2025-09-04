@@ -22,6 +22,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -74,6 +80,11 @@ export default function AccountManagementPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  // 搜尋和篩選狀態
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRole, setSelectedRole] = useState('all');
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+
   // 刪除確認對話框狀態
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -88,14 +99,24 @@ export default function AccountManagementPage() {
     },
   ];
 
-  const loadData = async (page = currentPage, size = pageSize) => {
+  const loadData = async (page = currentPage, size = pageSize, search = searchQuery, role = selectedRole) => {
     try {
       setLoading(true);
+
       const [statsData, usersData] = await Promise.all([
         fetchStats(),
-        fetchUsers({ page, pageSize: size }),
+        fetchUsers({
+          page,
+          pageSize: size,
+          q: search || undefined,
+          role: role === 'all' ? undefined : role
+        }),
       ]);
+
+      // 統計卡片永遠顯示真實的總數（不受篩選影響）
       setStats(statsData);
+
+      // 表格顯示篩選後的結果
       setAccounts(usersData.items || []);
       setTotalCount(usersData.total || 0);
     } catch (error) {
@@ -109,16 +130,50 @@ export default function AccountManagementPage() {
     loadData();
   }, []);
 
+  // 清理 timeout
+  useEffect(() => {
+    return () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+    };
+  }, [searchTimeout]);
+
   // 分頁控制函數
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    loadData(page, pageSize);
+    loadData(page, pageSize, searchQuery, selectedRole);
   };
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
     setCurrentPage(1); // 重置到第一頁
-    loadData(1, size);
+    loadData(1, size, searchQuery, selectedRole);
+  };
+
+  // 搜尋功能（防抖動 300ms）
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1); // 重置到第一頁
+
+    // 清除之前的 timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    // 設置新的 timeout
+    const timeout = setTimeout(() => {
+      loadData(1, pageSize, value, selectedRole);
+    }, 300);
+
+    setSearchTimeout(timeout);
+  };
+
+  // 篩選功能
+  const handleRoleFilter = (role: string) => {
+    setSelectedRole(role);
+    setCurrentPage(1); // 重置到第一頁
+    loadData(1, pageSize, searchQuery, role);
   };
 
   const handleAddUser = async (formData: {
@@ -301,7 +356,7 @@ export default function AccountManagementPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        {totalCount}
+                        {stats.total}
                       </div>
                     </CardContent>
                   </Card>
@@ -340,11 +395,7 @@ export default function AccountManagementPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold text-purple-600">
-                        {
-                          accounts.filter(
-                            (account: any) => account.role === 'management'
-                          ).length
-                        }
+                        {stats.management_count}
                       </div>
                     </CardContent>
                   </Card>
@@ -355,12 +406,54 @@ export default function AccountManagementPage() {
                   <div className="flex flex-1 items-center space-x-2">
                     <div className="relative flex-1 max-w-sm">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="搜尋帳號..." className="pl-8" />
+                      <Input
+                        placeholder="搜尋使用者姓名..."
+                        className="pl-8"
+                        value={searchQuery}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                      />
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Filter className="mr-2 h-4 w-4" />
-                      篩選
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Filter className="mr-2 h-4 w-4" />
+                          篩選
+                          {selectedRole !== 'all' && (
+                            <Badge variant="secondary" className="ml-2">
+                              {selectedRole === 'admin' ? '管理員' :
+                               selectedRole === 'management' ? '管理層' :
+                               selectedRole === 'sales' ? '業務員' : selectedRole}
+                            </Badge>
+                          )}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleRoleFilter('all')}
+                          className={selectedRole === 'all' ? 'bg-accent' : ''}
+                        >
+                          全部
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleRoleFilter('admin')}
+                          className={selectedRole === 'admin' ? 'bg-accent' : ''}
+                        >
+                          管理員
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleRoleFilter('management')}
+                          className={selectedRole === 'management' ? 'bg-accent' : ''}
+                        >
+                          管理層
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleRoleFilter('sales')}
+                          className={selectedRole === 'sales' ? 'bg-accent' : ''}
+                        >
+                          業務員
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                   <Button onClick={() => setIsAddDialogOpen(true)}>
                     <UserPlus className="mr-2 h-4 w-4" />

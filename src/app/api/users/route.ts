@@ -15,59 +15,71 @@ export async function GET(request: NextRequest) {
     const pageSize = Number.parseInt(searchParams.get('pageSize') || '10');
     const offset = (page - 1) * pageSize;
 
-    const whereConditions = [];
-    const queryParams = [];
-    let paramIndex = 1;
+    // 查詢篩選後的資料（用於表格顯示）
+    let dataResult;
+    let filteredTotal = 0;
 
-    if (q) {
-      whereConditions.push(
-        `(lower(account) like lower($${paramIndex}) OR lower(display_name) like lower($${paramIndex}))`
-      );
-      queryParams.push(`%${q}%`);
-      paramIndex++;
+    if ((q && q.trim()) || status || role) {
+      // 有篩選條件時，使用條件查詢
+      const conditions = [];
+
+      if (q && q.trim()) {
+        conditions.push(sql`(lower(account) like lower(${'%' + q + '%'}) OR lower(display_name) like lower(${'%' + q + '%'}))`);
+      }
+
+      if (status) {
+        conditions.push(sql`status = ${status}`);
+      }
+
+      if (role) {
+        conditions.push(sql`role = ${role}`);
+      }
+
+      const whereCondition = sql.join(conditions, sql` AND `);
+
+      // 查詢篩選後的總數（用於分頁）
+      const filteredCountResult = await db.execute(sql`
+        SELECT COUNT(*) FROM app_users
+        WHERE ${whereCondition}
+      `);
+      filteredTotal = Number.parseInt(filteredCountResult.rows[0].count as string);
+
+      // 查詢篩選後的資料
+      dataResult = await db.execute(sql`
+        SELECT
+          id,
+          account,
+          display_name,
+          role,
+          status,
+          to_char(created_at, 'YYYY-MM-DD') as created_date
+        FROM app_users
+        WHERE ${whereCondition}
+        ORDER BY created_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `);
+    } else {
+      // 無篩選條件時
+      const totalCountResult = await db.execute(sql`SELECT COUNT(*) FROM app_users`);
+      filteredTotal = Number.parseInt(totalCountResult.rows[0].count as string);
+
+      dataResult = await db.execute(sql`
+        SELECT
+          id,
+          account,
+          display_name,
+          role,
+          status,
+          to_char(created_at, 'YYYY-MM-DD') as created_date
+        FROM app_users
+        ORDER BY created_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `);
     }
-
-    if (status) {
-      whereConditions.push(`status = $${paramIndex}`);
-      queryParams.push(status);
-      paramIndex++;
-    }
-
-    if (role) {
-      whereConditions.push(`role = $${paramIndex}`);
-      queryParams.push(role);
-      paramIndex++;
-    }
-
-    const whereClause =
-      whereConditions.length > 0
-        ? `WHERE ${whereConditions.join(' AND ')}`
-        : '';
-
-    // 查詢總數
-    const countResult = await db.execute(
-      sql`SELECT COUNT(*) FROM app_users ${sql.raw(whereClause)}`
-    );
-    const total = Number.parseInt(countResult.rows[0].count as string);
-
-    // 查詢資料
-    const dataResult = await db.execute(sql`
-      SELECT
-        id,
-        account,
-        display_name,
-        role,
-        status,
-        to_char(created_at, 'YYYY-MM-DD') as created_date
-      FROM app_users
-      ${sql.raw(whereClause)}
-      ORDER BY created_at DESC
-      LIMIT ${pageSize} OFFSET ${offset}
-    `);
 
     return NextResponse.json({
       items: dataResult.rows,
-      total,
+      total: filteredTotal,
       page,
       pageSize,
     });
