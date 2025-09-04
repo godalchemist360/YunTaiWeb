@@ -103,7 +103,7 @@ async function testStorageConnection() {
               console.log('原始內容:', testContent);
               console.log('下載內容:', downloadedContent);
             }
-          } else {
+          } else {關ㄩ
             console.log('❌ 測試檔案下載失敗:', response.status, response.statusText);
           }
         } catch (downloadError) {

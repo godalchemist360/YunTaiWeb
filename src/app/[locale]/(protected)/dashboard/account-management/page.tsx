@@ -39,6 +39,10 @@ import {
   updateUser,
 } from '@/lib/usersClient';
 import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   Edit,
   Filter,
   Plus,
@@ -64,6 +68,12 @@ export default function AccountManagementPage() {
     admin_count: 0,
   });
 
+  // 分頁狀態
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
   // 刪除確認對話框狀態
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -78,22 +88,38 @@ export default function AccountManagementPage() {
     },
   ];
 
-  const loadData = async () => {
+  const loadData = async (page = currentPage, size = pageSize) => {
     try {
+      setLoading(true);
       const [statsData, usersData] = await Promise.all([
         fetchStats(),
-        fetchUsers({ page: 1, pageSize: 10 }),
+        fetchUsers({ page, pageSize: size }),
       ]);
       setStats(statsData);
       setAccounts(usersData.items || []);
+      setTotalCount(usersData.total || 0);
     } catch (error) {
       console.error('Failed to load data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // 分頁控制函數
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    loadData(page, pageSize);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // 重置到第一頁
+    loadData(1, size);
+  };
 
   const handleAddUser = async (formData: {
     displayName: string;
@@ -275,7 +301,7 @@ export default function AccountManagementPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        {accounts.length}
+                        {totalCount}
                       </div>
                     </CardContent>
                   </Card>
@@ -363,46 +389,149 @@ export default function AccountManagementPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {accounts.map((account: any) => (
-                          <TableRow key={account.id}>
-                            <TableCell className="font-medium">
-                              {account.display_name}
-                            </TableCell>
-                            <TableCell>{account.account}</TableCell>
-                            <TableCell>{getLevelBadge(account.role)}</TableCell>
-                            <TableCell>
-                              {getStatusBadge(account.status, account.id)}
-                            </TableCell>
-                            <TableCell>{account.created_date}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleOpenEditDialog(account)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-red-600 hover:text-red-700"
-                                  onClick={() =>
-                                    handleDeleteUser(
-                                      account.id,
-                                      account.display_name
-                                    )
-                                  }
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                        {loading ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8">
+                              <div className="flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                                <span className="ml-2">載入中...</span>
                               </div>
                             </TableCell>
                           </TableRow>
-                        ))}
+                        ) : accounts.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                              無符合條件的帳號
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          accounts.map((account: any) => (
+                            <TableRow key={account.id}>
+                              <TableCell className="font-medium">
+                                {account.display_name}
+                              </TableCell>
+                              <TableCell>{account.account}</TableCell>
+                              <TableCell>{getLevelBadge(account.role)}</TableCell>
+                              <TableCell>
+                                {getStatusBadge(account.status, account.id)}
+                              </TableCell>
+                              <TableCell>{account.created_date}</TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleOpenEditDialog(account)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-600 hover:text-red-700"
+                                    onClick={() =>
+                                      handleDeleteUser(
+                                        account.id,
+                                        account.display_name
+                                      )
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
                       </TableBody>
                     </Table>
                   </CardContent>
+
+                  {/* 分頁控制元件 */}
+                  {totalCount > 0 && (
+                    <div className="flex items-center justify-between px-6 py-4 border-t">
+                      <div className="flex items-center space-x-2">
+                        <p className="text-sm text-muted-foreground">
+                          每頁顯示
+                        </p>
+                        <select
+                          value={pageSize}
+                          onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                          className="h-8 w-16 rounded border border-input bg-background px-2 text-sm"
+                        >
+                          <option value={5}>5</option>
+                          <option value={10}>10</option>
+                          <option value={20}>20</option>
+                          <option value={50}>50</option>
+                        </select>
+                        <p className="text-sm text-muted-foreground">
+                          筆，共 {totalCount} 筆資料
+                        </p>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <p className="text-sm text-muted-foreground">
+                          第 {currentPage} 頁，共 {Math.ceil(totalCount / pageSize)} 頁
+                        </p>
+
+                        <div className="flex items-center space-x-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(1)}
+                            disabled={currentPage === 1 || loading}
+                          >
+                            <ChevronsLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1 || loading}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+
+                          {/* 頁碼按鈕 */}
+                          {Array.from({ length: Math.min(5, Math.ceil(totalCount / pageSize)) }, (_, i) => {
+                            const startPage = Math.max(1, currentPage - 2);
+                            const pageNum = startPage + i;
+                            if (pageNum > Math.ceil(totalCount / pageSize)) return null;
+
+                            return (
+                              <Button
+                                key={pageNum}
+                                variant={pageNum === currentPage ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => handlePageChange(pageNum)}
+                                disabled={loading}
+                                className="w-8 h-8 p-0"
+                              >
+                                {pageNum}
+                              </Button>
+                            );
+                          })}
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage >= Math.ceil(totalCount / pageSize) || loading}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(Math.ceil(totalCount / pageSize))}
+                            disabled={currentPage >= Math.ceil(totalCount / pageSize) || loading}
+                          >
+                            <ChevronsRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </Card>
               </div>
             </div>
