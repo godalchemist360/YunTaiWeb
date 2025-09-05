@@ -6,3 +6,4 @@ export { ConsultationMotiveEditor } from './consultation-motive-editor';
 export { LeadSourceEditor } from './lead-source-editor';
 export { CustomerNameEditor } from './customer-name-editor';
 export { AddRecordDialog } from './add-record-dialog';
+export { NextActionEditor } from './next-action-editor';

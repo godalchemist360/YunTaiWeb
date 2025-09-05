@@ -9,6 +9,7 @@ import { MeetingRecordDetailCard } from '@/components/customer-tracking/meeting-
 import { ConsultationMotiveEditor } from '@/components/customer-tracking/consultation-motive-editor';
 import { LeadSourceEditor } from '@/components/customer-tracking/lead-source-editor';
 import { CustomerNameEditor } from '@/components/customer-tracking/customer-name-editor';
+import { NextActionEditor } from '@/components/customer-tracking/next-action-editor';
 import { AddRecordDialog } from '@/components/customer-tracking/add-record-dialog';
 import {
   AlertTriangle,
@@ -73,6 +74,14 @@ export default function CustomerTrackingPage() {
     isOpen: boolean;
     rowIndex?: number;
     initialCustomerName?: string;
+  }>({ isOpen: false });
+
+  const [nextActionEditor, setNextActionEditor] = useState<{
+    isOpen: boolean;
+    rowIndex?: number;
+    initialAction?: string;
+    initialDate?: string;
+    initialTime?: string;
   }>({ isOpen: false });
 
   // 樣本資料
@@ -163,6 +172,13 @@ export default function CustomerTrackingPage() {
   // 樣本客戶名稱資料
   const sampleCustomerNames = ['王大明', '陳志強', '黃淑芬'];
 
+  // 樣本下一步行動資料
+  const sampleNextActions = [
+    { action: '安排第二次會面討論貸款方案', date: '2024-01-20', time: '09:00' },
+    { action: '提供投資建議書', date: '2024-01-25', time: '14:30' },
+    { action: '準備稅務規劃方案', date: '2024-01-30', time: '10:15' }
+  ];
+
   const handleAddRecord = (data: any) => {
     console.log('新增記錄:', data);
     // 這裡之後會連接到 API
@@ -191,6 +207,11 @@ export default function CustomerTrackingPage() {
 
   const handleCustomerNameSave = (customerName: string) => {
     console.log('儲存客戶名稱:', customerName);
+    // 這裡之後會連接到 API 更新資料
+  };
+
+  const handleNextActionSave = (action: string, date: string, time: string) => {
+    console.log('儲存下一步行動:', { action, date, time });
     // 這裡之後會連接到 API 更新資料
   };
 
@@ -430,10 +451,24 @@ export default function CustomerTrackingPage() {
                               點擊查看詳情
                             </button>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            <div className="flex flex-col">
-                              <span className="text-xs text-gray-500">2024-01-20</span>
-                              <span className="text-sm">安排第二次會面討論貸款方案</span>
+                          <td className="px-6 py-4 text-sm text-gray-900 text-center">
+                            <div
+                              onClick={() => setNextActionEditor({
+                                isOpen: true,
+                                rowIndex: 0,
+                                initialAction: sampleNextActions[0].action,
+                                initialDate: sampleNextActions[0].date,
+                                initialTime: sampleNextActions[0].time
+                              })}
+                              className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                            >
+                              <div className="flex flex-col items-center">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">{sampleNextActions[0].date}</span>
+                                  <span className="text-xs text-gray-500">{sampleNextActions[0].time}</span>
+                                </div>
+                                <span className="text-sm">{sampleNextActions[0].action}</span>
+                              </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -530,10 +565,24 @@ export default function CustomerTrackingPage() {
                               點擊查看詳情
                             </button>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            <div className="flex flex-col">
-                              <span className="text-xs text-gray-500">2024-01-25</span>
-                              <span className="text-sm">提供投資建議書</span>
+                          <td className="px-6 py-4 text-sm text-gray-900 text-center">
+                            <div
+                              onClick={() => setNextActionEditor({
+                                isOpen: true,
+                                rowIndex: 1,
+                                initialAction: sampleNextActions[1].action,
+                                initialDate: sampleNextActions[1].date,
+                                initialTime: sampleNextActions[1].time
+                              })}
+                              className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                            >
+                              <div className="flex flex-col items-center">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">{sampleNextActions[1].date}</span>
+                                  <span className="text-xs text-gray-500">{sampleNextActions[1].time}</span>
+                                </div>
+                                <span className="text-sm">{sampleNextActions[1].action}</span>
+                              </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -630,10 +679,24 @@ export default function CustomerTrackingPage() {
                               點擊查看詳情
                             </button>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            <div className="flex flex-col">
-                              <span className="text-xs text-gray-500">2024-01-30</span>
-                              <span className="text-sm">準備稅務規劃方案</span>
+                          <td className="px-6 py-4 text-sm text-gray-900 text-center">
+                            <div
+                              onClick={() => setNextActionEditor({
+                                isOpen: true,
+                                rowIndex: 2,
+                                initialAction: sampleNextActions[2].action,
+                                initialDate: sampleNextActions[2].date,
+                                initialTime: sampleNextActions[2].time
+                              })}
+                              className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                            >
+                              <div className="flex flex-col items-center">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">{sampleNextActions[2].date}</span>
+                                  <span className="text-xs text-gray-500">{sampleNextActions[2].time}</span>
+                                </div>
+                                <span className="text-sm">{sampleNextActions[2].action}</span>
+                              </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -714,6 +777,15 @@ export default function CustomerTrackingPage() {
         onClose={() => setCustomerNameEditor({ isOpen: false })}
         onSave={handleCustomerNameSave}
         initialCustomerName={customerNameEditor.initialCustomerName}
+      />
+
+      <NextActionEditor
+        isOpen={nextActionEditor.isOpen}
+        onClose={() => setNextActionEditor({ isOpen: false })}
+        onSave={handleNextActionSave}
+        initialAction={nextActionEditor.initialAction}
+        initialDate={nextActionEditor.initialDate}
+        initialTime={nextActionEditor.initialTime}
       />
     </>
   );
