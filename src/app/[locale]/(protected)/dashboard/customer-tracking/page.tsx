@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { AssetLiabilityDetailCard } from '@/components/customer-tracking/asset-liability-detail-card';
 import { IncomeExpenseDetailCard } from '@/components/customer-tracking/income-expense-detail-card';
@@ -11,6 +11,7 @@ import { LeadSourceEditor } from '@/components/customer-tracking/lead-source-edi
 import { CustomerNameEditor } from '@/components/customer-tracking/customer-name-editor';
 import { NextActionEditor } from '@/components/customer-tracking/next-action-editor';
 import { AddRecordDialog } from '@/components/customer-tracking/add-record-dialog';
+import { CustomerInteraction, CustomerInteractionsResponse } from '@/types/customer-interactions';
 import {
   AlertTriangle,
   Building,
@@ -32,6 +33,50 @@ export default function CustomerTrackingPage() {
       isCurrentPage: true,
     },
   ];
+
+  // 資料狀態管理
+  const [customerInteractions, setCustomerInteractions] = useState<CustomerInteraction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // 獲取客戶互動資料
+  const fetchCustomerInteractions = async (query: string = '') => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams();
+      if (query) params.append('q', query);
+      params.append('page', '1');
+      params.append('pageSize', '100'); // 暫時設大一點，之後可以實作分頁
+
+      const response = await fetch(`/api/customer-interactions?${params.toString()}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch customer interactions');
+      }
+
+      const data: CustomerInteractionsResponse = await response.json();
+      setCustomerInteractions(data.items);
+    } catch (err) {
+      console.error('Error fetching customer interactions:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 初始載入資料
+  useEffect(() => {
+    fetchCustomerInteractions();
+  }, []);
+
+  // 搜尋功能
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    fetchCustomerInteractions(query);
+  };
 
   // 彈出卡片狀態管理
   const [assetLiabilityCard, setAssetLiabilityCard] = useState<{
@@ -84,100 +129,33 @@ export default function CustomerTrackingPage() {
     initialTime?: string;
   }>({ isOpen: false });
 
-  // 樣本資料
-  const sampleAssetLiabilityData = {
-    assets: {
-      realEstate: '2,500萬',
-      cash: '300萬',
-      stocks: '150萬',
-      funds: '80萬',
-      insurance: '200萬',
-      others: '50萬'
-    },
-    liabilities: {
-      mortgage: '1,200萬',
-      carLoan: '80萬',
-      creditLoan: '0',
-      creditCard: '15萬',
-      studentLoan: '0',
-      installment: '0',
-      otherLoans: '0'
-    },
-    familyResources: {
-      familyProperties: '3間',
-      familyAssets: '約500萬',
-      others: '無'
+  // 輔助函數：格式化日期時間
+  const formatDateTime = (dateTime: string | null) => {
+    if (!dateTime) return null;
+    const date = new Date(dateTime);
+    return {
+      date: date.toLocaleDateString('zh-TW'),
+      time: date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+    };
+  };
+
+  // 輔助函數：獲取會面紀錄選項
+  const getMeetingOptions = (meetingCount: number | null) => {
+    if (!meetingCount) return [];
+    const options = [];
+    for (let i = 1; i <= meetingCount; i++) {
+      options.push({
+        value: i.toString(),
+        label: `第${i}次`
+      });
     }
+    return options;
   };
 
-  const sampleIncomeExpenseData = {
-    income: {
-      mainIncome: '12萬/月',
-      sideIncome: '3萬/月',
-      otherIncome: '2萬/月'
-    },
-    expenses: {
-      livingExpenses: '6萬/月',
-      housingExpenses: '4萬/月',
-      otherExpenses: '3萬/月'
-    },
-    monthlyBalance: '4萬/月'
+  // 輔助函數：獲取會面紀錄內容
+  const getMeetingRecord = (meetingRecord: { [key: string]: string }, meetingNumber: string) => {
+    return meetingRecord[meetingNumber] || '無會面紀錄';
   };
-
-  const sampleSituationData = {
-    painPoints: '目前房貸壓力較大，希望能夠優化資產配置，增加被動收入來源。同時擔心退休後的財務規劃。',
-    goals: '希望在3年內還清部分房貸，並建立穩定的投資組合。長期目標是達到財務自由，能夠提前退休。',
-    familyRelationships: '已婚，育有2子。配偶也有穩定收入，家庭關係和睦。父母健在，需要考慮孝養責任。',
-    others: '對投資理財有一定了解，但缺乏系統性規劃。希望能夠得到專業的財務建議。'
-  };
-
-  const sampleMeetingRecordData = {
-    first: {
-      meetingNumber: '第一次會面',
-      content: '初次接觸，了解客戶基本需求。客戶表示有購房意願，但對貸款條件不太了解。討論了基本的房貸方案，客戶對利率和還款方式很關心。約定下次會面時提供更詳細的貸款方案。'
-    },
-    second: {
-      meetingNumber: '第二次會面',
-      content: '深入討論貸款方案，客戶對我們的服務很滿意。提供了三種不同的貸款方案供客戶選擇，客戶比較傾向於固定利率方案。討論了購房預算和區域偏好，客戶希望在新北市購房。'
-    },
-    third: {
-      meetingNumber: '第三次會面',
-      content: '確認最終貸款方案，客戶決定選擇固定利率方案。協助客戶準備相關文件，包括收入證明、財力證明等。客戶對整個流程很滿意，表示會推薦給朋友。預計下週完成貸款申請。'
-    }
-  };
-
-  // 樣本諮詢動機資料
-  const sampleConsultationMotives = [
-    {
-      standard: ['想買自住房', '貸款問題'],
-      custom: []
-    },
-    {
-      standard: ['了解不動產投資', '了解現金流規劃'],
-      custom: []
-    },
-    {
-      standard: ['稅務規劃', '資產傳承', '其他'],
-      custom: ['海外投資規劃', '家族信託']
-    }
-  ];
-
-  // 樣本名單來源資料
-  const sampleLeadSources = [
-    { source: '客戶轉介', custom: undefined },
-    { source: '公司名單', custom: undefined },
-    { source: '原顧', custom: undefined }
-  ];
-
-  // 樣本客戶名稱資料
-  const sampleCustomerNames = ['王大明', '陳志強', '黃淑芬'];
-
-  // 樣本下一步行動資料
-  const sampleNextActions = [
-    { action: '安排第二次會面討論貸款方案', date: '2024-01-20', time: '09:00' },
-    { action: '提供投資建議書', date: '2024-01-25', time: '14:30' },
-    { action: '準備稅務規劃方案', date: '2024-01-30', time: '10:15' }
-  ];
 
   const handleAddRecord = (data: any) => {
     console.log('新增記錄:', data);
@@ -189,20 +167,9 @@ export default function CustomerTrackingPage() {
     // 這裡之後會連接到 API 更新資料
   };
 
-  // 合併顯示諮詢動機的函數
-  const getDisplayMotives = (standardMotives: string[], customMotives: string[]) => {
-    const filteredStandard = standardMotives.filter(motive => motive !== '其他');
-    return [...filteredStandard, ...customMotives];
-  };
-
   const handleLeadSourceSave = (leadSource: string, customSource?: string) => {
     console.log('儲存名單來源:', { leadSource, customSource });
     // 這裡之後會連接到 API 更新資料
-  };
-
-  // 獲取名單來源顯示文字的函數
-  const getLeadSourceDisplay = (source: string, custom?: string) => {
-    return custom || source;
   };
 
   const handleCustomerNameSave = (customerName: string) => {
@@ -309,6 +276,8 @@ export default function CustomerTrackingPage() {
                     <input
                       type="text"
                       placeholder="搜尋客戶互動..."
+                      value={searchQuery}
+                      onChange={(e) => handleSearch(e.target.value)}
                       className="w-full rounded-lg border border-gray-300 bg-white pl-10 pr-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
@@ -335,7 +304,9 @@ export default function CustomerTrackingPage() {
                         客戶互動記錄
                       </h3>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <span>共 3 筆記錄</span>
+                        <span>共 {customerInteractions.length} 筆記錄</span>
+                        {loading && <span className="text-blue-500">載入中...</span>}
+                        {error && <span className="text-red-500">載入失敗</span>}
                       </div>
                     </div>
                   </div>
@@ -374,347 +345,164 @@ export default function CustomerTrackingPage() {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {/* Sample Row 1 */}
-                        <tr className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
-                            張小明
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <span>{sampleCustomerNames[0]}</span>
-                              <button
-                                onClick={() => setCustomerNameEditor({
-                                  isOpen: true,
-                                  rowIndex: 0,
-                                  initialCustomerName: sampleCustomerNames[0]
-                                })}
-                                className="p-1 hover:bg-gray-100 rounded transition-colors"
-                                title="編輯客戶名稱"
-                              >
-                                <Pencil className="h-3 w-3 text-gray-500 hover:text-gray-700" />
-                              </button>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <div
-                              onClick={() => setLeadSourceEditor({
-                                isOpen: true,
-                                rowIndex: 0,
-                                initialLeadSource: sampleLeadSources[0].source,
-                                initialCustomSource: sampleLeadSources[0].custom
-                              })}
-                              className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors flex justify-center"
-                            >
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {getLeadSourceDisplay(sampleLeadSources[0].source, sampleLeadSources[0].custom)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            <div
-                              onClick={() => setConsultationMotiveEditor({
-                                isOpen: true,
-                                rowIndex: 0,
-                                initialStandardMotives: sampleConsultationMotives[0].standard,
-                                initialCustomMotives: sampleConsultationMotives[0].custom
-                              })}
-                              className="flex flex-wrap gap-1 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                            >
-                              {getDisplayMotives(sampleConsultationMotives[0].standard, sampleConsultationMotives[0].custom).map((motive, index) => (
-                                <span key={index} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800">
-                                  {motive}
-                                </span>
-                              ))}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <button
-                              onClick={() => setAssetLiabilityCard({ isOpen: true, data: sampleAssetLiabilityData })}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              點擊查看詳情
-                            </button>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <button
-                              onClick={() => setIncomeExpenseCard({ isOpen: true, data: sampleIncomeExpenseData })}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              點擊查看詳情
-                            </button>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <button
-                              onClick={() => setSituationCard({ isOpen: true, data: sampleSituationData })}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              點擊查看詳情
-                            </button>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900 text-center">
-                            <div
-                              onClick={() => setNextActionEditor({
-                                isOpen: true,
-                                rowIndex: 0,
-                                initialAction: sampleNextActions[0].action,
-                                initialDate: sampleNextActions[0].date,
-                                initialTime: sampleNextActions[0].time
-                              })}
-                              className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                            >
-                              <div className="flex flex-col items-center">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-gray-500">{sampleNextActions[0].date}</span>
-                                  <span className="text-xs text-gray-500">{sampleNextActions[0].time}</span>
-                                </div>
-                                <span className="text-sm">{sampleNextActions[0].action}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div className="flex items-center gap-2">
-                              <select className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="第一次">第一次</option>
-                                <option value="第二次">第二次</option>
-                                <option value="第三次">第三次</option>
-                              </select>
-                              <button
-                                onClick={() => setMeetingRecordCard({ isOpen: true, data: sampleMeetingRecordData.first })}
-                                className="text-blue-600 hover:text-blue-800 font-medium text-xs"
-                              >
-                                查看
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
+                        {loading ? (
+                          <tr>
+                            <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
+                              載入中...
+                            </td>
+                          </tr>
+                        ) : error ? (
+                          <tr>
+                            <td colSpan={9} className="px-6 py-8 text-center text-red-500">
+                              載入失敗: {error}
+                            </td>
+                          </tr>
+                        ) : customerInteractions.length === 0 ? (
+                          <tr>
+                            <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
+                              暫無客戶互動記錄
+                            </td>
+                          </tr>
+                        ) : (
+                          customerInteractions.map((interaction, index) => {
+                            const nextActionDateTime = formatDateTime(interaction.next_action_date);
+                            const meetingOptions = getMeetingOptions(interaction.meeting_count);
 
-                        {/* Sample Row 2 */}
-                        <tr className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
-                            李美華
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <span>{sampleCustomerNames[1]}</span>
-                              <button
-                                onClick={() => setCustomerNameEditor({
-                                  isOpen: true,
-                                  rowIndex: 1,
-                                  initialCustomerName: sampleCustomerNames[1]
-                                })}
-                                className="p-1 hover:bg-gray-100 rounded transition-colors"
-                                title="編輯客戶名稱"
-                              >
-                                <Pencil className="h-3 w-3 text-gray-500 hover:text-gray-700" />
-                              </button>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <div
-                              onClick={() => setLeadSourceEditor({
-                                isOpen: true,
-                                rowIndex: 1,
-                                initialLeadSource: sampleLeadSources[1].source,
-                                initialCustomSource: sampleLeadSources[1].custom
-                              })}
-                              className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors flex justify-center"
-                            >
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                {getLeadSourceDisplay(sampleLeadSources[1].source, sampleLeadSources[1].custom)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            <div
-                              onClick={() => setConsultationMotiveEditor({
-                                isOpen: true,
-                                rowIndex: 1,
-                                initialStandardMotives: sampleConsultationMotives[1].standard,
-                                initialCustomMotives: sampleConsultationMotives[1].custom
-                              })}
-                              className="flex flex-wrap gap-1 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                            >
-                              {getDisplayMotives(sampleConsultationMotives[1].standard, sampleConsultationMotives[1].custom).map((motive, index) => (
-                                <span key={index} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800">
-                                  {motive}
-                                </span>
-                              ))}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <button
-                              onClick={() => setAssetLiabilityCard({ isOpen: true, data: sampleAssetLiabilityData })}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              點擊查看詳情
-                            </button>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <button
-                              onClick={() => setIncomeExpenseCard({ isOpen: true, data: sampleIncomeExpenseData })}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              點擊查看詳情
-                            </button>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <button
-                              onClick={() => setSituationCard({ isOpen: true, data: sampleSituationData })}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              點擊查看詳情
-                            </button>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900 text-center">
-                            <div
-                              onClick={() => setNextActionEditor({
-                                isOpen: true,
-                                rowIndex: 1,
-                                initialAction: sampleNextActions[1].action,
-                                initialDate: sampleNextActions[1].date,
-                                initialTime: sampleNextActions[1].time
-                              })}
-                              className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                            >
-                              <div className="flex flex-col items-center">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-gray-500">{sampleNextActions[1].date}</span>
-                                  <span className="text-xs text-gray-500">{sampleNextActions[1].time}</span>
-                                </div>
-                                <span className="text-sm">{sampleNextActions[1].action}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div className="flex items-center gap-2">
-                              <select className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500" defaultValue="第二次">
-                                <option value="第一次">第一次</option>
-                                <option value="第二次">第二次</option>
-                                <option value="第三次">第三次</option>
-                              </select>
-                              <button
-                                onClick={() => setMeetingRecordCard({ isOpen: true, data: sampleMeetingRecordData.second })}
-                                className="text-blue-600 hover:text-blue-800 font-medium text-xs"
-                              >
-                                查看
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-
-                        {/* Sample Row 3 */}
-                        <tr className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
-                            林志偉
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <span>{sampleCustomerNames[2]}</span>
-                              <button
-                                onClick={() => setCustomerNameEditor({
-                                  isOpen: true,
-                                  rowIndex: 2,
-                                  initialCustomerName: sampleCustomerNames[2]
-                                })}
-                                className="p-1 hover:bg-gray-100 rounded transition-colors"
-                                title="編輯客戶名稱"
-                              >
-                                <Pencil className="h-3 w-3 text-gray-500 hover:text-gray-700" />
-                              </button>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <div
-                              onClick={() => setLeadSourceEditor({
-                                isOpen: true,
-                                rowIndex: 2,
-                                initialLeadSource: sampleLeadSources[2].source,
-                                initialCustomSource: sampleLeadSources[2].custom
-                              })}
-                              className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors flex justify-center"
-                            >
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                {getLeadSourceDisplay(sampleLeadSources[2].source, sampleLeadSources[2].custom)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            <div
-                              onClick={() => setConsultationMotiveEditor({
-                                isOpen: true,
-                                rowIndex: 2,
-                                initialStandardMotives: sampleConsultationMotives[2].standard,
-                                initialCustomMotives: sampleConsultationMotives[2].custom
-                              })}
-                              className="flex flex-wrap gap-1 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                            >
-                              {getDisplayMotives(sampleConsultationMotives[2].standard, sampleConsultationMotives[2].custom).map((motive, index) => (
-                                <span key={index} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800">
-                                  {motive}
-                                </span>
-                              ))}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <button
-                              onClick={() => setAssetLiabilityCard({ isOpen: true, data: sampleAssetLiabilityData })}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              點擊查看詳情
-                            </button>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <button
-                              onClick={() => setIncomeExpenseCard({ isOpen: true, data: sampleIncomeExpenseData })}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              點擊查看詳情
-                            </button>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <button
-                              onClick={() => setSituationCard({ isOpen: true, data: sampleSituationData })}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              點擊查看詳情
-                            </button>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900 text-center">
-                            <div
-                              onClick={() => setNextActionEditor({
-                                isOpen: true,
-                                rowIndex: 2,
-                                initialAction: sampleNextActions[2].action,
-                                initialDate: sampleNextActions[2].date,
-                                initialTime: sampleNextActions[2].time
-                              })}
-                              className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                            >
-                              <div className="flex flex-col items-center">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-gray-500">{sampleNextActions[2].date}</span>
-                                  <span className="text-xs text-gray-500">{sampleNextActions[2].time}</span>
-                                </div>
-                                <span className="text-sm">{sampleNextActions[2].action}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div className="flex items-center gap-2">
-                              <select className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500" defaultValue="第三次">
-                                <option value="第一次">第一次</option>
-                                <option value="第二次">第二次</option>
-                                <option value="第三次">第三次</option>
-                              </select>
-                              <button
-                                onClick={() => setMeetingRecordCard({ isOpen: true, data: sampleMeetingRecordData.third })}
-                                className="text-blue-600 hover:text-blue-800 font-medium text-xs"
-                              >
-                                查看
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
+                            return (
+                              <tr key={interaction.id} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
+                                  {interaction.salesperson}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span>{interaction.customer_name}</span>
+                                    <button
+                                      onClick={() => setCustomerNameEditor({
+                                        isOpen: true,
+                                        rowIndex: index,
+                                        initialCustomerName: interaction.customer_name
+                                      })}
+                                      className="p-1 hover:bg-gray-100 rounded transition-colors"
+                                      title="編輯客戶名稱"
+                                    >
+                                      <Pencil className="h-3 w-3 text-gray-500 hover:text-gray-700" />
+                                    </button>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                  <div
+                                    onClick={() => setLeadSourceEditor({
+                                      isOpen: true,
+                                      rowIndex: index,
+                                      initialLeadSource: interaction.lead_source,
+                                      initialCustomSource: undefined
+                                    })}
+                                    className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors flex justify-center"
+                                  >
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                      {interaction.lead_source}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 text-sm text-gray-900">
+                                  <div
+                                    onClick={() => setConsultationMotiveEditor({
+                                      isOpen: true,
+                                      rowIndex: index,
+                                      initialStandardMotives: interaction.consultation_motives,
+                                      initialCustomMotives: []
+                                    })}
+                                    className="flex flex-wrap gap-1 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                                  >
+                                    {interaction.consultation_motives.map((motive, motiveIndex) => (
+                                      <span key={motiveIndex} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800">
+                                        {motive}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                  <button
+                                    onClick={() => setAssetLiabilityCard({ isOpen: true, data: interaction.asset_liability_data })}
+                                    className="text-blue-600 hover:text-blue-800 font-medium"
+                                  >
+                                    點擊查看詳情
+                                  </button>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                  <button
+                                    onClick={() => setIncomeExpenseCard({ isOpen: true, data: interaction.income_expense_data })}
+                                    className="text-blue-600 hover:text-blue-800 font-medium"
+                                  >
+                                    點擊查看詳情
+                                  </button>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                  <button
+                                    onClick={() => setSituationCard({ isOpen: true, data: interaction.situation_data })}
+                                    className="text-blue-600 hover:text-blue-800 font-medium"
+                                  >
+                                    點擊查看詳情
+                                  </button>
+                                </td>
+                                <td className="px-6 py-4 text-sm text-gray-900 text-center">
+                                  <div
+                                    onClick={() => setNextActionEditor({
+                                      isOpen: true,
+                                      rowIndex: index,
+                                      initialAction: interaction.next_action_description || '',
+                                      initialDate: nextActionDateTime?.date || '',
+                                      initialTime: nextActionDateTime?.time || ''
+                                    })}
+                                    className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                                  >
+                                    <div className="flex flex-col items-center">
+                                      {nextActionDateTime && (
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-xs text-gray-500">{nextActionDateTime.date}</span>
+                                          <span className="text-xs text-gray-500">{nextActionDateTime.time}</span>
+                                        </div>
+                                      )}
+                                      <span className="text-sm">{interaction.next_action_description || '無下一步行動'}</span>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  <div className="flex items-center gap-2">
+                                    <select
+                                      className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                      data-interaction-id={interaction.id}
+                                      defaultValue="1"
+                                    >
+                                      {meetingOptions.map(option => (
+                                        <option key={option.value} value={option.value}>
+                                          {option.label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <button
+                                      onClick={() => {
+                                        const selectElement = document.querySelector(`select[data-interaction-id="${interaction.id}"]`) as HTMLSelectElement;
+                                        const selectedMeeting = selectElement?.value || '1';
+                                        const meetingContent = getMeetingRecord(interaction.meeting_record, selectedMeeting);
+                                        setMeetingRecordCard({
+                                          isOpen: true,
+                                          data: {
+                                            meetingNumber: `第${selectedMeeting}次`,
+                                            content: meetingContent
+                                          }
+                                        });
+                                      }}
+                                      className="text-blue-600 hover:text-blue-800 font-medium text-xs"
+                                    >
+                                      查看
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
                       </tbody>
                     </table>
                   </div>
