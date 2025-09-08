@@ -234,6 +234,31 @@ export default function CustomerTrackingPage() {
     showNotification('error', '儲存失敗', error);
   };
 
+  // 諮詢動機編輯成功處理
+  const handleConsultationMotiveSuccess = () => {
+    showNotification('success', '儲存成功', '諮詢動機已成功更新');
+    // 重新載入資料
+    fetchCustomerInteractions(searchQuery);
+  };
+
+  // 諮詢動機編輯錯誤處理
+  const handleConsultationMotiveError = (error: string) => {
+    showNotification('error', '儲存失敗', error);
+  };
+
+  // 標準諮詢動機選項
+  const standardConsultationMotiveOptions = [
+    '想買自住房',
+    '貸款問題',
+    '了解不動產投資',
+    '了解現金流規劃',
+    '了解全案資產配置',
+    '稅務規劃',
+    '資產傳承',
+    '企業相關',
+    '其他'
+  ];
+
   const handleCustomerNameSave = (customerName: string) => {
     console.log('儲存客戶名稱:', customerName);
     // 這裡之後會連接到 API 更新資料
@@ -468,12 +493,22 @@ export default function CustomerTrackingPage() {
                                 </td>
                                 <td className="px-6 py-4 text-sm text-gray-900">
                                   <div
-                                    onClick={() => setConsultationMotiveEditor({
-                                      isOpen: true,
-                                      rowIndex: index,
-                                      initialStandardMotives: interaction.consultation_motives,
-                                      initialCustomMotives: []
-                                    })}
+                                    onClick={() => {
+                                      // 分離標準動機和自定義動機
+                                      const standardMotives = interaction.consultation_motives.filter(motive =>
+                                        standardConsultationMotiveOptions.includes(motive)
+                                      );
+                                      const customMotives = interaction.consultation_motives.filter(motive =>
+                                        !standardConsultationMotiveOptions.includes(motive)
+                                      );
+
+                                      setConsultationMotiveEditor({
+                                        isOpen: true,
+                                        rowIndex: index,
+                                        initialStandardMotives: standardMotives,
+                                        initialCustomMotives: customMotives
+                                      });
+                                    }}
                                     className="flex flex-wrap gap-1 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                                   >
                                     {interaction.consultation_motives.map((motive, motiveIndex) => (
@@ -612,6 +647,9 @@ export default function CustomerTrackingPage() {
         onSave={handleConsultationMotiveSave}
         initialStandardMotives={consultationMotiveEditor.initialStandardMotives}
         initialCustomMotives={consultationMotiveEditor.initialCustomMotives}
+        interactionId={customerInteractions[consultationMotiveEditor.rowIndex || 0]?.id}
+        onSuccess={handleConsultationMotiveSuccess}
+        onError={handleConsultationMotiveError}
       />
 
       <LeadSourceEditor

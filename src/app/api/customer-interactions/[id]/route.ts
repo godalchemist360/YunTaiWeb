@@ -13,10 +13,10 @@ export async function PUT(
     const { id } = await params;
 
     const body = await req.json();
-    const { customer_name, lead_source } = body;
+    const { customer_name, lead_source, consultation_motives } = body;
 
     // 驗證輸入 - 至少要有其中一個欄位要更新
-    if (!customer_name && !lead_source) {
+    if (!customer_name && !lead_source && !consultation_motives) {
       return NextResponse.json(
         { error: '至少需要提供一個要更新的欄位' },
         { status: 400 }
@@ -52,6 +52,26 @@ export async function PUT(
       }
     }
 
+    // 驗證諮詢動機（如果提供）
+    if (consultation_motives !== undefined) {
+      if (!Array.isArray(consultation_motives) || consultation_motives.length === 0) {
+        return NextResponse.json(
+          { error: '至少需要選擇一個諮詢動機' },
+          { status: 400 }
+        );
+      }
+
+      // 驗證每個動機都是字串
+      for (const motive of consultation_motives) {
+        if (typeof motive !== 'string' || !motive.trim()) {
+          return NextResponse.json(
+            { error: '諮詢動機不能為空' },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // 檢查記錄是否存在
     const checkResult = await query(
       'SELECT id FROM customer_interactions WHERE id = $1',
@@ -79,6 +99,12 @@ export async function PUT(
     if (lead_source !== undefined) {
       updateFields.push(`lead_source = $${paramIndex}`);
       updateValues.push(lead_source.trim());
+      paramIndex++;
+    }
+
+    if (consultation_motives !== undefined) {
+      updateFields.push(`consultation_motives = $${paramIndex}`);
+      updateValues.push(consultation_motives.map(motive => motive.trim()));
       paramIndex++;
     }
 
