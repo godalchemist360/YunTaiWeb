@@ -681,7 +681,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                   <h4 className="text-sm font-semibold text-gray-900 mb-3">三、家庭資源</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">家人有幾間房？</label>
+                      <label className="block text-sm text-gray-600 mb-1">家人有幾間房</label>
                       <input
                         type="text"
                         value={formData.assetLiability.familyResources.familyProperties}

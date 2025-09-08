@@ -13,10 +13,10 @@ export async function PUT(
     const { id } = await params;
 
     const body = await req.json();
-    const { customer_name, lead_source, consultation_motives } = body;
+    const { customer_name, lead_source, consultation_motives, asset_liability_data } = body;
 
     // 驗證輸入 - 至少要有其中一個欄位要更新
-    if (!customer_name && !lead_source && !consultation_motives) {
+    if (!customer_name && !lead_source && !consultation_motives && !asset_liability_data) {
       return NextResponse.json(
         { error: '至少需要提供一個要更新的欄位' },
         { status: 400 }
@@ -72,6 +72,16 @@ export async function PUT(
       }
     }
 
+    // 驗證資產負債資料（如果提供）
+    if (asset_liability_data !== undefined) {
+      if (typeof asset_liability_data !== 'object' || asset_liability_data === null) {
+        return NextResponse.json(
+          { error: '資產負債資料格式不正確' },
+          { status: 400 }
+        );
+      }
+    }
+
     // 檢查記錄是否存在
     const checkResult = await query(
       'SELECT id FROM customer_interactions WHERE id = $1',
@@ -105,6 +115,12 @@ export async function PUT(
     if (consultation_motives !== undefined) {
       updateFields.push(`consultation_motives = $${paramIndex}`);
       updateValues.push(consultation_motives.map(motive => motive.trim()));
+      paramIndex++;
+    }
+
+    if (asset_liability_data !== undefined) {
+      updateFields.push(`asset_liability_data = $${paramIndex}`);
+      updateValues.push(JSON.stringify(asset_liability_data));
       paramIndex++;
     }
 

@@ -21,8 +21,37 @@ interface IncomeExpenseDetailCardProps {
   };
 }
 
+// 將扁平資料結構轉換為巢狀結構
+const transformFlatToNested = (flatData: { [key: string]: any }) => {
+  if (!flatData) return null;
+
+  const nested: any = {
+    income: {},
+    expenses: {},
+    monthlyBalance: ''
+  };
+
+  // 轉換收入支出資料
+  Object.keys(flatData).forEach(key => {
+    if (key.startsWith('income.')) {
+      const incomeKey = key.replace('income.', '');
+      nested.income[incomeKey] = flatData[key];
+    } else if (key.startsWith('expenses.')) {
+      const expenseKey = key.replace('expenses.', '');
+      nested.expenses[expenseKey] = flatData[key];
+    } else if (key === 'monthlyBalance') {
+      nested.monthlyBalance = flatData[key];
+    }
+  });
+
+  return nested;
+};
+
 export function IncomeExpenseDetailCard({ isOpen, onClose, data }: IncomeExpenseDetailCardProps) {
   if (!isOpen) return null;
+
+  // 轉換資料結構
+  const transformedData = transformFlatToNested(data);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -48,15 +77,15 @@ export function IncomeExpenseDetailCard({ isOpen, onClose, data }: IncomeExpense
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div className="bg-green-50 rounded-md p-2 text-center">
                 <div className="text-xs font-medium text-gray-700 mb-1">1. 主業收入</div>
-                <div className="text-base text-gray-900 font-semibold">{data?.income.mainIncome || '未填寫'}</div>
+                <div className="text-base text-gray-900 font-semibold">{transformedData?.income?.mainIncome || '未填寫'}</div>
               </div>
               <div className="bg-green-50 rounded-md p-2 text-center">
                 <div className="text-xs font-medium text-gray-700 mb-1">2. 副業收入</div>
-                <div className="text-base text-gray-900 font-semibold">{data?.income.sideIncome || '未填寫'}</div>
+                <div className="text-base text-gray-900 font-semibold">{transformedData?.income?.sideIncome || '未填寫'}</div>
               </div>
               <div className="bg-green-50 rounded-md p-2 text-center">
                 <div className="text-xs font-medium text-gray-700 mb-1">3. 其他收入(如配息)</div>
-                <div className="text-base text-gray-900 font-semibold">{data?.income.otherIncome || '未填寫'}</div>
+                <div className="text-base text-gray-900 font-semibold">{transformedData?.income?.otherIncome || '未填寫'}</div>
               </div>
             </div>
           </div>
@@ -69,15 +98,15 @@ export function IncomeExpenseDetailCard({ isOpen, onClose, data }: IncomeExpense
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div className="bg-red-50 rounded-md p-2 text-center">
                 <div className="text-xs font-medium text-gray-700 mb-1">1. 生活費</div>
-                <div className="text-base text-gray-900 font-semibold">{data?.expenses.livingExpenses || '未填寫'}</div>
+                <div className="text-base text-gray-900 font-semibold">{transformedData?.expenses?.livingExpenses || '未填寫'}</div>
               </div>
               <div className="bg-red-50 rounded-md p-2 text-center">
                 <div className="text-xs font-medium text-gray-700 mb-1">2. 房貸或房租</div>
-                <div className="text-base text-gray-900 font-semibold">{data?.expenses.housingExpenses || '未填寫'}</div>
+                <div className="text-base text-gray-900 font-semibold">{transformedData?.expenses?.housingExpenses || '未填寫'}</div>
               </div>
               <div className="bg-red-50 rounded-md p-2 text-center">
                 <div className="text-xs font-medium text-gray-700 mb-1">3. 其他支出(如孝養金、保費、教育金、車貸)</div>
-                <div className="text-base text-gray-900 font-semibold">{data?.expenses.otherExpenses || '未填寫'}</div>
+                <div className="text-base text-gray-900 font-semibold">{transformedData?.expenses?.otherExpenses || '未填寫'}</div>
               </div>
             </div>
           </div>
@@ -90,7 +119,7 @@ export function IncomeExpenseDetailCard({ isOpen, onClose, data }: IncomeExpense
             <div className="flex justify-center">
               <div className="bg-blue-50 rounded-md p-3 text-center min-w-[200px]">
                 <div className="text-xs font-medium text-gray-700 mb-1">月結餘</div>
-                <div className="text-lg text-gray-900 font-semibold">{data?.monthlyBalance || '未填寫'}</div>
+                <div className="text-lg text-gray-900 font-semibold">{transformedData?.monthlyBalance || '未填寫'}</div>
               </div>
             </div>
           </div>

@@ -246,6 +246,19 @@ export default function CustomerTrackingPage() {
     showNotification('error', '儲存失敗', error);
   };
 
+  // 監聽 customerInteractions 變化，自動更新卡片資料
+  useEffect(() => {
+    if (assetLiabilityCard.isOpen && assetLiabilityCard.rowIndex !== undefined) {
+      const updatedInteraction = customerInteractions[assetLiabilityCard.rowIndex];
+      if (updatedInteraction && updatedInteraction.asset_liability_data) {
+        setAssetLiabilityCard(prev => ({
+          ...prev,
+          data: updatedInteraction.asset_liability_data
+        }));
+      }
+    }
+  }, [customerInteractions, assetLiabilityCard.isOpen, assetLiabilityCard.rowIndex]);
+
   // 標準諮詢動機選項
   const standardConsultationMotiveOptions = [
     '想買自住房',
@@ -520,7 +533,7 @@ export default function CustomerTrackingPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                   <button
-                                    onClick={() => setAssetLiabilityCard({ isOpen: true, data: interaction.asset_liability_data })}
+                                    onClick={() => setAssetLiabilityCard({ isOpen: true, data: interaction.asset_liability_data, rowIndex: index })}
                                     className="text-blue-600 hover:text-blue-800 font-medium"
                                   >
                                     點擊查看詳情
@@ -615,6 +628,15 @@ export default function CustomerTrackingPage() {
         isOpen={assetLiabilityCard.isOpen}
         onClose={() => setAssetLiabilityCard({ isOpen: false })}
         data={assetLiabilityCard.data}
+        interactionId={customerInteractions[assetLiabilityCard.rowIndex || 0]?.id}
+        onSuccess={async () => {
+          showNotification('success', '儲存成功', '資產負債狀況已成功更新');
+          // 重新載入資料
+          await fetchCustomerInteractions(searchQuery);
+        }}
+        onError={(error: string) => {
+          showNotification('error', '儲存失敗', error);
+        }}
       />
 
       <IncomeExpenseDetailCard
