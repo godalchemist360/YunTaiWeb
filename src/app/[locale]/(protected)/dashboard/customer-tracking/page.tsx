@@ -12,6 +12,7 @@ import { CustomerNameEditor } from '@/components/customer-tracking/customer-name
 import { NextActionEditor } from '@/components/customer-tracking/next-action-editor';
 import { AddRecordDialog } from '@/components/customer-tracking/add-record-dialog';
 import { CustomerInteraction, CustomerInteractionsResponse } from '@/types/customer-interactions';
+import { NotificationDialog } from '@/components/ui/notification-dialog';
 import {
   AlertTriangle,
   Building,
@@ -129,6 +130,19 @@ export default function CustomerTrackingPage() {
     initialTime?: string;
   }>({ isOpen: false });
 
+  // 通知狀態管理
+  const [notification, setNotification] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: ''
+  });
+
   // 輔助函數：格式化日期時間
   const formatDateTime = (dateTime: string | null) => {
     if (!dateTime) return null;
@@ -157,6 +171,20 @@ export default function CustomerTrackingPage() {
     return meetingRecord[meetingNumber] || '無會面紀錄';
   };
 
+  // 輔助函數：獲取名單來源的顯示樣式
+  const getLeadSourceStyle = (leadSource: string) => {
+    if (leadSource === '原顧') {
+      return 'bg-blue-100 text-blue-800';
+    } else if (leadSource === '客戶轉介') {
+      return 'bg-green-100 text-green-800';
+    } else if (leadSource === '公司名單') {
+      return 'bg-purple-100 text-purple-800';
+    } else {
+      // 其他自定義來源用粉色系
+      return 'bg-pink-100 text-pink-800';
+    }
+  };
+
   const handleAddRecord = (data: any) => {
     console.log('新增記錄:', data);
     // 這裡之後會連接到 API
@@ -170,6 +198,40 @@ export default function CustomerTrackingPage() {
   const handleLeadSourceSave = (leadSource: string, customSource?: string) => {
     console.log('儲存名單來源:', { leadSource, customSource });
     // 這裡之後會連接到 API 更新資料
+  };
+
+  // 顯示通知的輔助函數
+  const showNotification = (type: 'success' | 'error', title: string, message: string) => {
+    setNotification({
+      isOpen: true,
+      type,
+      title,
+      message
+    });
+  };
+
+  // 客戶名稱編輯成功處理
+  const handleCustomerNameSuccess = () => {
+    showNotification('success', '儲存成功', '客戶名稱已成功更新');
+    // 重新載入資料
+    fetchCustomerInteractions(searchQuery);
+  };
+
+  // 客戶名稱編輯錯誤處理
+  const handleCustomerNameError = (error: string) => {
+    showNotification('error', '儲存失敗', error);
+  };
+
+  // 名單來源編輯成功處理
+  const handleLeadSourceSuccess = () => {
+    showNotification('success', '儲存成功', '名單來源已成功更新');
+    // 重新載入資料
+    fetchCustomerInteractions(searchQuery);
+  };
+
+  // 名單來源編輯錯誤處理
+  const handleLeadSourceError = (error: string) => {
+    showNotification('error', '儲存失敗', error);
   };
 
   const handleCustomerNameSave = (customerName: string) => {
@@ -399,7 +461,7 @@ export default function CustomerTrackingPage() {
                                     })}
                                     className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors flex justify-center"
                                   >
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLeadSourceStyle(interaction.lead_source)}`}>
                                       {interaction.lead_source}
                                     </span>
                                   </div>
@@ -558,6 +620,9 @@ export default function CustomerTrackingPage() {
         onSave={handleLeadSourceSave}
         initialLeadSource={leadSourceEditor.initialLeadSource}
         initialCustomSource={leadSourceEditor.initialCustomSource}
+        interactionId={customerInteractions[leadSourceEditor.rowIndex || 0]?.id}
+        onSuccess={handleLeadSourceSuccess}
+        onError={handleLeadSourceError}
       />
 
       <CustomerNameEditor
@@ -565,6 +630,9 @@ export default function CustomerTrackingPage() {
         onClose={() => setCustomerNameEditor({ isOpen: false })}
         onSave={handleCustomerNameSave}
         initialCustomerName={customerNameEditor.initialCustomerName}
+        interactionId={customerInteractions[customerNameEditor.rowIndex || 0]?.id}
+        onSuccess={handleCustomerNameSuccess}
+        onError={handleCustomerNameError}
       />
 
       <NextActionEditor
@@ -574,6 +642,14 @@ export default function CustomerTrackingPage() {
         initialAction={nextActionEditor.initialAction}
         initialDate={nextActionEditor.initialDate}
         initialTime={nextActionEditor.initialTime}
+      />
+
+      <NotificationDialog
+        isOpen={notification.isOpen}
+        onClose={() => setNotification(prev => ({ ...prev, isOpen: false }))}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
       />
     </>
   );
