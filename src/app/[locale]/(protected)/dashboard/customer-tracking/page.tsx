@@ -88,6 +88,8 @@ export default function CustomerTrackingPage() {
   const [incomeExpenseCard, setIncomeExpenseCard] = useState<{
     isOpen: boolean;
     data?: any;
+    interactionId?: string;
+    rowIndex?: number;
   }>({ isOpen: false });
 
   const [situationCard, setSituationCard] = useState<{
@@ -258,6 +260,19 @@ export default function CustomerTrackingPage() {
       }
     }
   }, [customerInteractions, assetLiabilityCard.isOpen, assetLiabilityCard.rowIndex]);
+
+  // 監聽 customerInteractions 變化，自動更新收支狀況卡片資料
+  useEffect(() => {
+    if (incomeExpenseCard.isOpen && incomeExpenseCard.rowIndex !== undefined) {
+      const updatedInteraction = customerInteractions[incomeExpenseCard.rowIndex];
+      if (updatedInteraction && updatedInteraction.income_expense_data) {
+        setIncomeExpenseCard(prev => ({
+          ...prev,
+          data: updatedInteraction.income_expense_data
+        }));
+      }
+    }
+  }, [customerInteractions, incomeExpenseCard.isOpen, incomeExpenseCard.rowIndex]);
 
   // 標準諮詢動機選項
   const standardConsultationMotiveOptions = [
@@ -541,7 +556,12 @@ export default function CustomerTrackingPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                   <button
-                                    onClick={() => setIncomeExpenseCard({ isOpen: true, data: interaction.income_expense_data })}
+                                    onClick={() => setIncomeExpenseCard({
+                                      isOpen: true,
+                                      data: interaction.income_expense_data,
+                                      interactionId: interaction.id,
+                                      rowIndex: index
+                                    })}
                                     className="text-blue-600 hover:text-blue-800 font-medium"
                                   >
                                     點擊查看詳情
@@ -643,6 +663,15 @@ export default function CustomerTrackingPage() {
         isOpen={incomeExpenseCard.isOpen}
         onClose={() => setIncomeExpenseCard({ isOpen: false })}
         data={incomeExpenseCard.data}
+        interactionId={incomeExpenseCard.interactionId || ''}
+        onSuccess={async () => {
+          showNotification('success', '儲存成功', '收支狀況已成功更新');
+          // 重新載入資料
+          await fetchCustomerInteractions(searchQuery);
+        }}
+        onError={(error: string) => {
+          showNotification('error', '儲存失敗', error);
+        }}
       />
 
       <SituationDetailCard
