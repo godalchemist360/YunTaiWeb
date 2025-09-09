@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { AssetLiabilityDetailCard } from '@/components/customer-tracking/asset-liability-detail-card';
 import { IncomeExpenseDetailCard } from '@/components/customer-tracking/income-expense-detail-card';
@@ -16,7 +16,6 @@ import { NotificationDialog } from '@/components/ui/notification-dialog';
 import {
   AlertTriangle,
   Building,
-  Calendar,
   Clock,
   Eye,
   MessageSquare,
@@ -73,11 +72,31 @@ export default function CustomerTrackingPage() {
     fetchCustomerInteractions();
   }, []);
 
-  // 搜尋功能
-  const handleSearch = (query: string) => {
+  // 清理 timeout
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // 防抖動搜尋功能
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    fetchCustomerInteractions(query);
-  };
+
+    // 清除之前的 timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // 設置新的 timeout
+    searchTimeoutRef.current = setTimeout(() => {
+      fetchCustomerInteractions(query);
+    }, 300); // 300ms 延遲
+  }, []);
 
   // 彈出卡片狀態管理
   const [assetLiabilityCard, setAssetLiabilityCard] = useState<{
@@ -170,8 +189,8 @@ export default function CustomerTrackingPage() {
     };
   };
 
-  // 輔助函數：獲取會面紀錄選項
-  const getMeetingOptions = (meetingCount: number | null) => {
+  // 輔助函數：獲取會面紀錄選項（使用 useMemo 優化）
+  const getMeetingOptions = useCallback((meetingCount: number | null) => {
     if (!meetingCount) return [];
     const options = [];
     for (let i = 1; i <= meetingCount; i++) {
@@ -181,7 +200,7 @@ export default function CustomerTrackingPage() {
       });
     }
     return options;
-  };
+  }, []);
 
   // 輔助函數：獲取會面紀錄內容
   const getMeetingRecord = (meetingRecord: { [key: string]: string }, meetingNumber: string) => {
@@ -189,7 +208,7 @@ export default function CustomerTrackingPage() {
   };
 
   // 輔助函數：獲取名單來源的顯示樣式
-  const getLeadSourceStyle = (leadSource: string) => {
+  const getLeadSourceStyle = useCallback((leadSource: string) => {
     if (leadSource === '原顧') {
       return 'bg-blue-100 text-blue-800';
     } else if (leadSource === '客戶轉介') {
@@ -200,11 +219,45 @@ export default function CustomerTrackingPage() {
       // 其他自定義來源用粉色系
       return 'bg-pink-100 text-pink-800';
     }
-  };
+  }, []);
 
-  const handleAddRecord = (data: any) => {
-    console.log('新增記錄:', data);
-    // 這裡之後會連接到 API
+  // 計算統計數據（使用 useMemo 優化）
+  const statistics = useMemo(() => {
+    const total = customerInteractions.length;
+    const active = customerInteractions.filter(item => item.meeting_count && item.meeting_count > 0).length;
+    const potential = customerInteractions.filter(item => !item.meeting_count || item.meeting_count === 0).length;
+    const churnRisk = customerInteractions.filter(item => {
+      if (!item.next_action_date) return false;
+      const nextActionDate = new Date(item.next_action_date);
+      const now = new Date();
+      const daysDiff = Math.ceil((nextActionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return daysDiff < 0; // 已過期的下一步行動
+    }).length;
+
+    return { total, active, potential, churnRisk };
+  }, [customerInteractions]);
+
+  const handleAddRecord = async (data: any) => {
+    try {
+      const response = await fetch('/api/customer-interactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '新增記錄失敗');
+      }
+
+      showNotification('success', '新增成功', '客戶互動記錄已成功新增');
+      // 重新載入資料
+      await fetchCustomerInteractions(searchQuery);
+    } catch (error) {
+      showNotification('error', '新增失敗', error instanceof Error ? error.message : '新增記錄失敗');
+    }
   };
 
   const handleConsultationMotiveSave = (standardMotives: string[], customMotives: string[]) => {
@@ -228,10 +281,21 @@ export default function CustomerTrackingPage() {
   };
 
   // 客戶名稱編輯成功處理
-  const handleCustomerNameSuccess = () => {
+  const handleCustomerNameSuccess = (newName: string, rowIndex: number) => {
+    console.log('客戶名稱樂觀更新:', { newName, rowIndex });
+    // 樂觀更新：立即更新本地狀態
+    setCustomerInteractions(prev => {
+      const updated = prev.map((item, index) =>
+        index === rowIndex
+          ? { ...item, customer_name: newName, updated_at: new Date().toISOString() }
+          : item
+      );
+      console.log('更新後的數據:', updated[rowIndex]);
+      return updated;
+    });
     showNotification('success', '儲存成功', '客戶名稱已成功更新');
-    // 重新載入資料
-    fetchCustomerInteractions(searchQuery);
+    // 可選：在背景重新載入資料以確保數據一致性
+    // fetchCustomerInteractions(searchQuery);
   };
 
   // 客戶名稱編輯錯誤處理
@@ -240,10 +304,19 @@ export default function CustomerTrackingPage() {
   };
 
   // 名單來源編輯成功處理
-  const handleLeadSourceSuccess = () => {
+  const handleLeadSourceSuccess = (newLeadSource: string, rowIndex: number) => {
+    console.log('名單來源樂觀更新:', { newLeadSource, rowIndex });
+    // 樂觀更新：立即更新本地狀態
+    setCustomerInteractions(prev => {
+      const updated = prev.map((item, index) =>
+        index === rowIndex
+          ? { ...item, lead_source: newLeadSource, updated_at: new Date().toISOString() }
+          : item
+      );
+      console.log('更新後的數據:', updated[rowIndex]);
+      return updated;
+    });
     showNotification('success', '儲存成功', '名單來源已成功更新');
-    // 重新載入資料
-    fetchCustomerInteractions(searchQuery);
   };
 
   // 名單來源編輯錯誤處理
@@ -474,10 +547,6 @@ export default function CustomerTrackingPage() {
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
-                      <Calendar className="h-4 w-4" />
-                      篩選日期
-                    </button>
                     <button
                       onClick={() => setAddRecordDialog(true)}
                       className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
@@ -496,7 +565,7 @@ export default function CustomerTrackingPage() {
                         客戶互動記錄
                       </h3>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <span>共 {customerInteractions.length} 筆記錄</span>
+                        <span>共 {statistics.total} 筆記錄</span>
                         {loading && <span className="text-blue-500">載入中...</span>}
                         {error && <span className="text-red-500">載入失敗</span>}
                       </div>
@@ -549,7 +618,7 @@ export default function CustomerTrackingPage() {
                               載入失敗: {error}
                             </td>
                           </tr>
-                        ) : customerInteractions.length === 0 ? (
+                        ) : statistics.total === 0 ? (
                           <tr>
                             <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
                               暫無客戶互動記錄
@@ -596,7 +665,7 @@ export default function CustomerTrackingPage() {
                                     </span>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-900">
+                                <td className="px-5 py-4 text-sm text-gray-900 max-w-[250px]">
                                   <div
                                     onClick={() => {
                                       // 分離標準動機和自定義動機
@@ -679,40 +748,46 @@ export default function CustomerTrackingPage() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  <div className="flex items-center gap-2">
-                                    <select
-                                      className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                      data-interaction-id={interaction.id}
-                                      defaultValue="1"
-                                    >
-                                      {meetingOptions.map(option => (
-                                        <option key={option.value} value={option.value}>
-                                          {option.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                    <button
-                                      onClick={() => {
-                                        const selectElement = document.querySelector(`select[data-interaction-id="${interaction.id}"]`) as HTMLSelectElement;
-                                        const selectedMeeting = selectElement?.value || '1';
-                                        const meetingContent = getMeetingRecord(interaction.meeting_record, selectedMeeting);
-                                        setMeetingRecordCard({
-                                          isOpen: true,
-                                          data: {
-                                            meetingNumber: `第${selectedMeeting}次`,
-                                            content: meetingContent,
-                                            meetingIndex: selectedMeeting,
-                                            isNew: false
-                                          },
-                                          interactionId: interaction.id,
-                                          rowIndex: index
-                                        });
-                                      }}
-                                      className="text-blue-600 hover:text-blue-800 font-medium text-xs"
-                                    >
-                                      查看
-                                    </button>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                  <div className="flex items-center justify-center gap-2">
+                                    {meetingOptions.length > 0 ? (
+                                      <>
+                                        <select
+                                          className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          data-interaction-id={interaction.id}
+                                          defaultValue="1"
+                                        >
+                                          {meetingOptions.map(option => (
+                                            <option key={option.value} value={option.value}>
+                                              {option.label}
+                                            </option>
+                                          ))}
+                                        </select>
+                                        <button
+                                          onClick={() => {
+                                            const selectElement = document.querySelector(`select[data-interaction-id="${interaction.id}"]`) as HTMLSelectElement;
+                                            const selectedMeeting = selectElement?.value || '1';
+                                            const meetingContent = getMeetingRecord(interaction.meeting_record, selectedMeeting);
+                                            setMeetingRecordCard({
+                                              isOpen: true,
+                                              data: {
+                                                meetingNumber: `第${selectedMeeting}次`,
+                                                content: meetingContent,
+                                                meetingIndex: selectedMeeting,
+                                                isNew: false
+                                              },
+                                              interactionId: interaction.id,
+                                              rowIndex: index
+                                            });
+                                          }}
+                                          className="text-blue-600 hover:text-blue-800 font-medium text-xs"
+                                        >
+                                          查看
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <span className="text-gray-500 text-xs">無會面</span>
+                                    )}
                                     <button
                                       onClick={() => {
                                         const newMeetingCount = (interaction.meeting_count || 0) + 1;
@@ -843,7 +918,7 @@ export default function CustomerTrackingPage() {
         initialLeadSource={leadSourceEditor.initialLeadSource}
         initialCustomSource={leadSourceEditor.initialCustomSource}
         interactionId={customerInteractions[leadSourceEditor.rowIndex || 0]?.id}
-        onSuccess={handleLeadSourceSuccess}
+        onSuccess={(newLeadSource) => handleLeadSourceSuccess(newLeadSource, leadSourceEditor.rowIndex || 0)}
         onError={handleLeadSourceError}
       />
 
@@ -853,7 +928,7 @@ export default function CustomerTrackingPage() {
         onSave={handleCustomerNameSave}
         initialCustomerName={customerNameEditor.initialCustomerName}
         interactionId={customerInteractions[customerNameEditor.rowIndex || 0]?.id}
-        onSuccess={handleCustomerNameSuccess}
+        onSuccess={(newName) => handleCustomerNameSuccess(newName, customerNameEditor.rowIndex || 0)}
         onError={handleCustomerNameError}
       />
 

@@ -10,6 +10,7 @@ interface AddRecordDialogProps {
 }
 
 export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     salesperson: '',
     customerName: '',
@@ -50,7 +51,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
       expenses: {
         livingExpenses: '',
         housingExpenses: '',
-        otherExpenses: ''
+        insurance: ''
       },
       monthlyBalance: ''
     },
@@ -60,6 +61,21 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
       familyRelationships: '',
       others: ''
     }
+  });
+
+  // 動態新增項目的狀態
+  const [newItemInputs, setNewItemInputs] = useState<{
+    assets: Array<{ name: string; value: string }>;
+    liabilities: Array<{ name: string; value: string }>;
+    familyResources: Array<{ name: string; value: string }>;
+    income: Array<{ name: string; value: string }>;
+    expenses: Array<{ name: string; value: string }>;
+  }>({
+    assets: [],
+    liabilities: [],
+    familyResources: [],
+    income: [],
+    expenses: []
   });
 
   const leadSourceOptions = ['原顧', '客戶轉介', '公司名單', '其他'];
@@ -111,6 +127,32 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
     setFormData(prev => ({
       ...prev,
       consultationMotivesOther: prev.consultationMotivesOther.filter((_, i) => i !== index)
+    }));
+  };
+
+  // 新增動態項目
+  const addNewItem = (section: keyof typeof newItemInputs) => {
+    setNewItemInputs(prev => ({
+      ...prev,
+      [section]: [...prev[section], { name: '', value: '' }]
+    }));
+  };
+
+  // 更新動態項目
+  const updateNewItem = (section: keyof typeof newItemInputs, index: number, field: 'name' | 'value', value: string) => {
+    setNewItemInputs(prev => ({
+      ...prev,
+      [section]: prev[section].map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  // 刪除動態項目
+  const removeNewItem = (section: keyof typeof newItemInputs, index: number) => {
+    setNewItemInputs(prev => ({
+      ...prev,
+      [section]: prev[section].filter((_, i) => i !== index)
     }));
   };
 
@@ -196,68 +238,130 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {};
+
+    // 基本資訊驗證
+    if (!formData.salesperson.trim()) {
+      errors.salesperson = '業務員為必填欄位';
+    }
+    if (!formData.customerName.trim()) {
+      errors.customerName = '客戶名稱為必填欄位';
+    }
+    if (!formData.leadSource) {
+      errors.leadSource = '名單來源為必填欄位';
+    }
+    if (formData.leadSource === '其他' && !formData.leadSourceOther.trim()) {
+      errors.leadSourceOther = '請輸入其他名單來源';
+    }
+
+    // 諮詢動機驗證
+    const allMotives = [...formData.consultationMotives];
+    if (formData.consultationMotives.includes('其他') && formData.consultationMotivesOther.length > 0) {
+      allMotives.push(...formData.consultationMotivesOther.filter(motive => motive.trim()));
+    }
+    if (allMotives.length === 0) {
+      errors.consultationMotives = '至少需要選擇一個諮詢動機';
+    }
+    if (formData.consultationMotives.includes('其他') && formData.consultationMotivesOther.some(motive => !motive.trim())) {
+      errors.consultationMotivesOther = '其他諮詢動機不能為空';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    onClose();
-    // 重置表單
-    setFormData({
-      salesperson: '',
-      customerName: '',
-      leadSource: '',
-      leadSourceOther: '',
-      consultationMotives: [],
-      consultationMotivesOther: [],
-      assetLiability: {
-        assets: {
-          realEstate: '',
-          cash: '',
-          stocks: '',
-          funds: '',
-          insurance: '',
-          others: ''
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // 合併動態新增項目的資料
+      const submitData = {
+        ...formData,
+        newItemInputs
+      };
+      await onSubmit(submitData);
+      onClose();
+      // 重置表單
+      setFormData({
+        salesperson: '',
+        customerName: '',
+        leadSource: '',
+        leadSourceOther: '',
+        consultationMotives: [],
+        consultationMotivesOther: [],
+        assetLiability: {
+          assets: {
+            realEstate: '',
+            cash: '',
+            stocks: '',
+            funds: '',
+            insurance: '',
+            others: ''
+          },
+          liabilities: {
+            mortgage: '',
+            carLoan: '',
+            creditLoan: '',
+            creditCard: '',
+            studentLoan: '',
+            installment: '',
+            otherLoans: ''
+          },
+          familyResources: {
+            familyProperties: '',
+            familyAssets: '',
+            others: ''
+          }
         },
-        liabilities: {
-          mortgage: '',
-          carLoan: '',
-          creditLoan: '',
-          creditCard: '',
-          studentLoan: '',
-          installment: '',
-          otherLoans: ''
+        incomeExpense: {
+          income: {
+            mainIncome: '',
+            sideIncome: '',
+            otherIncome: ''
+          },
+          expenses: {
+            livingExpenses: '',
+            housingExpenses: '',
+            insurance: ''
+          },
+          monthlyBalance: ''
         },
-        familyResources: {
-          familyProperties: '',
-          familyAssets: '',
+        situation: {
+          painPoints: '',
+          goals: '',
+          familyRelationships: '',
           others: ''
         }
-      },
-      incomeExpense: {
-        income: {
-          mainIncome: '',
-          sideIncome: '',
-          otherIncome: ''
-        },
-        expenses: {
-          livingExpenses: '',
-          housingExpenses: '',
-          otherExpenses: ''
-        },
-        monthlyBalance: ''
-      },
-      situation: {
-        painPoints: '',
-        goals: '',
-        familyRelationships: '',
-        others: ''
-      }
-    });
-    // 重置展開狀態
-    setExpandedSections({
-      assetLiability: false,
-      incomeExpense: false,
-      situation: false
-    });
+      });
+      // 重置展開狀態
+      setExpandedSections({
+        assetLiability: false,
+        incomeExpense: false,
+        situation: false
+      });
+      // 重置動態新增項目
+      setNewItemInputs({
+        assets: [],
+        liabilities: [],
+        familyResources: [],
+        income: [],
+        expenses: []
+      });
+      // 清除驗證錯誤
+      setValidationErrors({});
+    } catch (error) {
+      // 錯誤處理由父組件負責
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -305,9 +409,14 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                   required
                   value={formData.salesperson}
                   onChange={(e) => handleInputChange('salesperson', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm ${
+                    validationErrors.salesperson ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="請輸入業務員"
                 />
+                {validationErrors.salesperson && (
+                  <p className="text-sm text-red-600">{validationErrors.salesperson}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -320,9 +429,14 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                   required
                   value={formData.customerName}
                   onChange={(e) => handleInputChange('customerName', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm ${
+                    validationErrors.customerName ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="請輸入客戶姓名"
                 />
+                {validationErrors.customerName && (
+                  <p className="text-sm text-red-600">{validationErrors.customerName}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -334,13 +448,18 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                   required
                   value={formData.leadSource}
                   onChange={(e) => handleInputChange('leadSource', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm ${
+                    validationErrors.leadSource ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
                   <option value="">請選擇名單來源</option>
                   {leadSourceOptions.map(option => (
                     <option key={option} value={option}>{option}</option>
                   ))}
                 </select>
+                {validationErrors.leadSource && (
+                  <p className="text-sm text-red-600">{validationErrors.leadSource}</p>
+                )}
               </div>
             </div>
           </div>
@@ -356,9 +475,14 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                 type="text"
                 value={formData.leadSourceOther}
                 onChange={(e) => handleInputChange('leadSourceOther', e.target.value)}
-                className="w-full px-4 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 bg-white shadow-sm"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 bg-white shadow-sm ${
+                  validationErrors.leadSourceOther ? 'border-red-500' : 'border-amber-300'
+                }`}
                 placeholder="請輸入其他名單來源"
               />
+              {validationErrors.leadSourceOther && (
+                <p className="text-sm text-red-600 mt-1">{validationErrors.leadSourceOther}</p>
+              )}
             </div>
           )}
 
@@ -370,7 +494,9 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
               </div>
               諮詢動機 *
             </h4>
-            <div className="p-3 bg-white border border-blue-200 rounded-lg shadow-sm">
+            <div className={`p-3 bg-white border rounded-lg shadow-sm ${
+              validationErrors.consultationMotives ? 'border-red-300' : 'border-blue-200'
+            }`}>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {consultationMotiveOptions.map(motive => (
                   <label key={motive} className="flex items-center space-x-2 p-2 hover:bg-blue-50 rounded-lg transition-all duration-200 cursor-pointer border border-transparent hover:border-blue-200">
@@ -384,10 +510,15 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                   </label>
                 ))}
               </div>
+              {validationErrors.consultationMotives && (
+                <p className="text-sm text-red-600 mt-2">{validationErrors.consultationMotives}</p>
+              )}
             </div>
 
             {formData.consultationMotives.includes('其他') && (
-              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className={`mt-3 p-3 bg-blue-50 border rounded-lg ${
+                validationErrors.consultationMotivesOther ? 'border-red-300' : 'border-blue-200'
+              }`}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-blue-800">其他諮詢動機</span>
                   <button
@@ -420,6 +551,9 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                     </div>
                   ))}
                 </div>
+                {validationErrors.consultationMotivesOther && (
+                  <p className="text-sm text-red-600 mt-2">{validationErrors.consultationMotivesOther}</p>
+                )}
               </div>
             )}
           </div>
@@ -543,7 +677,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.assets.realEstate}
                         onChange={(e) => updateAssetLiability('assets', 'realEstate', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：2,500萬"
+                        placeholder="請輸入金額"
                       />
                     </div>
                     <div>
@@ -553,7 +687,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.assets.cash}
                         onChange={(e) => updateAssetLiability('assets', 'cash', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：300萬"
+                        placeholder="請輸入金額"
                       />
                     </div>
                     <div>
@@ -563,7 +697,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.assets.stocks}
                         onChange={(e) => updateAssetLiability('assets', 'stocks', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：150萬"
+                        placeholder="請輸入金額"
                       />
                     </div>
                     <div>
@@ -573,7 +707,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.assets.funds}
                         onChange={(e) => updateAssetLiability('assets', 'funds', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：80萬"
+                        placeholder="請輸入金額"
                       />
                     </div>
                     <div>
@@ -583,18 +717,54 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.assets.insurance}
                         onChange={(e) => updateAssetLiability('assets', 'insurance', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：200萬"
+                        placeholder="請輸入金額"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">其他</label>
-                      <input
-                        type="text"
-                        value={formData.assetLiability.assets.others}
-                        onChange={(e) => updateAssetLiability('assets', 'others', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：50萬"
-                      />
+                    {/* 動態新增的資產項目 */}
+                    {newItemInputs.assets.map((item, index) => (
+                      <div key={index} className="col-span-full">
+                        <div className="flex gap-2 items-end">
+                          <div className="flex-1">
+                            <label className="block text-sm text-gray-600 mb-1">項目名稱</label>
+                            <input
+                              type="text"
+                              value={item.name}
+                              onChange={(e) => updateNewItem('assets', index, 'name', e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                              placeholder="請輸入項目名稱"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-sm text-gray-600 mb-1">金額</label>
+                            <input
+                              type="text"
+                              value={item.value}
+                              onChange={(e) => updateNewItem('assets', index, 'value', e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                              placeholder="請輸入金額"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeNewItem('assets', index)}
+                            className="px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            移除
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {/* 新增按鈕 */}
+                    <div className="col-span-full">
+                      <button
+                        type="button"
+                        onClick={() => addNewItem('assets')}
+                        className="flex items-center gap-1 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <Plus className="h-4 w-4" />
+                        新增資產項目
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -610,7 +780,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.liabilities.mortgage}
                         onChange={(e) => updateAssetLiability('liabilities', 'mortgage', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：1,200萬"
+                        placeholder="請輸入金額"
                       />
                     </div>
                     <div>
@@ -620,7 +790,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.liabilities.carLoan}
                         onChange={(e) => updateAssetLiability('liabilities', 'carLoan', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：80萬"
+                        placeholder="請輸入金額"
                       />
                     </div>
                     <div>
@@ -630,7 +800,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.liabilities.creditLoan}
                         onChange={(e) => updateAssetLiability('liabilities', 'creditLoan', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：0"
+                        placeholder="請輸入金額"
                       />
                     </div>
                     <div>
@@ -640,7 +810,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.liabilities.creditCard}
                         onChange={(e) => updateAssetLiability('liabilities', 'creditCard', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：15萬"
+                        placeholder="請輸入金額"
                       />
                     </div>
                     <div>
@@ -650,7 +820,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.liabilities.studentLoan}
                         onChange={(e) => updateAssetLiability('liabilities', 'studentLoan', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：0"
+                        placeholder="請輸入金額"
                       />
                     </div>
                     <div>
@@ -660,18 +830,54 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.liabilities.installment}
                         onChange={(e) => updateAssetLiability('liabilities', 'installment', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：0"
+                        placeholder="請輸入金額"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">其他貸款</label>
-                      <input
-                        type="text"
-                        value={formData.assetLiability.liabilities.otherLoans}
-                        onChange={(e) => updateAssetLiability('liabilities', 'otherLoans', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：0"
-                      />
+                    {/* 動態新增的負債項目 */}
+                    {newItemInputs.liabilities.map((item, index) => (
+                      <div key={index} className="col-span-full">
+                        <div className="flex gap-2 items-end">
+                          <div className="flex-1">
+                            <label className="block text-sm text-gray-600 mb-1">項目名稱</label>
+                            <input
+                              type="text"
+                              value={item.name}
+                              onChange={(e) => updateNewItem('liabilities', index, 'name', e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                              placeholder="請輸入項目名稱"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-sm text-gray-600 mb-1">金額</label>
+                            <input
+                              type="text"
+                              value={item.value}
+                              onChange={(e) => updateNewItem('liabilities', index, 'value', e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                              placeholder="請輸入金額"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeNewItem('liabilities', index)}
+                            className="px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            移除
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {/* 新增按鈕 */}
+                    <div className="col-span-full">
+                      <button
+                        type="button"
+                        onClick={() => addNewItem('liabilities')}
+                        className="flex items-center gap-1 px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      >
+                        <Plus className="h-4 w-4" />
+                        新增負債項目
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -687,7 +893,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.familyResources.familyProperties}
                         onChange={(e) => updateAssetLiability('familyResources', 'familyProperties', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：3間"
+                        placeholder="請輸入數量"
                       />
                     </div>
                     <div>
@@ -697,18 +903,54 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.assetLiability.familyResources.familyAssets}
                         onChange={(e) => updateAssetLiability('familyResources', 'familyAssets', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：約500萬"
+                        placeholder="請輸入金額"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">其他</label>
-                      <input
-                        type="text"
-                        value={formData.assetLiability.familyResources.others}
-                        onChange={(e) => updateAssetLiability('familyResources', 'others', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：無"
-                      />
+                    {/* 動態新增的家庭資源項目 */}
+                    {newItemInputs.familyResources.map((item, index) => (
+                      <div key={index} className="col-span-full">
+                        <div className="flex gap-2 items-end">
+                          <div className="flex-1">
+                            <label className="block text-sm text-gray-600 mb-1">項目名稱</label>
+                            <input
+                              type="text"
+                              value={item.name}
+                              onChange={(e) => updateNewItem('familyResources', index, 'name', e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                              placeholder="請輸入項目名稱"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-sm text-gray-600 mb-1">內容</label>
+                            <input
+                              type="text"
+                              value={item.value}
+                              onChange={(e) => updateNewItem('familyResources', index, 'value', e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                              placeholder="請輸入內容"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeNewItem('familyResources', index)}
+                            className="px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            移除
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {/* 新增按鈕 */}
+                    <div className="col-span-full">
+                      <button
+                        type="button"
+                        onClick={() => addNewItem('familyResources')}
+                        className="flex items-center gap-1 px-3 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                      >
+                        <Plus className="h-4 w-4" />
+                        新增家庭資源項目
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -728,7 +970,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.incomeExpense.income.mainIncome}
                         onChange={(e) => updateIncomeExpense('income', 'mainIncome', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：8萬/月"
+                        placeholder="請輸入收入"
                       />
                     </div>
                     <div>
@@ -738,18 +980,54 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.incomeExpense.income.sideIncome}
                         onChange={(e) => updateIncomeExpense('income', 'sideIncome', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：2萬/月"
+                        placeholder="請輸入收入"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">其他收入</label>
-                      <input
-                        type="text"
-                        value={formData.incomeExpense.income.otherIncome}
-                        onChange={(e) => updateIncomeExpense('income', 'otherIncome', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：配息1萬/月"
-                      />
+                    {/* 動態新增的收入項目 */}
+                    {newItemInputs.income.map((item, index) => (
+                      <div key={index} className="col-span-full">
+                        <div className="flex gap-2 items-end">
+                          <div className="flex-1">
+                            <label className="block text-sm text-gray-600 mb-1">項目名稱</label>
+                            <input
+                              type="text"
+                              value={item.name}
+                              onChange={(e) => updateNewItem('income', index, 'name', e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                              placeholder="請輸入項目名稱"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-sm text-gray-600 mb-1">收入</label>
+                            <input
+                              type="text"
+                              value={item.value}
+                              onChange={(e) => updateNewItem('income', index, 'value', e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                              placeholder="請輸入收入"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeNewItem('income', index)}
+                            className="px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            移除
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {/* 新增按鈕 */}
+                    <div className="col-span-full">
+                      <button
+                        type="button"
+                        onClick={() => addNewItem('income')}
+                        className="flex items-center gap-1 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <Plus className="h-4 w-4" />
+                        新增收入項目
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -765,7 +1043,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.incomeExpense.expenses.livingExpenses}
                         onChange={(e) => updateIncomeExpense('expenses', 'livingExpenses', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：3萬/月"
+                        placeholder="請輸入支出"
                       />
                     </div>
                     <div>
@@ -775,18 +1053,64 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                         value={formData.incomeExpense.expenses.housingExpenses}
                         onChange={(e) => updateIncomeExpense('expenses', 'housingExpenses', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：4萬/月"
+                        placeholder="請輸入支出"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">其他支出</label>
+                      <label className="block text-sm text-gray-600 mb-1">保費</label>
                       <input
                         type="text"
-                        value={formData.incomeExpense.expenses.otherExpenses}
-                        onChange={(e) => updateIncomeExpense('expenses', 'otherExpenses', e.target.value)}
+                        value={formData.incomeExpense.expenses.insurance}
+                        onChange={(e) => updateIncomeExpense('expenses', 'insurance', e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="例：保費、教育金等"
+                        placeholder="請輸入支出"
                       />
+                    </div>
+                    {/* 動態新增的支出項目 */}
+                    {newItemInputs.expenses.map((item, index) => (
+                      <div key={index} className="col-span-full">
+                        <div className="flex gap-2 items-end">
+                          <div className="flex-1">
+                            <label className="block text-sm text-gray-600 mb-1">項目名稱</label>
+                            <input
+                              type="text"
+                              value={item.name}
+                              onChange={(e) => updateNewItem('expenses', index, 'name', e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                              placeholder="請輸入項目名稱"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-sm text-gray-600 mb-1">支出</label>
+                            <input
+                              type="text"
+                              value={item.value}
+                              onChange={(e) => updateNewItem('expenses', index, 'value', e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                              placeholder="請輸入支出"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeNewItem('expenses', index)}
+                            className="px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            移除
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {/* 新增按鈕 */}
+                    <div className="col-span-full">
+                      <button
+                        type="button"
+                        onClick={() => addNewItem('expenses')}
+                        className="flex items-center gap-1 px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      >
+                        <Plus className="h-4 w-4" />
+                        新增支出項目
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -800,7 +1124,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                       value={formData.incomeExpense.monthlyBalance}
                       onChange={(e) => updateIncomeExpense('monthlyBalance', '', e.target.value)}
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                      placeholder="例：4萬/月"
+                      placeholder="請輸入月結餘"
                     />
                   </div>
                 </div>
@@ -869,9 +1193,21 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
             <button
               type="submit"
               form="customer-form"
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              disabled={isSubmitting}
+              className={`px-8 py-3 rounded-xl transition-all duration-200 font-medium shadow-lg transform ${
+                isSubmitting
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:-translate-y-0.5'
+              }`}
             >
-              新增記錄
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-gray-200 border-t-white rounded-full animate-spin"></div>
+                  新增中...
+                </div>
+              ) : (
+                '新增記錄'
+              )}
             </button>
           </div>
         </div>

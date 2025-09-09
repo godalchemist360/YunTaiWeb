@@ -9,7 +9,7 @@ interface CustomerNameEditorProps {
   onSave: (customerName: string) => void;
   initialCustomerName?: string;
   interactionId?: string;
-  onSuccess?: () => void;
+  onSuccess?: (newName: string) => void;
   onError?: (error: string) => void;
 }
 
@@ -81,7 +81,7 @@ export function CustomerNameEditor({
 
         // 成功後關閉對話框並觸發成功回調
         onClose();
-        onSuccess?.();
+        onSuccess?.(trimmedName);
       } else {
         // 如果沒有 interactionId，使用原有的 onSave 回調
         onSave(trimmedName);

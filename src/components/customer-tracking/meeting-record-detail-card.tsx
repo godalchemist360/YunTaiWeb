@@ -127,6 +127,10 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
 
   // 開始編輯
   const handleEdit = () => {
+    // 如果是無會面資料，不允許編輯
+    if (data?.meetingNumber === '無會面資料') {
+      return;
+    }
     setIsEditing(true);
   };
 
@@ -195,7 +199,15 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
         {/* Footer with gradient background */}
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-b-2xl border-t border-gray-200">
           <div className="flex justify-end gap-3">
-            {isEditing ? (
+            {data?.meetingNumber === '無會面資料' ? (
+              // 無會面資料時只顯示關閉按鈕
+              <button
+                onClick={onClose}
+                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                關閉
+              </button>
+            ) : isEditing ? (
               <>
                 <button
                   onClick={handleCancel}
