@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Building } from 'lucide-react';
 
 interface LeadSourceEditorProps {
   isOpen: boolean;
@@ -128,15 +128,21 @@ export function LeadSourceEditor({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+        {/* Header with gradient background */}
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">選擇名單來源</h3>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                <Building className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white">選擇名單來源</h3>
+            </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
             >
-              <X className="h-5 w-5 text-gray-500" />
+              <X className="h-5 w-5 text-white" />
             </button>
           </div>
         </div>
@@ -193,19 +199,20 @@ export function LeadSourceEditor({
           </div>
         )}
 
-        <div className="p-6 border-t border-gray-200">
-          <div className="flex justify-end space-x-3">
+        {/* Footer with gradient background */}
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-b-2xl border-t border-gray-200">
+          <div className="flex justify-end gap-3">
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
             >
               取消
             </button>
             <button
               onClick={handleSave}
               disabled={!selectedSource || (selectedSource === '其他' && !customSource.trim()) || isLoading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               {isLoading ? '儲存中...' : '儲存'}
             </button>

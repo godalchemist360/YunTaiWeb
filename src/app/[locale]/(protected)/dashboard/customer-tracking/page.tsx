@@ -95,6 +95,8 @@ export default function CustomerTrackingPage() {
   const [situationCard, setSituationCard] = useState<{
     isOpen: boolean;
     data?: any;
+    interactionId?: string;
+    rowIndex?: number;
   }>({ isOpen: false });
 
   const [addRecordDialog, setAddRecordDialog] = useState(false);
@@ -273,6 +275,19 @@ export default function CustomerTrackingPage() {
       }
     }
   }, [customerInteractions, incomeExpenseCard.isOpen, incomeExpenseCard.rowIndex]);
+
+  // 監聽 customerInteractions 變化，自動更新現況說明卡片資料
+  useEffect(() => {
+    if (situationCard.isOpen && situationCard.rowIndex !== undefined) {
+      const updatedInteraction = customerInteractions[situationCard.rowIndex];
+      if (updatedInteraction && updatedInteraction.situation_data) {
+        setSituationCard(prev => ({
+          ...prev,
+          data: updatedInteraction.situation_data
+        }));
+      }
+    }
+  }, [customerInteractions, situationCard.isOpen, situationCard.rowIndex]);
 
   // 標準諮詢動機選項
   const standardConsultationMotiveOptions = [
@@ -569,7 +584,12 @@ export default function CustomerTrackingPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                   <button
-                                    onClick={() => setSituationCard({ isOpen: true, data: interaction.situation_data })}
+                                    onClick={() => setSituationCard({
+                                      isOpen: true,
+                                      data: interaction.situation_data,
+                                      interactionId: interaction.id,
+                                      rowIndex: index
+                                    })}
                                     className="text-blue-600 hover:text-blue-800 font-medium"
                                   >
                                     點擊查看詳情
@@ -678,6 +698,15 @@ export default function CustomerTrackingPage() {
         isOpen={situationCard.isOpen}
         onClose={() => setSituationCard({ isOpen: false })}
         data={situationCard.data}
+        interactionId={situationCard.interactionId || ''}
+        onSuccess={async () => {
+          showNotification('success', '儲存成功', '現況說明已成功更新');
+          // 重新載入資料
+          await fetchCustomerInteractions(searchQuery);
+        }}
+        onError={(error: string) => {
+          showNotification('error', '儲存失敗', error);
+        }}
       />
 
       <AddRecordDialog

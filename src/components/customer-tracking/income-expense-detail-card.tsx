@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Plus, Save, Edit } from 'lucide-react';
+import { X, Plus, Save, Edit, DollarSign } from 'lucide-react';
 
 interface IncomeExpenseDetailCardProps {
   isOpen: boolean;
@@ -220,6 +220,14 @@ export function IncomeExpenseDetailCard({ isOpen, onClose, data, interactionId, 
   const [editData, setEditData] = useState<any>(null);
   const [newItemInputs, setNewItemInputs] = useState<{[key: string]: {name: string, value: string}}>({});
 
+  // 當卡片關閉時重置編輯狀態
+  useEffect(() => {
+    if (!isOpen) {
+      setIsEditing(false);
+      setNewItemInputs({});
+    }
+  }, [isOpen]);
+
   // 初始化編輯資料
   useEffect(() => {
     if (data) {
@@ -325,16 +333,22 @@ export function IncomeExpenseDetailCard({ isOpen, onClose, data, interactionId, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="p-4 border-b border-gray-200">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header with gradient background */}
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">收支狀況</h3>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                <DollarSign className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white">收支狀況</h3>
+            </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
             >
-              <X className="h-5 w-5 text-gray-500" />
+              <X className="h-5 w-5 text-white" />
             </button>
           </div>
         </div>
@@ -646,44 +660,46 @@ export function IncomeExpenseDetailCard({ isOpen, onClose, data, interactionId, 
           </div>
         </div>
 
-        {/* 底部按鈕 */}
-        <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
-          {isEditing ? (
-            <>
+        {/* Footer with gradient background */}
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-b-2xl border-t border-gray-200">
+          <div className="flex justify-end gap-3">
+            {isEditing ? (
+              <>
+                <button
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                  className="px-6 py-3 text-gray-600 hover:text-gray-800 disabled:opacity-50 transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-300 disabled:opacity-50 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      儲存中...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      儲存
+                    </>
+                  )}
+                </button>
+              </>
+            ) : (
               <button
-                onClick={handleCancel}
-                disabled={isLoading}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50"
+                onClick={handleEdit}
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                取消
+                <Edit className="h-4 w-4" />
+                編輯
               </button>
-              <button
-                onClick={handleSave}
-                disabled={isLoading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    儲存中...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" />
-                    儲存
-                  </>
-                )}
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={handleEdit}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-            >
-              <Edit className="h-4 w-4" />
-              編輯
-            </button>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

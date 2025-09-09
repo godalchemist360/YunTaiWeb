@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Plus, Edit3, Save, XCircle } from 'lucide-react';
+import { X, Plus, Edit3, Save, XCircle, TrendingUp } from 'lucide-react';
 
 interface AssetLiabilityDetailCardProps {
   isOpen: boolean;
@@ -294,6 +294,14 @@ export function AssetLiabilityDetailCard({ isOpen, onClose, data, interactionId,
   const [editData, setEditData] = useState<any>(null);
   const [newItemInputs, setNewItemInputs] = useState<{[key: string]: {name: string, value: string}}>({});
 
+  // 當卡片關閉時重置編輯狀態
+  useEffect(() => {
+    if (!isOpen) {
+      setIsEditing(false);
+      setNewItemInputs({});
+    }
+  }, [isOpen]);
+
   // 初始化編輯資料
   useEffect(() => {
     if (isOpen && data) {
@@ -445,15 +453,21 @@ export function AssetLiabilityDetailCard({ isOpen, onClose, data, interactionId,
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header with gradient background */}
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">資產負債狀況</h3>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white">資產負債狀況</h3>
+            </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
             >
-              <X className="h-5 w-5 text-gray-500" />
+              <X className="h-5 w-5 text-white" />
             </button>
           </div>
         </div>
@@ -865,15 +879,15 @@ export function AssetLiabilityDetailCard({ isOpen, onClose, data, interactionId,
           </div>
         </div>
 
-        {/* 底部按鈕區域 */}
-        <div className="p-6 border-t border-gray-200">
+        {/* Footer with gradient background */}
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-b-2xl border-t border-gray-200">
           <div className="flex justify-end gap-3">
             {isEditing ? (
               <>
                 <button
                   onClick={handleSave}
                   disabled={isLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   <Save className="h-4 w-4" />
                   {isLoading ? '儲存中...' : '儲存'}
@@ -881,7 +895,7 @@ export function AssetLiabilityDetailCard({ isOpen, onClose, data, interactionId,
                 <button
                   onClick={handleCancel}
                   disabled={isLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <XCircle className="h-4 w-4" />
                   取消
@@ -890,7 +904,7 @@ export function AssetLiabilityDetailCard({ isOpen, onClose, data, interactionId,
             ) : (
               <button
                 onClick={handleEdit}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 <Edit3 className="h-4 w-4" />
                 編輯
