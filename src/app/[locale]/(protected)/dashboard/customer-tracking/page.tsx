@@ -104,6 +104,8 @@ export default function CustomerTrackingPage() {
   const [meetingRecordCard, setMeetingRecordCard] = useState<{
     isOpen: boolean;
     data?: any;
+    interactionId?: string;
+    rowIndex?: number;
   }>({ isOpen: false });
 
   const [consultationMotiveEditor, setConsultationMotiveEditor] = useState<{
@@ -132,6 +134,7 @@ export default function CustomerTrackingPage() {
     initialAction?: string;
     initialDate?: string;
     initialTime?: string;
+    isLoading?: boolean;
   }>({ isOpen: false });
 
   // 通知狀態管理
@@ -151,9 +154,19 @@ export default function CustomerTrackingPage() {
   const formatDateTime = (dateTime: string | null) => {
     if (!dateTime) return null;
     const date = new Date(dateTime);
+
+    // 格式化為 HTML input 需要的格式
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
     return {
-      date: date.toLocaleDateString('zh-TW'),
-      time: date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+      date: `${year}-${month}-${day}`, // YYYY-MM-DD 格式
+      time: `${hours}:${minutes}`, // HH:mm 格式
+      displayDate: date.toLocaleDateString('zh-TW'), // 用於顯示
+      displayTime: date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) // 用於顯示
     };
   };
 
@@ -307,9 +320,58 @@ export default function CustomerTrackingPage() {
     // 這裡之後會連接到 API 更新資料
   };
 
-  const handleNextActionSave = (action: string, date: string, time: string) => {
-    console.log('儲存下一步行動:', { action, date, time });
-    // 這裡之後會連接到 API 更新資料
+  const handleNextActionSave = async (action: string, date: string, time: string) => {
+    if (nextActionEditor.rowIndex === undefined || nextActionEditor.rowIndex === null) {
+      return;
+    }
+
+    const interaction = customerInteractions[nextActionEditor.rowIndex];
+    if (!interaction) {
+      return;
+    }
+
+    // 設置載入狀態
+    setNextActionEditor(prev => ({ ...prev, isLoading: true }));
+
+    try {
+      // 組合日期和時間為完整的 timestamp
+      let nextActionDate = null;
+      if (date && time) {
+        // 直接使用本地時間格式，不轉換為 UTC
+        const dateTimeString = `${date} ${time}:00`;
+        nextActionDate = dateTimeString;
+      } else if (date) {
+        // 如果只有日期沒有時間，使用當天的 09:00
+        const dateTimeString = `${date} 09:00:00`;
+        nextActionDate = dateTimeString;
+      }
+
+      const response = await fetch(`/api/customer-interactions/${interaction.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          next_action_date: nextActionDate,
+          next_action_description: action || null
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('儲存失敗');
+      }
+
+      showNotification('success', '儲存成功', '下一步行動已成功更新');
+      // 重新載入資料
+      await fetchCustomerInteractions(searchQuery);
+      // 關閉編輯器
+      setNextActionEditor({ isOpen: false });
+    } catch (error) {
+      showNotification('error', '儲存失敗', '網路連線中斷或伺服器錯誤');
+    } finally {
+      // 清除載入狀態
+      setNextActionEditor(prev => ({ ...prev, isLoading: false }));
+    }
   };
 
   return (
@@ -609,8 +671,8 @@ export default function CustomerTrackingPage() {
                                     <div className="flex flex-col items-center">
                                       {nextActionDateTime && (
                                         <div className="flex items-center gap-2">
-                                          <span className="text-xs text-gray-500">{nextActionDateTime.date}</span>
-                                          <span className="text-xs text-gray-500">{nextActionDateTime.time}</span>
+                                          <span className="text-xs text-gray-500">{nextActionDateTime.displayDate}</span>
+                                          <span className="text-xs text-gray-500">{nextActionDateTime.displayTime}</span>
                                         </div>
                                       )}
                                       <span className="text-sm">{interaction.next_action_description || '無下一步行動'}</span>
@@ -639,13 +701,36 @@ export default function CustomerTrackingPage() {
                                           isOpen: true,
                                           data: {
                                             meetingNumber: `第${selectedMeeting}次`,
-                                            content: meetingContent
-                                          }
+                                            content: meetingContent,
+                                            meetingIndex: selectedMeeting,
+                                            isNew: false
+                                          },
+                                          interactionId: interaction.id,
+                                          rowIndex: index
                                         });
                                       }}
                                       className="text-blue-600 hover:text-blue-800 font-medium text-xs"
                                     >
                                       查看
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        const newMeetingCount = (interaction.meeting_count || 0) + 1;
+                                        setMeetingRecordCard({
+                                          isOpen: true,
+                                          data: {
+                                            meetingNumber: `第${newMeetingCount}次`,
+                                            content: '',
+                                            meetingIndex: newMeetingCount.toString(),
+                                            isNew: true
+                                          },
+                                          interactionId: interaction.id,
+                                          rowIndex: index
+                                        });
+                                      }}
+                                      className="text-blue-600 hover:text-blue-800 font-medium text-xs ml-2"
+                                    >
+                                      新增
                                     </button>
                                   </div>
                                 </td>
@@ -719,6 +804,25 @@ export default function CustomerTrackingPage() {
         isOpen={meetingRecordCard.isOpen}
         onClose={() => setMeetingRecordCard({ isOpen: false })}
         data={meetingRecordCard.data}
+        interactionId={meetingRecordCard.interactionId || ''}
+        onDataUpdate={(newContent: string) => {
+          // 即時更新卡片中的資料
+          setMeetingRecordCard(prev => ({
+            ...prev,
+            data: {
+              ...prev.data,
+              content: newContent
+            }
+          }));
+        }}
+        onSuccess={async () => {
+          showNotification('success', '儲存成功', '會面紀錄已成功更新');
+          // 重新載入資料
+          await fetchCustomerInteractions(searchQuery);
+        }}
+        onError={(error: string) => {
+          showNotification('error', '儲存失敗', error);
+        }}
       />
 
       <ConsultationMotiveEditor
@@ -760,6 +864,7 @@ export default function CustomerTrackingPage() {
         initialAction={nextActionEditor.initialAction}
         initialDate={nextActionEditor.initialDate}
         initialTime={nextActionEditor.initialTime}
+        isLoading={nextActionEditor.isLoading}
       />
 
       <NotificationDialog

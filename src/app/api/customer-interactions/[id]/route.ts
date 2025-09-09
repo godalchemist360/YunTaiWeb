@@ -13,10 +13,10 @@ export async function PUT(
     const { id } = await params;
 
     const body = await req.json();
-    const { customer_name, lead_source, consultation_motives, asset_liability_data, income_expense_data, situation_data } = body;
+    const { customer_name, lead_source, consultation_motives, asset_liability_data, income_expense_data, situation_data, next_action_date, next_action_description, meeting_record, meeting_count } = body;
 
     // 驗證輸入 - 至少要有其中一個欄位要更新
-    if (!customer_name && !lead_source && !consultation_motives && !asset_liability_data && !income_expense_data && !situation_data) {
+    if (!customer_name && !lead_source && !consultation_motives && !asset_liability_data && !income_expense_data && !situation_data && next_action_date === undefined && next_action_description === undefined && meeting_record === undefined && meeting_count === undefined) {
       return NextResponse.json(
         { error: '至少需要提供一個要更新的欄位' },
         { status: 400 }
@@ -102,6 +102,46 @@ export async function PUT(
       }
     }
 
+    // 驗證下一步行動日期（如果提供）
+    if (next_action_date !== undefined && next_action_date !== null) {
+      if (typeof next_action_date !== 'string') {
+        return NextResponse.json(
+          { error: '下一步行動日期格式不正確' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 驗證下一步行動描述（如果提供）
+    if (next_action_description !== undefined && next_action_description !== null) {
+      if (typeof next_action_description !== 'string') {
+        return NextResponse.json(
+          { error: '下一步行動描述格式不正確' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 驗證會面紀錄（如果提供）
+    if (meeting_record !== undefined) {
+      if (typeof meeting_record !== 'object' || meeting_record === null) {
+        return NextResponse.json(
+          { error: '會面紀錄資料格式不正確' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 驗證會面次數（如果提供）
+    if (meeting_count !== undefined && meeting_count !== null) {
+      if (typeof meeting_count !== 'number' || meeting_count < 0) {
+        return NextResponse.json(
+          { error: '會面次數格式不正確' },
+          { status: 400 }
+        );
+      }
+    }
+
     // 檢查記錄是否存在
     const checkResult = await query(
       'SELECT id FROM customer_interactions WHERE id = $1',
@@ -153,6 +193,31 @@ export async function PUT(
     if (situation_data !== undefined) {
       updateFields.push(`situation_data = $${paramIndex}`);
       updateValues.push(JSON.stringify(situation_data));
+      paramIndex++;
+    }
+
+    if (next_action_date !== undefined) {
+      updateFields.push(`next_action_date = $${paramIndex}`);
+      updateValues.push(next_action_date);
+      paramIndex++;
+    }
+
+    if (next_action_description !== undefined) {
+      updateFields.push(`next_action_description = $${paramIndex}`);
+      updateValues.push(next_action_description);
+      paramIndex++;
+    }
+
+    if (meeting_record !== undefined) {
+      // 對於 meeting_record，需要合併到現有資料而不是覆蓋
+      updateFields.push(`meeting_record = COALESCE(meeting_record, '{}'::jsonb) || $${paramIndex}::jsonb`);
+      updateValues.push(JSON.stringify(meeting_record));
+      paramIndex++;
+    }
+
+    if (meeting_count !== undefined) {
+      updateFields.push(`meeting_count = $${paramIndex}`);
+      updateValues.push(meeting_count);
       paramIndex++;
     }
 
