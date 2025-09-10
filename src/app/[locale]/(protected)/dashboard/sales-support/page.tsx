@@ -1,14 +1,24 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import {
   BookOpen,
+  Building2,
+  Calculator,
   Download,
   FileText,
+  Gavel,
   Headphones,
+  Home,
+  Megaphone,
+  Paintbrush,
   Play,
+  Shield,
   Star,
   TrendingUp,
   Users,
+  PieChart,
+  Coins,
 } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function SalesSupportPage() {
   const breadcrumbs = [
@@ -101,18 +111,18 @@ export default async function SalesSupportPage() {
 
                 {/* Support Resources Grid */}
                 <div className="grid gap-6 md:grid-cols-2">
-                  {/* Product Database */}
-                  <div className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-blue-200">
+                  {/* 客戶服務 */}
+                  <Link href="/dashboard/customer-overview" className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-blue-200 cursor-pointer">
                     <div className="flex items-start gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
-                        <FileText className="h-6 w-6" />
+                        <Users className="h-6 w-6" />
                       </div>
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          產品資料庫
+                          客戶服務
                         </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
-                          最新的產品規格、價格和宣傳資料，包含詳細的技術參數和應用場景說明。
+                          全面的客戶服務系統，包含客戶支援、問題處理和服務追蹤。
                         </p>
                         <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
                           <span className="inline-flex items-center gap-1">
@@ -120,36 +130,36 @@ export default async function SalesSupportPage() {
                             4.8/5
                           </span>
                           <span>•</span>
-                          <span>156 個產品</span>
+                          <span>1,247 個客戶</span>
                           <span>•</span>
-                          <span>更新於 2 天前</span>
+                          <span>更新於 1 天前</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors">
-                            <FileText className="h-4 w-4" />
-                            查看產品資料
-                          </button>
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700">
+                            <Users className="h-4 w-4" />
+                            查看客戶
+                          </span>
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
                             <Download className="h-4 w-4" />
-                            下載目錄
-                          </button>
+                            匯出資料
+                          </span>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
 
-                  {/* Sales Techniques */}
-                  <div className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-green-200">
+                  {/* 房地產 */}
+                  <Link href="/dashboard/real-estate" className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-green-200 cursor-pointer">
                     <div className="flex items-start gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-lg">
-                        <BookOpen className="h-6 w-6" />
+                        <Home className="h-6 w-6" />
                       </div>
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          銷售技巧
+                          房地產
                         </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
-                          專業的銷售技巧和話術指南，包含客戶溝通、需求挖掘和成交技巧。
+                          房地產投資分析、市場趨勢和物業管理服務，提供專業的房地產諮詢。
                         </p>
                         <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
                           <span className="inline-flex items-center gap-1">
@@ -157,73 +167,36 @@ export default async function SalesSupportPage() {
                             4.9/5
                           </span>
                           <span>•</span>
-                          <span>42 個技巧</span>
+                          <span>156 個物業</span>
                           <span>•</span>
-                          <span>更新於 1 週前</span>
+                          <span>更新於 2 天前</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-green-50 px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-100 transition-colors">
-                            <Play className="h-4 w-4" />
-                            學習銷售技巧
-                          </button>
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
-                            <Download className="h-4 w-4" />
-                            下載手冊
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Customer Cases */}
-                  <div className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-purple-200">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-lg">
-                        <Users className="h-6 w-6" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          客戶案例
-                        </h3>
-                        <p className="text-gray-600 mb-4 leading-relaxed">
-                          成功案例和客戶見證，展示產品在不同行業的應用效果和客戶滿意度。
-                        </p>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                          <span className="inline-flex items-center gap-1">
-                            <Star className="h-4 w-4 text-yellow-500" />
-                            4.7/5
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-green-50 px-4 py-2 text-sm font-medium text-green-700">
+                            <Home className="h-4 w-4" />
+                            查看物業
                           </span>
-                          <span>•</span>
-                          <span>89 個案例</span>
-                          <span>•</span>
-                          <span>更新於 3 天前</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-purple-50 px-4 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100 transition-colors">
-                            <FileText className="h-4 w-4" />
-                            查看案例
-                          </button>
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
                             <Download className="h-4 w-4" />
-                            下載案例集
-                          </button>
+                            下載報告
+                          </span>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
 
-                  {/* Competitive Analysis */}
-                  <div className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-orange-200">
+                  {/* 保險經紀 */}
+                  <Link href="/dashboard/insurance" className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-yellow-200 cursor-pointer">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg">
-                        <TrendingUp className="h-6 w-6" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-amber-500 text-white shadow-lg">
+                        <Coins className="h-6 w-6" />
                       </div>
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          競爭分析
+                          保險經紀
                         </h3>
                         <p className="text-gray-600 mb-4 leading-relaxed">
-                          市場競爭對手分析報告，包含產品對比、價格分析和市場定位策略。
+                          專業保險規劃和風險管理服務，為客戶提供最適合的保險方案。
                         </p>
                         <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
                           <span className="inline-flex items-center gap-1">
@@ -231,23 +204,245 @@ export default async function SalesSupportPage() {
                             4.6/5
                           </span>
                           <span>•</span>
-                          <span>23 個分析</span>
+                          <span>23 個方案</span>
                           <span>•</span>
                           <span>更新於 1 週前</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-orange-50 px-4 py-2 text-sm font-medium text-orange-700 hover:bg-orange-100 transition-colors">
-                            <FileText className="h-4 w-4" />
-                            查看分析
-                          </button>
-                          <button className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-yellow-50 px-4 py-2 text-sm font-medium text-yellow-700">
+                            <Coins className="h-4 w-4" />
+                            查看方案
+                          </span>
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
                             <Download className="h-4 w-4" />
-                            下載報告
-                          </button>
+                            下載說明
+                          </span>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
+
+                  {/* 行銷 */}
+                  <Link href="/dashboard/marketing" className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-purple-200 cursor-pointer">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-lg">
+                        <Megaphone className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          行銷
+                        </h3>
+                        <p className="text-gray-600 mb-4 leading-relaxed">
+                          數位行銷策略、廣告投放和品牌推廣服務，提升品牌知名度和銷售業績。
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                          <span className="inline-flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500" />
+                            4.7/5
+                          </span>
+                          <span>•</span>
+                          <span>89 個活動</span>
+                          <span>•</span>
+                          <span>更新於 3 天前</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-purple-50 px-4 py-2 text-sm font-medium text-purple-700">
+                            <Megaphone className="h-4 w-4" />
+                            查看活動
+                          </span>
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
+                            <Download className="h-4 w-4" />
+                            下載方案
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* 基金推薦 */}
+                  <Link href="/dashboard/fund-recommendation" className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-emerald-200 cursor-pointer">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-lg">
+                        <PieChart className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          基金推薦
+                        </h3>
+                        <p className="text-gray-600 mb-4 leading-relaxed">
+                          專業基金投資建議和投資組合管理，協助客戶進行長期財富增值規劃。
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                          <span className="inline-flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500" />
+                            4.9/5
+                          </span>
+                          <span>•</span>
+                          <span>67 個基金</span>
+                          <span>•</span>
+                          <span>更新於 2 天前</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
+                            <PieChart className="h-4 w-4" />
+                            查看基金
+                          </span>
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
+                            <Download className="h-4 w-4" />
+                            下載報告
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* 租賃管理 */}
+                  <Link href="/dashboard/lease-management" className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-indigo-200 cursor-pointer">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 text-white shadow-lg">
+                        <Building2 className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          租賃管理
+                        </h3>
+                        <p className="text-gray-600 mb-4 leading-relaxed">
+                          專業的物業租賃管理服務，包含租戶管理、租金收取和物業維護。
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                          <span className="inline-flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500" />
+                            4.7/5
+                          </span>
+                          <span>•</span>
+                          <span>89 個物業</span>
+                          <span>•</span>
+                          <span>更新於 3 天前</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700">
+                            <Building2 className="h-4 w-4" />
+                            查看物業
+                          </span>
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
+                            <Download className="h-4 w-4" />
+                            下載合約
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* 會計稅務 */}
+                  <Link href="/dashboard/accounting" className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-teal-200 cursor-pointer">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 text-white shadow-lg">
+                        <Calculator className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          會計稅務
+                        </h3>
+                        <p className="text-gray-600 mb-4 leading-relaxed">
+                          專業會計服務和稅務規劃，協助企業和個人進行財務管理和稅務優化。
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                          <span className="inline-flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500" />
+                            4.8/5
+                          </span>
+                          <span>•</span>
+                          <span>156 個服務</span>
+                          <span>•</span>
+                          <span>更新於 2 天前</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-teal-50 px-4 py-2 text-sm font-medium text-teal-700">
+                            <Calculator className="h-4 w-4" />
+                            查看服務
+                          </span>
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
+                            <Download className="h-4 w-4" />
+                            下載表格
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* 室內裝修 */}
+                  <Link href="/dashboard/interior-design" className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-pink-200 cursor-pointer">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 text-white shadow-lg">
+                        <Paintbrush className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          室內裝修
+                        </h3>
+                        <p className="text-gray-600 mb-4 leading-relaxed">
+                          專業室內設計和裝修服務，打造舒適美觀的居住和辦公環境。
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                          <span className="inline-flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500" />
+                            4.9/5
+                          </span>
+                          <span>•</span>
+                          <span>42 個專案</span>
+                          <span>•</span>
+                          <span>更新於 1 週前</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-pink-50 px-4 py-2 text-sm font-medium text-pink-700">
+                            <Paintbrush className="h-4 w-4" />
+                            查看作品
+                          </span>
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
+                            <Download className="h-4 w-4" />
+                            下載目錄
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* 法律諮詢 */}
+                  <Link href="/dashboard/legal-consultation" className="group rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:border-slate-200 cursor-pointer">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-slate-500 to-gray-500 text-white shadow-lg">
+                        <Gavel className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          法律諮詢
+                        </h3>
+                        <p className="text-gray-600 mb-4 leading-relaxed">
+                          專業法律諮詢服務，提供合約審查、法律風險評估和訴訟支援。
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                          <span className="inline-flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500" />
+                            4.8/5
+                          </span>
+                          <span>•</span>
+                          <span>23 個案例</span>
+                          <span>•</span>
+                          <span>更新於 1 週前</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700">
+                            <Gavel className="h-4 w-4" />
+                            查看服務
+                          </span>
+                          <span className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
+                            <Download className="h-4 w-4" />
+                            下載資料
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
                 </div>
               </div>
             </div>

@@ -3,6 +3,7 @@
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -23,6 +24,7 @@ import { Skeleton } from '../ui/skeleton';
 
 interface DashboardBreadcrumbItem {
   label: string;
+  href?: string;
   isCurrentPage?: boolean;
 }
 
@@ -84,6 +86,8 @@ export function DashboardHeader({
                 >
                   {item.isCurrentPage ? (
                     <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                  ) : item.href ? (
+                    <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
                   ) : (
                     item.label
                   )}
