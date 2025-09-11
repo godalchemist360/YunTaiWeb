@@ -55,58 +55,34 @@ export default async function FundRecommendationPage() {
                 {/* Stats Cards */}
                 <div className="grid gap-4 md:grid-cols-4">
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100">
-                        <PieChart className="h-5 w-5 text-emerald-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          推薦基金
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">67</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類1
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
-                        <TrendingUp className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          平均報酬率
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">12.5%</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類2
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-                        <DollarSign className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          管理資產
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">$2.3M</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類3
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
-                        <BarChart3 className="h-5 w-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          投資組合
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">45</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類4
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -114,32 +90,53 @@ export default async function FundRecommendationPage() {
                 {/* Main Content */}
                 <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                    基金推薦服務功能
+                    附件區
                   </h2>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">投資建議</h3>
-                      <p className="text-gray-600 text-sm">
-                        專業的基金投資建議，根據客戶風險承受能力和投資目標提供個人化建議。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片1</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">投資組合管理</h3>
-                      <p className="text-gray-600 text-sm">
-                        全方位的投資組合管理服務，包含資產配置、風險控制和績效監控。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片2</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">市場分析</h3>
-                      <p className="text-gray-600 text-sm">
-                        深入的市場分析和趨勢預測，協助客戶做出明智的投資決策。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片3</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">財富規劃</h3>
-                      <p className="text-gray-600 text-sm">
-                        長期財富增值規劃服務，協助客戶實現財務目標和退休規劃。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片4</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片5</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片6</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片7</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片8</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片9</h3>
+                      </div>
                     </div>
                   </div>
                 </div>

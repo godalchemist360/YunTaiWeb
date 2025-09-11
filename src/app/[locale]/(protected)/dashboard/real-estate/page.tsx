@@ -55,58 +55,34 @@ export default async function RealEstatePage() {
                 {/* Stats Cards */}
                 <div className="grid gap-4 md:grid-cols-4">
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
-                        <Home className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          總物業數
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">156</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類1
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-                        <Building2 className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          商業物業
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">89</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類2
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
-                        <MapPin className="h-5 w-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          熱門區域
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">12</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類3
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100">
-                        <TrendingUp className="h-5 w-5 text-orange-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          投資回報率
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">8.5%</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類4
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -114,32 +90,53 @@ export default async function RealEstatePage() {
                 {/* Main Content */}
                 <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                    房地產服務功能
+                    附件區
                   </h2>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">投資分析</h3>
-                      <p className="text-gray-600 text-sm">
-                        專業的房地產投資分析，包含市場趨勢、價格評估和投資建議。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片1</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">市場趨勢</h3>
-                      <p className="text-gray-600 text-sm">
-                        即時市場數據分析，提供最新的房地產市場動態和趨勢預測。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片2</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">物業管理</h3>
-                      <p className="text-gray-600 text-sm">
-                        全方位的物業管理服務，包含維護、租賃和財務管理。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片3</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">專業諮詢</h3>
-                      <p className="text-gray-600 text-sm">
-                        資深房地產顧問提供專業諮詢服務，協助客戶做出最佳投資決策。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片4</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片5</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片6</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片7</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片8</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片9</h3>
+                      </div>
                     </div>
                   </div>
                 </div>

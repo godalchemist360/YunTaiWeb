@@ -55,58 +55,34 @@ export default async function AccountingPage() {
                 {/* Stats Cards */}
                 <div className="grid gap-4 md:grid-cols-4">
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100">
-                        <Calculator className="h-5 w-5 text-teal-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          會計服務
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">156</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類1
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-                        <FileText className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          稅務申報
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">89</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類2
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
-                        <TrendingUp className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          節稅金額
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">$2.3M</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類3
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
-                        <DollarSign className="h-5 w-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          財務規劃
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">45</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類4
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -114,32 +90,53 @@ export default async function AccountingPage() {
                 {/* Main Content */}
                 <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                    會計稅務服務功能
+                    附件區
                   </h2>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">會計服務</h3>
-                      <p className="text-gray-600 text-sm">
-                        完整的會計服務，包含帳務處理、財務報表編製和會計制度建立。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片1</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">稅務規劃</h3>
-                      <p className="text-gray-600 text-sm">
-                        專業的稅務規劃服務，協助企業和個人進行稅務優化和節稅規劃。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片2</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">財務管理</h3>
-                      <p className="text-gray-600 text-sm">
-                        全方位的財務管理服務，包含預算規劃、成本控制和財務分析。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片3</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">審計服務</h3>
-                      <p className="text-gray-600 text-sm">
-                        專業的審計服務，確保財務報表的準確性和合規性。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片4</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片5</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片6</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片7</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片8</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片9</h3>
+                      </div>
                     </div>
                   </div>
                 </div>

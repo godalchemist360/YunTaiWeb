@@ -1,5 +1,4 @@
-export { AssetLiabilityDetailCard } from './asset-liability-detail-card';
-export { IncomeExpenseDetailCard } from './income-expense-detail-card';
+export { EconomicStatusDetailCard } from './economic-status-detail-card';
 export { SituationDetailCard } from './situation-detail-card';
 export { MeetingRecordDetailCard } from './meeting-record-detail-card';
 export { ConsultationMotiveEditor } from './consultation-motive-editor';

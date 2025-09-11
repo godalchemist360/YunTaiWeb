@@ -55,58 +55,34 @@ export default async function InsurancePage() {
                 {/* Stats Cards */}
                 <div className="grid gap-4 md:grid-cols-4">
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-100">
-                        <Coins className="h-5 w-5 text-yellow-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          保險方案
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">23</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類1
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
-                        <Heart className="h-5 w-5 text-red-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          健康保險
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">156</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類2
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-                        <Car className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          車險保單
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">89</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類3
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
-                        <Home className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          房屋保險
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">67</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類4
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -114,32 +90,53 @@ export default async function InsurancePage() {
                 {/* Main Content */}
                 <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                    保險經紀服務功能
+                    附件區
                   </h2>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">保險規劃</h3>
-                      <p className="text-gray-600 text-sm">
-                        專業的保險需求分析，為客戶量身定制最適合的保險方案。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片1</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">風險管理</h3>
-                      <p className="text-gray-600 text-sm">
-                        全面的風險評估服務，協助客戶識別和降低潛在風險。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片2</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">理賠服務</h3>
-                      <p className="text-gray-600 text-sm">
-                        專業的理賠協助服務，確保客戶能夠順利獲得應有的保險理賠。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片3</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">保單管理</h3>
-                      <p className="text-gray-600 text-sm">
-                        完整的保單管理系統，協助客戶追蹤和管理所有保險合約。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片4</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片5</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片6</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片7</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片8</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片9</h3>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -21,13 +21,21 @@ import {
   Bell,
   Calendar,
   CheckCircle,
-  Clock,
-  FileText,
   Info,
   Megaphone,
   Plus,
   Trash2,
 } from 'lucide-react';
+import {
+  getTypeLabel,
+  getTypeIcon,
+  getTypeColor,
+  getTypeTagColor,
+  formatDate,
+  handleApiError,
+  showErrorToast,
+  showSuccessToast,
+} from '@/lib/announcement-utils';
 import { useEffect, useState } from 'react';
 
 interface Announcement {
@@ -79,9 +87,13 @@ export default function AnnouncementsPage() {
       if (response.ok) {
         const data = await response.json();
         setAnnouncements(data.items || []);
+      } else {
+        const errorMessage = handleApiError(response, '載入公告失敗');
+        showErrorToast(errorMessage);
       }
     } catch (error) {
-      console.error('載入公告失敗:', error);
+      const errorMessage = handleApiError(error, '載入公告失敗');
+      showErrorToast(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -94,9 +106,13 @@ export default function AnnouncementsPage() {
       if (response.ok) {
         const data = await response.json();
         setSummary(data);
+      } else {
+        const errorMessage = handleApiError(response, '載入統計資料失敗');
+        showErrorToast(errorMessage);
       }
     } catch (error) {
-      console.error('載入統計資料失敗:', error);
+      const errorMessage = handleApiError(error, '載入統計資料失敗');
+      showErrorToast(errorMessage);
     }
   };
 
@@ -132,12 +148,14 @@ export default function AnnouncementsPage() {
         // 重新載入資料
         loadAnnouncements();
         loadSummary();
+        showSuccessToast('公告刪除成功');
       } else {
-        alert('刪除失敗，請稍後再試');
+        const errorMessage = handleApiError(response, '刪除失敗，請稍後再試');
+        showErrorToast(errorMessage);
       }
     } catch (error) {
-      console.error('刪除公告失敗:', error);
-      alert('刪除失敗，請稍後再試');
+      const errorMessage = handleApiError(error, '刪除失敗，請稍後再試');
+      showErrorToast(errorMessage);
     } finally {
       setDeleteDialogOpen(false);
       setDeleteTarget(null);
@@ -176,9 +194,14 @@ export default function AnnouncementsPage() {
 
         // 重新載入統計資料
         loadSummary();
+        showSuccessToast('已標記為已讀');
+      } else {
+        const errorMessage = handleApiError(response, '標記已讀失敗');
+        showErrorToast(errorMessage);
       }
     } catch (error) {
-      console.error('標記已讀失敗:', error);
+      const errorMessage = handleApiError(error, '標記已讀失敗');
+      showErrorToast(errorMessage);
     }
   };
 
@@ -216,85 +239,19 @@ export default function AnnouncementsPage() {
         loadAnnouncements();
         loadSummary();
         setIsAddDialogOpen(false);
+        showSuccessToast('公告新增成功');
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error('新增公告失敗:', errorData);
-        alert(`新增公告失敗: ${errorData.error || '請稍後再試'}`);
+        const errorMessage = handleApiError(errorData, '新增公告失敗，請稍後再試');
+        showErrorToast(errorMessage);
       }
     } catch (error) {
-      console.error('新增公告失敗:', error);
-      alert('新增公告失敗，請稍後再試');
+      const errorMessage = handleApiError(error, '新增公告失敗，請稍後再試');
+      showErrorToast(errorMessage);
     }
   };
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'general':
-        return '一般';
-      case 'important':
-        return '重要';
-      case 'resource':
-        return '資源';
-      case 'training':
-        return '培訓';
-      default:
-        return type;
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'general':
-        return Info;
-      case 'important':
-        return AlertTriangle;
-      case 'resource':
-        return CheckCircle;
-      case 'training':
-        return Calendar;
-      default:
-        return Info;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'general':
-        return 'from-blue-500 to-blue-600';
-      case 'important':
-        return 'from-orange-500 to-red-500';
-      case 'resource':
-        return 'from-green-500 to-emerald-500';
-      case 'training':
-        return 'from-purple-500 to-indigo-500';
-      default:
-        return 'from-blue-500 to-blue-600';
-    }
-  };
-
-  const getTypeTagColor = (type: string) => {
-    switch (type) {
-      case 'general':
-        return 'bg-blue-100 text-blue-800';
-      case 'important':
-        return 'bg-red-100 text-red-800';
-      case 'resource':
-        return 'bg-green-100 text-green-800';
-      case 'training':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('zh-TW', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+  // 移除重複的函數，使用共用 utility
 
   const breadcrumbs = [
     {

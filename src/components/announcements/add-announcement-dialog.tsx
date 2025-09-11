@@ -21,6 +21,12 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { uploadFileFromBrowser } from '@/storage/client';
 import { Paperclip, X, Upload, CheckCircle } from 'lucide-react';
+import {
+  getFileSizeText,
+  handleApiError,
+  showErrorToast,
+  showSuccessToast,
+} from '@/lib/announcement-utils';
 import { useState } from 'react';
 
 interface AddAnnouncementDialogProps {
@@ -68,7 +74,7 @@ export function AddAnnouncementDialog({
     e.preventDefault();
 
     if (!title.trim() || !type || !description.trim()) {
-      alert('請填寫所有必填欄位');
+      showErrorToast('請填寫所有必填欄位');
       return;
     }
 
@@ -96,8 +102,8 @@ export function AddAnnouncementDialog({
 
           console.log(`檔案 ${file.name} 上傳成功`);
         } catch (error) {
-          console.error(`檔案 ${file.name} 處理失敗:`, error);
-          alert(`檔案 ${file.name} 處理失敗，請稍後再試`);
+          const errorMessage = handleApiError(error, `檔案 ${file.name} 處理失敗，請稍後再試`);
+          showErrorToast(errorMessage);
           return;
         }
       }
@@ -117,9 +123,10 @@ export function AddAnnouncementDialog({
       setAttachments([]);
       setUploadingAttachments([]);
       onOpenChange(false);
+      showSuccessToast('公告新增成功');
     } catch (error) {
-      console.error('提交失敗:', error);
-      alert('提交失敗，請稍後再試');
+      const errorMessage = handleApiError(error, '提交失敗，請稍後再試');
+      showErrorToast(errorMessage);
     } finally {
       setIsUploading(false);
     }
@@ -136,7 +143,7 @@ export function AddAnnouncementDialog({
 
       if (file.size > maxSize) {
         const maxSizeMB = (maxSize / 1024 / 1024).toFixed(0);
-        alert(`檔案 ${file.name} 超過大小限制：${maxSizeMB}MB`);
+        showErrorToast(`檔案 ${file.name} 超過大小限制：${maxSizeMB}MB`);
         return false;
       }
 
@@ -150,13 +157,7 @@ export function AddAnnouncementDialog({
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const getFileSizeText = (size: number) => {
-    if (size < 1024 * 1024) {
-      return `${(size / 1024).toFixed(1)} KB`;
-    } else {
-      return `${(size / 1024 / 1024).toFixed(1)} MB`;
-    }
-  };
+  // 移除重複的函數，使用共用 utility
 
   const getStorageTypeText = (file: File) => {
     // 所有檔案都使用雲端儲存

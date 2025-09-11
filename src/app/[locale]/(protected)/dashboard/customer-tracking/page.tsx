@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { AssetLiabilityDetailCard } from '@/components/customer-tracking/asset-liability-detail-card';
-import { IncomeExpenseDetailCard } from '@/components/customer-tracking/income-expense-detail-card';
+import { EconomicStatusDetailCard } from '@/components/customer-tracking';
 import { SituationDetailCard } from '@/components/customer-tracking/situation-detail-card';
 import { MeetingRecordDetailCard } from '@/components/customer-tracking/meeting-record-detail-card';
 import { ConsultationMotiveEditor } from '@/components/customer-tracking/consultation-motive-editor';
@@ -99,13 +98,7 @@ export default function CustomerTrackingPage() {
   }, []);
 
   // 彈出卡片狀態管理
-  const [assetLiabilityCard, setAssetLiabilityCard] = useState<{
-    isOpen: boolean;
-    data?: any;
-    rowIndex?: number;
-  }>({ isOpen: false });
-
-  const [incomeExpenseCard, setIncomeExpenseCard] = useState<{
+  const [economicStatusCard, setEconomicStatusCard] = useState<{
     isOpen: boolean;
     data?: any;
     interactionId?: string;
@@ -337,31 +330,21 @@ export default function CustomerTrackingPage() {
     showNotification('error', '儲存失敗', error);
   };
 
-  // 監聽 customerInteractions 變化，自動更新卡片資料
+  // 監聽 customerInteractions 變化，自動更新經濟狀況卡片資料
   useEffect(() => {
-    if (assetLiabilityCard.isOpen && assetLiabilityCard.rowIndex !== undefined) {
-      const updatedInteraction = customerInteractions[assetLiabilityCard.rowIndex];
-      if (updatedInteraction && updatedInteraction.asset_liability_data) {
-        setAssetLiabilityCard(prev => ({
+    if (economicStatusCard.isOpen && economicStatusCard.rowIndex !== undefined) {
+      const updatedInteraction = customerInteractions[economicStatusCard.rowIndex];
+      if (updatedInteraction) {
+        setEconomicStatusCard(prev => ({
           ...prev,
-          data: updatedInteraction.asset_liability_data
+          data: {
+            asset_liability_data: updatedInteraction.asset_liability_data,
+            income_expense_data: updatedInteraction.income_expense_data
+          }
         }));
       }
     }
-  }, [customerInteractions, assetLiabilityCard.isOpen, assetLiabilityCard.rowIndex]);
-
-  // 監聽 customerInteractions 變化，自動更新收支狀況卡片資料
-  useEffect(() => {
-    if (incomeExpenseCard.isOpen && incomeExpenseCard.rowIndex !== undefined) {
-      const updatedInteraction = customerInteractions[incomeExpenseCard.rowIndex];
-      if (updatedInteraction && updatedInteraction.income_expense_data) {
-        setIncomeExpenseCard(prev => ({
-          ...prev,
-          data: updatedInteraction.income_expense_data
-        }));
-      }
-    }
-  }, [customerInteractions, incomeExpenseCard.isOpen, incomeExpenseCard.rowIndex]);
+  }, [customerInteractions, economicStatusCard.isOpen, economicStatusCard.rowIndex]);
 
   // 監聽 customerInteractions 變化，自動更新現況說明卡片資料
   useEffect(() => {
@@ -590,10 +573,7 @@ export default function CustomerTrackingPage() {
                             諮詢動機
                           </th>
                           <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            資產負債狀況
-                          </th>
-                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            收支狀況
+                            經濟狀況
                           </th>
                           <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                             現況說明
@@ -609,19 +589,19 @@ export default function CustomerTrackingPage() {
                       <tbody className="bg-white divide-y divide-gray-200">
                         {loading ? (
                           <tr>
-                            <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
+                            <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                               載入中...
                             </td>
                           </tr>
                         ) : error ? (
                           <tr>
-                            <td colSpan={9} className="px-6 py-8 text-center text-red-500">
+                            <td colSpan={8} className="px-6 py-8 text-center text-red-500">
                               載入失敗: {error}
                             </td>
                           </tr>
                         ) : statistics.total === 0 ? (
                           <tr>
-                            <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
+                            <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                               暫無客戶互動記錄
                             </td>
                           </tr>
@@ -695,17 +675,12 @@ export default function CustomerTrackingPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                   <button
-                                    onClick={() => setAssetLiabilityCard({ isOpen: true, data: interaction.asset_liability_data, rowIndex: index })}
-                                    className="text-blue-600 hover:text-blue-800 font-medium"
-                                  >
-                                    點擊查看詳情
-                                  </button>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                  <button
-                                    onClick={() => setIncomeExpenseCard({
+                                    onClick={() => setEconomicStatusCard({
                                       isOpen: true,
-                                      data: interaction.income_expense_data,
+                                      data: {
+                                        asset_liability_data: interaction.asset_liability_data,
+                                        income_expense_data: interaction.income_expense_data
+                                      },
                                       interactionId: interaction.id,
                                       rowIndex: index
                                     })}
@@ -827,28 +802,13 @@ export default function CustomerTrackingPage() {
       </div>
 
       {/* 彈出卡片組件 */}
-      <AssetLiabilityDetailCard
-        isOpen={assetLiabilityCard.isOpen}
-        onClose={() => setAssetLiabilityCard({ isOpen: false })}
-        data={assetLiabilityCard.data}
-        interactionId={customerInteractions[assetLiabilityCard.rowIndex || 0]?.id}
+      <EconomicStatusDetailCard
+        isOpen={economicStatusCard.isOpen}
+        onClose={() => setEconomicStatusCard({ isOpen: false })}
+        data={economicStatusCard.data}
+        interactionId={economicStatusCard.interactionId || ''}
         onSuccess={async () => {
-          showNotification('success', '儲存成功', '資產負債狀況已成功更新');
-          // 重新載入資料
-          await fetchCustomerInteractions(searchQuery);
-        }}
-        onError={(error: string) => {
-          showNotification('error', '儲存失敗', error);
-        }}
-      />
-
-      <IncomeExpenseDetailCard
-        isOpen={incomeExpenseCard.isOpen}
-        onClose={() => setIncomeExpenseCard({ isOpen: false })}
-        data={incomeExpenseCard.data}
-        interactionId={incomeExpenseCard.interactionId || ''}
-        onSuccess={async () => {
-          showNotification('success', '儲存成功', '收支狀況已成功更新');
+          showNotification('success', '儲存成功', '經濟狀況已成功更新');
           // 重新載入資料
           await fetchCustomerInteractions(searchQuery);
         }}

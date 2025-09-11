@@ -10,15 +10,23 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  AlertTriangle,
-  Calendar,
   CheckCircle,
-  Clock,
   Download,
-  Info,
-  Play,
-  FileText,
+  Calendar,
 } from 'lucide-react';
+import {
+  getTypeLabel,
+  getTypeIcon,
+  getTypeColor,
+  getTypeTagColor,
+  getFileIcon,
+  getFileSizeText,
+  getStorageTypeText,
+  getStorageTypeColor,
+  formatDate,
+  handleApiError,
+  showErrorToast,
+} from '@/lib/announcement-utils';
 import { useEffect, useRef, useState } from 'react';
 
 interface Announcement {
@@ -82,116 +90,20 @@ export function ViewAnnouncementDialog({
         const data = await response.json();
         setFullAnnouncement(data);
       } else {
-        console.error('獲取公告詳情失敗');
+        const errorMessage = handleApiError(response, '獲取公告詳情失敗');
+        showErrorToast(errorMessage);
         setFullAnnouncement(announcement);
       }
     } catch (error) {
-      console.error('獲取公告詳情失敗:', error);
+      const errorMessage = handleApiError(error, '獲取公告詳情失敗');
+      showErrorToast(errorMessage);
       setFullAnnouncement(announcement);
     } finally {
       setLoading(false);
     }
   };
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'general':
-        return '一般';
-      case 'important':
-        return '重要';
-      case 'resource':
-        return '資源';
-      case 'training':
-        return '培訓';
-      default:
-        return type;
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'general':
-        return Info;
-      case 'important':
-        return AlertTriangle;
-      case 'resource':
-        return CheckCircle;
-      case 'training':
-        return Calendar;
-      default:
-        return Info;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'general':
-        return 'from-blue-500 to-blue-600';
-      case 'important':
-        return 'from-orange-500 to-red-500';
-      case 'resource':
-        return 'from-green-500 to-emerald-500';
-      case 'training':
-        return 'from-purple-500 to-indigo-500';
-      default:
-        return 'from-blue-500 to-blue-600';
-    }
-  };
-
-  const getTypeTagColor = (type: string) => {
-    switch (type) {
-      case 'general':
-        return 'bg-blue-100 text-blue-800';
-      case 'important':
-        return 'bg-red-100 text-red-800';
-      case 'resource':
-        return 'bg-green-100 text-green-800';
-      case 'training':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('zh-TW', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const getFileSizeText = (size?: number) => {
-    if (!size) return '';
-    if (size < 1024 * 1024) {
-      return `${(size / 1024).toFixed(1)} KB`;
-    } else {
-      return `${(size / 1024 / 1024).toFixed(1)} MB`;
-    }
-  };
-
-  const getFileIcon = (mimeType?: string) => {
-    if (!mimeType) return FileText;
-
-    if (mimeType.startsWith('image/')) return FileText;
-    if (mimeType.startsWith('audio/')) return Play;
-    if (mimeType.startsWith('video/')) return Play;
-    if (mimeType.startsWith('application/pdf')) return FileText;
-    if (mimeType.startsWith('application/')) return FileText;
-
-    return FileText;
-  };
-
-  const getStorageTypeText = (storageType?: string) => {
-    // 所有附件都是雲端儲存
-    return '雲端儲存';
-  };
-
-  const getStorageTypeColor = (storageType?: string) => {
-    // 所有附件都是雲端儲存
-    return 'bg-green-100 text-green-700';
-  };
+  // 移除重複的函數，使用共用 utility
 
   const startReadTimer = () => {
     // 如果沒有公告ID或已經標記為已讀，不啟動計時器
@@ -224,88 +136,50 @@ export function ViewAnnouncementDialog({
           onMarkAsRead(currentAnnouncementId);
         }
       } else {
-        console.error('Failed to mark as read:', response.statusText);
+        const errorMessage = handleApiError(response, '標記已讀失敗');
+        showErrorToast(errorMessage);
       }
     } catch (error) {
-      console.error('Failed to mark as read:', error);
+      const errorMessage = handleApiError(error, '標記已讀失敗');
+      showErrorToast(errorMessage);
       // 失敗時不更新UI，允許重試
     }
   };
 
-  // 監聽頁面可見性變化
+  // 合併所有監聽邏輯到一個 useEffect
   useEffect(() => {
     const handleVisibilityChange = () => {
       const isVisible = document.visibilityState === 'visible';
       setIsPageVisible(isVisible);
-
-      if (isVisible &&
-          open &&
-          currentAnnouncementId &&
-          !hasMarkedRead[currentAnnouncementId]
-      ) {
-        startReadTimer();
-      }
     };
 
+    // 添加頁面可見性監聽
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () =>
+
+    // 檢查是否需要啟動已讀計時器
+    if (
+      open &&
+      currentAnnouncementId &&
+      !hasMarkedRead[currentAnnouncementId]
+    ) {
+      startReadTimer();
+    }
+
+    return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [open, currentAnnouncementId, hasMarkedRead]);
-
-  // 監聽Modal開啟/關閉
-  useEffect(() => {
-    if (
-      open &&
-      currentAnnouncementId &&
-      !hasMarkedRead[currentAnnouncementId]
-    ) {
-      startReadTimer();
-    }
-  }, [open, currentAnnouncementId, hasMarkedRead]);
-
-  // 監聽公告變化
-  useEffect(() => {
-    if (
-      open &&
-      currentAnnouncementId &&
-      !hasMarkedRead[currentAnnouncementId]
-    ) {
-      startReadTimer();
-    }
-  }, [currentAnnouncementId, open, hasMarkedRead]);
 
   const handleDownload = (attachment: any) => {
-    // 所有附件都是雲端儲存，直接下載
+    // 所有附件都是雲端儲存，開啟新分頁
     if (attachment.fileUrl) {
       window.open(attachment.fileUrl, '_blank');
     } else {
-      console.error('附件 URL 不存在:', attachment);
+      showErrorToast('附件 URL 不存在');
     }
   };
 
-  const renderMediaPlayer = (attachment: any) => {
-    if (!attachment.mimeType) return null;
-
-    if (attachment.mimeType.startsWith('audio/')) {
-      return (
-        <audio controls className="w-full mt-2">
-          <source src={attachment.storageType === 'cloud' ? attachment.fileUrl : `/api/announcements/attachments/${attachment.id}`} type={attachment.mimeType} />
-          您的瀏覽器不支援音檔播放
-        </audio>
-      );
-    }
-
-    if (attachment.mimeType.startsWith('video/')) {
-      return (
-        <video controls className="w-full max-h-96 mt-2">
-          <source src={attachment.storageType === 'cloud' ? attachment.fileUrl : `/api/announcements/attachments/${attachment.id}`} type={attachment.mimeType} />
-          您的瀏覽器不支援影片播放
-        </video>
-      );
-    }
-
-    return null;
-  };
+  // 移除內嵌播放功能，所有附件統一為下載
 
   // 如果沒有公告，不渲染對話框
   if (!announcement) return null;
@@ -401,8 +275,7 @@ export function ViewAnnouncementDialog({
                           </Button>
                         </div>
 
-                        {/* 媒體播放器 */}
-                        {renderMediaPlayer(attachment)}
+                        {/* 移除內嵌播放功能，所有附件統一為下載 */}
                       </div>
                     );
                   })}

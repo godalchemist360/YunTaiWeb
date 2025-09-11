@@ -55,58 +55,34 @@ export default async function LeaseManagementPage() {
                 {/* Stats Cards */}
                 <div className="grid gap-4 md:grid-cols-4">
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100">
-                        <Building2 className="h-5 w-5 text-indigo-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          管理物業
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">89</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類1
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
-                        <Users className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          租戶數量
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">156</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類2
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-                        <Calendar className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          合約到期
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">23</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類3
+                      </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100">
-                        <DollarSign className="h-5 w-5 text-orange-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          月租金收入
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">$45K</p>
-                      </div>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-lg font-semibold text-gray-900">
+                        種類4
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -114,32 +90,53 @@ export default async function LeaseManagementPage() {
                 {/* Main Content */}
                 <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                    租賃管理服務功能
+                    附件區
                   </h2>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">租戶管理</h3>
-                      <p className="text-gray-600 text-sm">
-                        完整的租戶資料管理系統，包含租戶篩選、合約簽訂和關係維護。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片1</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">租金收取</h3>
-                      <p className="text-gray-600 text-sm">
-                        自動化的租金收取系統，包含催收提醒和逾期處理機制。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片2</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">物業維護</h3>
-                      <p className="text-gray-600 text-sm">
-                        專業的物業維護服務，包含定期檢查、維修安排和品質管控。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片3</h3>
+                      </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-2">財務管理</h3>
-                      <p className="text-gray-600 text-sm">
-                        完整的財務管理系統，包含收支記錄、報表生成和稅務處理。
-                      </p>
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片4</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片5</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片6</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片7</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片8</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-center h-full">
+                        <h3 className="text-lg font-semibold text-gray-900">卡片9</h3>
+                      </div>
                     </div>
                   </div>
                 </div>
