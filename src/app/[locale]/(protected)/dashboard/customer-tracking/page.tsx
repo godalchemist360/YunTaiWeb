@@ -774,7 +774,8 @@ export default function CustomerTrackingPage() {
                                                 meetingNumber: `第${selectedMeeting}次`,
                                                 content: meetingContent,
                                                 meetingIndex: selectedMeeting,
-                                                isNew: false
+                                                isNew: false,
+                                                meeting_record: interaction.meeting_record
                                               },
                                               interactionId: interaction.id,
                                               rowIndex: index
@@ -797,7 +798,8 @@ export default function CustomerTrackingPage() {
                                             meetingNumber: `第${newMeetingCount}次`,
                                             content: '',
                                             meetingIndex: newMeetingCount.toString(),
-                                            isNew: true
+                                            isNew: true,
+                                            meeting_record: interaction.meeting_record
                                           },
                                           interactionId: interaction.id,
                                           rowIndex: index
