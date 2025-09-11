@@ -102,6 +102,7 @@ export default function CustomerTrackingPage() {
   const [assetLiabilityCard, setAssetLiabilityCard] = useState<{
     isOpen: boolean;
     data?: any;
+    rowIndex?: number;
   }>({ isOpen: false });
 
   const [incomeExpenseCard, setIncomeExpenseCard] = useState<{
@@ -882,13 +883,13 @@ export default function CustomerTrackingPage() {
         onClose={() => setMeetingRecordCard({ isOpen: false })}
         data={meetingRecordCard.data}
         interactionId={meetingRecordCard.interactionId || ''}
-        onDataUpdate={(newContent: string) => {
-          // 即時更新卡片中的資料
+        onDataUpdate={(newMeetingRecord: string) => {
+          // 即時更新卡片中的 meeting_record 資料
           setMeetingRecordCard(prev => ({
             ...prev,
             data: {
               ...prev.data,
-              content: newContent
+              meeting_record: JSON.parse(newMeetingRecord)
             }
           }));
         }}

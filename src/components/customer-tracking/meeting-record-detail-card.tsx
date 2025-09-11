@@ -100,8 +100,12 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
         observations: currentMeetingData.observations || ''
       });
 
-      // 暫時禁用編輯模式，專注於檢視模式
-      setIsEditing(false);
+      // 如果是新增模式，直接啟用編輯模式
+      if (data.isNew) {
+        setIsEditing(true);
+      } else {
+        setIsEditing(false);
+      }
     }
   }, [data]);
 
@@ -111,6 +115,11 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
       ...prev,
       [field]: value
     }));
+
+    // 清除驗證錯誤
+    if (validationError) {
+      setValidationError('');
+    }
   };
 
   // 獲取成交率顏色
@@ -175,7 +184,11 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
   };
 
   // 行銷階段流程圖組件
-  const MarketingStageFlowchart = ({ currentStage }: { currentStage: string }) => {
+  const MarketingStageFlowchart = ({ currentStage, isEditing, onStageClick }: {
+    currentStage: string;
+    isEditing: boolean;
+    onStageClick?: (stage: string) => void;
+  }) => {
     const currentIndex = getMarketingStageIndex(currentStage);
 
     return (
@@ -201,12 +214,17 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
               return (
                 <div key={index} className="flex flex-col items-center group">
                   {/* 節點 */}
-                  <div className={`
-                    w-8 h-8 rounded-full border-3 flex items-center justify-center text-sm font-bold shadow-lg transition-all duration-300 flex-shrink-0 mx-auto
-                    ${isCompleted ? 'bg-gradient-to-br from-green-400 to-green-600 border-green-500 text-white shadow-green-200' :
-                      isCurrent ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-500 text-white shadow-blue-200 animate-pulse -translate-y-4' :
-                      'bg-white border-gray-300 text-gray-400 shadow-gray-100 hover:shadow-gray-200'}
-                  `} style={{ marginTop: '-16px' }}>
+                  <div
+                    className={`
+                      w-8 h-8 rounded-full border-3 flex items-center justify-center text-sm font-bold shadow-lg transition-all duration-300 flex-shrink-0 mx-auto
+                      ${isCompleted ? 'bg-gradient-to-br from-green-400 to-green-600 border-green-500 text-white shadow-green-200' :
+                        isCurrent ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-500 text-white shadow-blue-200 animate-pulse -translate-y-4' :
+                        'bg-white border-gray-300 text-gray-400 shadow-gray-100 hover:shadow-gray-200'}
+                      ${isEditing ? 'cursor-pointer hover:scale-105' : ''}
+                    `}
+                    style={{ marginTop: '-16px' }}
+                    onClick={isEditing ? () => onStageClick?.(stage) : undefined}
+                  >
                     {isCompleted ? (
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -217,12 +235,16 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                   </div>
 
                   {/* 階段名稱 */}
-                  <div className="mt-3 text-center max-w-20">
+                  <div
+                    className="mt-3 text-center max-w-20"
+                    onClick={isEditing ? () => onStageClick?.(stage) : undefined}
+                  >
                     <div className={`
                       text-xs font-semibold leading-tight transition-colors duration-300
                       ${isCurrent ? 'text-blue-600 bg-blue-50 px-2 py-1 rounded-md' :
                         isCompleted ? 'text-green-600' :
                         'text-gray-500 group-hover:text-gray-700'}
+                      ${isEditing ? 'cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5' : ''}
                     `}>
                       {stage}
                     </div>
@@ -255,21 +277,36 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
 
   // 儲存
   const handleSave = async () => {
-    const error = validateContent(editContent);
-    if (error) {
-      setValidationError(error);
-      return;
-    }
-
     setIsLoading(true);
+    setValidationError('');
+
     try {
-      // 準備要更新的 meeting_record
-      const meetingRecordUpdate = {
-        [data?.meetingIndex || '1']: editContent
+      // 驗證：如果選擇「其他」，main_goal_other 不可為空
+      if (formData.main_goal === '其他' && (!formData.main_goal_other || formData.main_goal_other.trim() === '')) {
+        setValidationError('選擇「其他」時，請填寫具體的目標內容');
+        setIsLoading(false);
+        return;
+      }
+
+      const meetingIndex = data?.meetingIndex || '1';
+      const currentMeetingRecord = data?.meeting_record || {};
+
+      // 更新特定會面次數的資料
+      const updatedMeetingRecord = {
+        ...currentMeetingRecord,
+        [meetingIndex]: {
+          appointment_date: formData.appointment_date || '',
+          marketing_stage: formData.marketing_stage || '',
+          main_goal: formData.main_goal || '',
+          main_goal_other: formData.main_goal_other || '',
+          success_rate: formData.success_rate || 0,
+          pain_points: formData.pain_points || '',
+          observations: formData.observations || ''
+        }
       };
 
       const requestBody: any = {
-        meeting_record: meetingRecordUpdate
+        meeting_record: updatedMeetingRecord
       };
 
       // 如果是新增模式，需要更新 meeting_count
@@ -289,8 +326,14 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
         throw new Error('儲存失敗');
       }
 
-      // 更新本地資料
-      onDataUpdate?.(editContent);
+      // 更新本地資料 - 傳遞更新後的 meeting_record 資料
+      const updatedData = {
+        ...data,
+        meeting_record: updatedMeetingRecord
+      };
+      onDataUpdate?.(JSON.stringify(updatedData.meeting_record));
+
+      // 觸發成功回調（會顯示成功訊息）
       onSuccess?.();
 
       // 如果是新增模式，儲存後直接關閉卡片
@@ -309,6 +352,21 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
 
   // 取消編輯
   const handleCancel = () => {
+    // 重置表單資料到原始狀態
+    const meetingIndex = data?.meetingIndex || '1';
+    const meetingRecord = data?.meeting_record || {};
+    const currentMeetingData = meetingRecord[meetingIndex] || {};
+
+    setFormData({
+      appointment_date: currentMeetingData.appointment_date || '',
+      marketing_stage: currentMeetingData.marketing_stage || '',
+      main_goal: currentMeetingData.main_goal || '',
+      main_goal_other: currentMeetingData.main_goal_other || '',
+      success_rate: currentMeetingData.success_rate || 0,
+      pain_points: currentMeetingData.pain_points || '',
+      observations: currentMeetingData.observations || ''
+    });
+
     setEditContent(data?.content || '');
     setValidationError('');
 
@@ -358,147 +416,138 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
           <div className="flex items-center gap-2">
             <div className="p-2 bg-blue-100 rounded-lg">
               <MessageSquare className="h-5 w-5 text-blue-600" />
-            </div>
+              </div>
             <h4 className="text-lg font-semibold text-gray-900">
-              {data?.meetingNumber || '會面紀錄'}
-            </h4>
-          </div>
+                {data?.meetingNumber || '會面紀錄'}
+              </h4>
+            </div>
 
-          {isEditing ? (
-            /* 編輯模式 */
+              {isEditing ? (
+            /* 編輯模式 - 與檢視模式保持一致的佈局 */
             <div className="space-y-6">
-              {/* 約訪日期 */}
+              {/* 行銷階段流程圖 */}
               <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                  <Calendar className="h-4 w-4" />
-                  約訪日期
-                </label>
-                <input
-                  type="date"
-                  value={formData.appointment_date || ''}
-                  onChange={(e) => handleFormDataChange('appointment_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                  <Target className="h-4 w-4" />
+                  行銷階段
+                </div>
+                {/* 流程圖顯示 */}
+                <MarketingStageFlowchart
+                  currentStage={formData.marketing_stage || ''}
+                  isEditing={isEditing}
+                  onStageClick={(stage) => handleFormDataChange('marketing_stage', stage)}
                 />
               </div>
 
-              {/* 行銷階段 */}
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                  <Target className="h-4 w-4" />
-                  行銷階段
-                </label>
-                <select
-                  value={formData.marketing_stage || ''}
-                  onChange={(e) => handleFormDataChange('marketing_stage', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">請選擇行銷階段</option>
-                  {marketingStages.map((stage, index) => (
-                    <option key={index} value={stage}>
-                      {index + 1}. {stage}
-                    </option>
-                  ))}
-                </select>
-
-                {/* 流程圖顯示 */}
-                {formData.marketing_stage && (
-                  <div className="mt-4">
-                    <MarketingStageFlowchart currentStage={formData.marketing_stage} />
-                  </div>
-                )}
-              </div>
-
-              {/* 約訪主軸目標 */}
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                  <Target className="h-4 w-4" />
-                  約訪主軸目標
-                </label>
-                <select
-                  value={formData.main_goal || ''}
-                  onChange={(e) => handleFormDataChange('main_goal', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">請選擇主軸目標</option>
-                  {mainGoalOptions.map((option, index) => (
-                    <option key={index} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-
-                {/* 其他目標輸入框 */}
-                {formData.main_goal === '其他' && (
-                  <div className="mt-3">
-                    <input
-                      type="text"
-                      value={formData.main_goal_other || ''}
-                      onChange={(e) => handleFormDataChange('main_goal_other', e.target.value)}
-                      placeholder="請輸入其他目標"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* 預估成交率 */}
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                  <TrendingUp className="h-4 w-4" />
-                  預估成交率
-                </label>
-                <div className="space-y-4">
-                  {/* 圓圈型百分比圖 */}
-                  <div className="flex justify-center">
-                    <CircularProgress percentage={formData.success_rate || 0} />
-                  </div>
-
-                  {/* 滑桿控制 */}
-                  <div className="space-y-2">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={formData.success_rate || 0}
-                      onChange={(e) => handleFormDataChange('success_rate', parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>0%</span>
-                      <span>50%</span>
-                      <span>100%</span>
+              {/* 三個區域配置：左側兩個垂直排列 + 右側一個圓圈 */}
+              <div className="grid grid-cols-2 gap-4 h-51">
+                {/* 左側：約訪日期和約訪主軸目標垂直排列 */}
+                <div className="space-y-3">
+                  {/* 約訪日期 */}
+                  <div className="bg-white rounded-lg p-3 border border-gray-200 flex flex-col justify-center h-24">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <Calendar className="h-4 w-4" />
+                      約訪日期
                     </div>
+                    <input
+                      type="date"
+                      value={formData.appointment_date || ''}
+                      onChange={(e) => handleFormDataChange('appointment_date', e.target.value)}
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* 約訪主軸目標 */}
+                  <div className="bg-white rounded-lg p-3 border border-gray-200 flex flex-col justify-center h-24">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <Target className="h-4 w-4" />
+                      約訪主軸目標
+                    </div>
+                    <div className="flex gap-2">
+                      <select
+                        value={formData.main_goal || ''}
+                        onChange={(e) => handleFormDataChange('main_goal', e.target.value)}
+                        className="w-1/2 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="">請選擇</option>
+                        {mainGoalOptions.map((option, index) => (
+                          <option key={index} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      {/* 其他目標輸入框 */}
+                      {formData.main_goal === '其他' && (
+                        <input
+                          type="text"
+                          value={formData.main_goal_other || ''}
+                          onChange={(e) => handleFormDataChange('main_goal_other', e.target.value)}
+                          placeholder="請輸入其他目標"
+                          className="w-1/2 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 右側：預估成交率（一個圓圈，與左側對齊） */}
+                <div className="bg-white rounded-lg p-3 border border-gray-200 flex flex-col h-full">
+                  {/* 頂部：標題，與約訪日期頂部對齊 */}
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700 h-6 mb-2">
+                    <TrendingUp className="h-4 w-4" />
+                    預估成交率
+                  </div>
+
+                  {/* 中間：圓圈，垂直置中 */}
+                  <div className="flex-1 flex justify-center items-center">
+                    <CircularProgress percentage={formData.success_rate || 0} size={100} />
+                  </div>
+
+                  {/* 底部：滑桿控制區域 */}
+                  <div className="h-6 flex items-center justify-center">
+                    {isEditing && (
+                      <div className="w-full px-2">
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={formData.success_rate || 0}
+                          onChange={(e) => handleFormDataChange('success_rate', parseInt(e.target.value))}
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
               {/* 觀察到的痛點 */}
               <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                   <Eye className="h-4 w-4" />
                   觀察到的痛點（成交關鍵）
-                </label>
+                </div>
                 <textarea
                   value={formData.pain_points || ''}
                   onChange={(e) => handleFormDataChange('pain_points', e.target.value)}
-                  placeholder="請輸入觀察到的痛點..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  placeholder="請輸入觀察到的痛點..."
                 />
               </div>
 
               {/* 過程中的觀察與發現 */}
               <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                   <FileText className="h-4 w-4" />
-                  過程中的觀察與發現（說的話、做的事、有的行為）
-                </label>
+                  過程中的觀察與發現
+                </div>
                 <textarea
                   value={formData.observations || ''}
                   onChange={(e) => handleFormDataChange('observations', e.target.value)}
-                  placeholder="請輸入觀察與發現..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  rows={4}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  placeholder="請輸入過程中的觀察與發現..."
                 />
               </div>
             </div>
@@ -506,113 +555,147 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
             /* 檢視模式 */
             <div className="space-y-4">
               {/* 行銷階段 - 移到最上方 */}
-              {formData.marketing_stage && (
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                    <Target className="h-4 w-4" />
-                    行銷階段
-                  </div>
-
-                  {/* 流程圖顯示 */}
-                  <MarketingStageFlowchart currentStage={formData.marketing_stage} />
+              <div className="bg-white rounded-lg p-4 border border-gray-200">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                  <Target className="h-4 w-4" />
+                  行銷階段
                 </div>
-              )}
+
+                {/* 流程圖顯示 */}
+                <MarketingStageFlowchart
+                  currentStage={formData.marketing_stage || ''}
+                  isEditing={isEditing}
+                  onStageClick={(stage) => handleFormDataChange('marketing_stage', stage)}
+                />
+              </div>
 
               {/* 三個區域配置：左側兩個垂直排列 + 右側一個圓圈 */}
               <div className="grid grid-cols-2 gap-4 h-51">
                 {/* 左側：約訪日期和約訪主軸目標垂直排列 */}
                 <div className="space-y-3">
                   {/* 第二象限：約訪日期 */}
-                  {formData.appointment_date && (
-                    <div className="bg-white rounded-lg p-3 border border-gray-200 flex flex-col justify-center h-24">
-                      <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                        <Calendar className="h-4 w-4" />
-                        約訪日期
-                      </div>
-                      <p className="text-gray-900 text-lg font-medium">{formData.appointment_date}</p>
+                  <div className="bg-white rounded-lg p-3 border border-gray-200 flex flex-col justify-start h-24">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <Calendar className="h-4 w-4" />
+                      約訪日期
                     </div>
-                  )}
+                    <p className="text-gray-900 text-lg font-medium text-center -mt-1">
+                      {formData.appointment_date || '尚未填寫相關資訊'}
+                    </p>
+                  </div>
 
                   {/* 第三象限：約訪主軸目標 */}
-                  {formData.main_goal && (
-                    <div className="bg-white rounded-lg p-3 border border-gray-200 flex flex-col justify-center h-24">
-                      <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                        <Target className="h-4 w-4" />
-                        約訪主軸目標
-                      </div>
-                      <p className="text-gray-900 text-lg font-medium">
-                        {formData.main_goal}
-                        {formData.main_goal === '其他' && formData.main_goal_other && (
-                          <span className="text-gray-600"> - {formData.main_goal_other}</span>
-                        )}
-                      </p>
+                  <div className="bg-white rounded-lg p-3 border border-gray-200 flex flex-col justify-start h-24">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <Target className="h-4 w-4" />
+                      約訪主軸目標
                     </div>
-                  )}
+                    <p className="text-gray-900 text-lg font-medium text-center -mt-1">
+                      {formData.main_goal === '其他' && formData.main_goal_other
+                        ? formData.main_goal_other
+                        : formData.main_goal || '尚未填寫相關資訊'}
+                    </p>
+                  </div>
                 </div>
 
                 {/* 右側：預估成交率（一個圓圈，與左側對齊） */}
-                {formData.success_rate !== undefined && (
-                  <div className="bg-white rounded-lg p-3 border border-gray-200 flex flex-col h-full">
-                    {/* 頂部：標題，與約訪日期頂部對齊 */}
-                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700 h-6 mb-2">
-                      <TrendingUp className="h-4 w-4" />
-                      預估成交率
-                    </div>
-
-                    {/* 中間：圓圈，垂直置中 */}
-                    <div className="flex-1 flex justify-center items-center">
-                      <CircularProgress percentage={formData.success_rate} size={100} />
-                    </div>
-
-                    {/* 底部：空區域，確保與約訪主軸目標底部對齊 */}
-                    <div className="h-6"></div>
+                <div className="bg-white rounded-lg p-3 border border-gray-200 flex flex-col h-full">
+                  {/* 頂部：標題，與約訪日期頂部對齊 */}
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700 h-6 mb-2">
+                    <TrendingUp className="h-4 w-4" />
+                    預估成交率
                   </div>
-                )}
+
+                  {/* 中間：圓圈，垂直置中 */}
+                  <div className="flex-1 flex justify-center items-center">
+                    <CircularProgress percentage={formData.success_rate || 0} size={100} />
+                  </div>
+
+                  {/* 底部：空區域，確保與約訪主軸目標底部對齊 */}
+                  <div className="h-6"></div>
+                </div>
               </div>
 
               {/* 觀察到的痛點 */}
-              {formData.pain_points && (
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                    <Eye className="h-4 w-4" />
-                    觀察到的痛點（成交關鍵）
-                  </div>
-                  <p className="text-gray-900 whitespace-pre-wrap">{formData.pain_points}</p>
+              <div className="bg-white rounded-lg p-4 border border-gray-200">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <Eye className="h-4 w-4" />
+                  觀察到的痛點（成交關鍵）
                 </div>
-              )}
+                <p className="text-gray-900 whitespace-pre-wrap">
+                  {formData.pain_points || '尚未填寫相關資訊'}
+                </p>
+              </div>
 
               {/* 過程中的觀察與發現 */}
-              {formData.observations && (
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                    <FileText className="h-4 w-4" />
-                    過程中的觀察與發現
-                  </div>
-                  <p className="text-gray-900 whitespace-pre-wrap">{formData.observations}</p>
+              <div className="bg-white rounded-lg p-4 border border-gray-200">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <FileText className="h-4 w-4" />
+                  過程中的觀察與發現
                 </div>
-              )}
+                <p className="text-gray-900 whitespace-pre-wrap">
+                  {formData.observations || '尚未填寫相關資訊'}
+                </p>
+              </div>
 
-              {/* 如果完全沒有資料（理論上不會發生，因為我們有模擬資料） */}
-              {!formData.appointment_date && !formData.marketing_stage && !formData.main_goal && !formData.pain_points && !formData.observations && (
-                <div className="bg-gray-50 rounded-lg p-8 text-center">
-                  <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">暫無會面紀錄內容</p>
-                </div>
-              )}
             </div>
           )}
         </div>
 
         {/* Footer with gradient background */}
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-b-2xl border-t border-gray-200">
+          {/* 驗證錯誤訊息 */}
+          {validationError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{validationError}</p>
+            </div>
+          )}
           <div className="flex justify-end gap-3">
-            {/* 暫時只顯示關閉按鈕，專注於檢視模式 */}
-            <button
-              onClick={onClose}
-              className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              關閉
-            </button>
+            {isEditing ? (
+              /* 編輯模式按鈕 */
+              <>
+                <button
+                  onClick={handleCancel}
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      儲存中...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      儲存
+                    </>
+                  )}
+                </button>
+              </>
+            ) : (
+              /* 檢視模式按鈕 */
+              <>
+                <button
+                  onClick={handleEdit}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                  <Edit className="w-4 h-4" />
+                  編輯
+                </button>
+                <button
+                  onClick={onClose}
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  關閉
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
