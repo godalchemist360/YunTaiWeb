@@ -36,11 +36,6 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
         installment: '',
         otherLoans: ''
       },
-      familyResources: {
-        familyProperties: '',
-        familyAssets: '',
-        others: ''
-      }
     },
     incomeExpense: {
       income: {
@@ -52,8 +47,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
         livingExpenses: '',
         housingExpenses: '',
         insurance: ''
-      },
-      monthlyBalance: ''
+      }
     },
     situation: {
       painPoints: '',
@@ -67,13 +61,11 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
   const [newItemInputs, setNewItemInputs] = useState<{
     assets: Array<{ name: string; value: string }>;
     liabilities: Array<{ name: string; value: string }>;
-    familyResources: Array<{ name: string; value: string }>;
     income: Array<{ name: string; value: string }>;
     expenses: Array<{ name: string; value: string }>;
   }>({
     assets: [],
     liabilities: [],
-    familyResources: [],
     income: [],
     expenses: []
   });
@@ -203,27 +195,17 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
   // 更新收支狀況
   const updateIncomeExpense = (section: string, field: string, value: string) => {
     setFormData(prev => {
-      if (section === 'monthlyBalance') {
-        return {
-          ...prev,
-          incomeExpense: {
-            ...prev.incomeExpense,
-            monthlyBalance: value
+      const sectionData = prev.incomeExpense[section as keyof typeof prev.incomeExpense] as Record<string, string>;
+      return {
+        ...prev,
+        incomeExpense: {
+          ...prev.incomeExpense,
+          [section]: {
+            ...sectionData,
+            [field]: value
           }
-        };
-      } else {
-        const sectionData = prev.incomeExpense[section as keyof typeof prev.incomeExpense] as Record<string, string>;
-        return {
-          ...prev,
-          incomeExpense: {
-            ...prev.incomeExpense,
-            [section]: {
-              ...sectionData,
-              [field]: value
-            }
-          }
-        };
-      }
+        }
+      };
     });
   };
 
@@ -315,11 +297,6 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
             installment: '',
             otherLoans: ''
           },
-          familyResources: {
-            familyProperties: '',
-            familyAssets: '',
-            others: ''
-          }
         },
         incomeExpense: {
           income: {
@@ -331,8 +308,7 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
             livingExpenses: '',
             housingExpenses: '',
             insurance: ''
-          },
-          monthlyBalance: ''
+          }
         },
         situation: {
           painPoints: '',
@@ -351,7 +327,6 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
       setNewItemInputs({
         assets: [],
         liabilities: [],
-        familyResources: [],
         income: [],
         expenses: []
       });
@@ -882,78 +857,6 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                   </div>
                 </div>
 
-                {/* 家庭資源 */}
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3">三、家庭資源</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">家人有幾間房</label>
-                      <input
-                        type="text"
-                        value={formData.assetLiability.familyResources.familyProperties}
-                        onChange={(e) => updateAssetLiability('familyResources', 'familyProperties', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="請輸入數量"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">保單、股票、現金</label>
-                      <input
-                        type="text"
-                        value={formData.assetLiability.familyResources.familyAssets}
-                        onChange={(e) => updateAssetLiability('familyResources', 'familyAssets', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                        placeholder="請輸入金額"
-                      />
-                    </div>
-                    {/* 動態新增的家庭資源項目 */}
-                    {newItemInputs.familyResources.map((item, index) => (
-                      <div key={index} className="col-span-full">
-                        <div className="flex gap-2 items-end">
-                          <div className="flex-1">
-                            <label className="block text-sm text-gray-600 mb-1">項目名稱</label>
-                            <input
-                              type="text"
-                              value={item.name}
-                              onChange={(e) => updateNewItem('familyResources', index, 'name', e.target.value)}
-                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                              placeholder="請輸入項目名稱"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <label className="block text-sm text-gray-600 mb-1">內容</label>
-                            <input
-                              type="text"
-                              value={item.value}
-                              onChange={(e) => updateNewItem('familyResources', index, 'value', e.target.value)}
-                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                              placeholder="請輸入內容"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeNewItem('familyResources', index)}
-                            className="px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            移除
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                    {/* 新增按鈕 */}
-                    <div className="col-span-full">
-                      <button
-                        type="button"
-                        onClick={() => addNewItem('familyResources')}
-                        className="flex items-center gap-1 px-3 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                      >
-                        <Plus className="h-4 w-4" />
-                        新增家庭資源項目
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </div>
             )}
 
@@ -1119,13 +1022,27 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                 <div>
                   <h4 className="text-sm font-semibold text-gray-900 mb-3">三、月結餘</h4>
                   <div className="max-w-xs">
-                    <input
-                      type="text"
-                      value={formData.incomeExpense.monthlyBalance}
-                      onChange={(e) => updateIncomeExpense('monthlyBalance', '', e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                      placeholder="請輸入月結餘"
-                    />
+                    <div className="px-3 py-2 text-sm border border-gray-300 rounded bg-gray-50 text-gray-700">
+                      {(() => {
+                        // 計算總收入
+                        const totalIncome =
+                          (parseFloat(formData.incomeExpense.income.mainIncome) || 0) +
+                          (parseFloat(formData.incomeExpense.income.sideIncome) || 0) +
+                          newItemInputs.income.reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
+
+                        // 計算總支出
+                        const totalExpenses =
+                          (parseFloat(formData.incomeExpense.expenses.livingExpenses) || 0) +
+                          (parseFloat(formData.incomeExpense.expenses.housingExpenses) || 0) +
+                          (parseFloat(formData.incomeExpense.expenses.insurance) || 0) +
+                          newItemInputs.expenses.reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
+
+                        // 計算月結餘
+                        const monthlyBalance = totalIncome - totalExpenses;
+
+                        return monthlyBalance.toLocaleString();
+                      })()}
+                    </div>
                   </div>
                 </div>
               </div>
