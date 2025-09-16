@@ -89,18 +89,14 @@ export async function POST(req: Request) {
   try {
     // 權限檢查：只有 admin 和 management 可以新增公告
     const userId = await getCurrentUserId(req);
-    const userResult = await query(
-      'SELECT role FROM app_users WHERE id = $1',
-      [userId]
-    );
-    
+    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
+      userId,
+    ]);
+
     if (userResult.rows.length === 0) {
-      return NextResponse.json(
-        { error: '用戶不存在' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: '用戶不存在' }, { status: 404 });
     }
-    
+
     const userRole = userResult.rows[0].role;
     if (userRole === 'sales') {
       return NextResponse.json(
@@ -176,7 +172,7 @@ export async function POST(req: Request) {
             attachment.fileUrl,
             attachment.cloudKey,
             'cloud',
-            attachment.cloudProvider || 's3'
+            attachment.cloudProvider || 's3',
           ]
         );
         console.log(`附件 ${attachment.fileName} 儲存成功`);

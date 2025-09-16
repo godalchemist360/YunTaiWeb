@@ -3,8 +3,8 @@
  * 監聽用戶活動，管理閒置狀態，達到閒置時間後自動登出
  */
 
-import { useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef } from 'react';
 import { useAppUser } from './use-app-user';
 
 export function useAutoLogout() {
@@ -39,7 +39,9 @@ export function useAutoLogout() {
   };
 
   // 更新閒置計數
-  const updateIdleCount = async (action: 'increment' | 'reset'): Promise<boolean> => {
+  const updateIdleCount = async (
+    action: 'increment' | 'reset'
+  ): Promise<boolean> => {
     try {
       const response = await fetch('/api/user/update-idle', {
         method: 'POST',
@@ -148,7 +150,7 @@ export function useAutoLogout() {
     const events = ['keydown', 'click', 'scroll', 'touchstart'];
 
     // 添加事件監聽器
-    events.forEach(event => {
+    events.forEach((event) => {
       document.addEventListener(event, handleUserActivity, { passive: true });
     });
 
@@ -157,7 +159,7 @@ export function useAutoLogout() {
 
     // 清理函數
     return () => {
-      events.forEach(event => {
+      events.forEach((event) => {
         document.removeEventListener(event, handleUserActivity);
       });
 
@@ -174,6 +176,6 @@ export function useAutoLogout() {
         clearInterval(checkIntervalRef.current);
         checkIntervalRef.current = null;
       }
-    }
+    },
   };
 }

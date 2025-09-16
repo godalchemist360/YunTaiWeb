@@ -1,7 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, MessageSquare, Edit, Save, AlertTriangle, Calendar, Target, TrendingUp, Eye, FileText } from 'lucide-react';
+import {
+  AlertTriangle,
+  Calendar,
+  Edit,
+  Eye,
+  FileText,
+  MessageSquare,
+  Save,
+  Target,
+  TrendingUp,
+  X,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 // 新的會面紀錄資料結構
 interface MeetingRecordData {
@@ -33,7 +44,15 @@ interface MeetingRecordDetailCardProps {
   onDataUpdate?: (newContent: string) => void; // 新增：用於更新父組件的資料
 }
 
-export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, onSuccess, onError, onDataUpdate }: MeetingRecordDetailCardProps) {
+export function MeetingRecordDetailCard({
+  isOpen,
+  onClose,
+  data,
+  interactionId,
+  onSuccess,
+  onError,
+  onDataUpdate,
+}: MeetingRecordDetailCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [editContent, setEditContent] = useState('');
@@ -47,7 +66,7 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
     main_goal_other: '',
     success_rate: 0,
     pain_points: '',
-    observations: ''
+    observations: '',
   });
 
   // 行銷階段選項
@@ -59,16 +78,11 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
     '看報告書',
     '了解使用工具',
     '簽顧問合約',
-    '啟動計畫（簽保單、簽斡旋）'
+    '啟動計畫（簽保單、簽斡旋）',
   ];
 
   // 約訪主軸目標選項
-  const mainGoalOptions = [
-    '選項1',
-    '選項2',
-    '選項3',
-    '其他'
-  ];
+  const mainGoalOptions = ['選項1', '選項2', '選項3', '其他'];
 
   // 當卡片關閉時重置編輯狀態
   useEffect(() => {
@@ -77,7 +91,6 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
       setValidationError('');
     }
   }, [isOpen]);
-
 
   // 初始化編輯內容
   useEffect(() => {
@@ -97,7 +110,7 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
         main_goal_other: currentMeetingData.main_goal_other || '',
         success_rate: currentMeetingData.success_rate || 0,
         pain_points: currentMeetingData.pain_points || '',
-        observations: currentMeetingData.observations || ''
+        observations: currentMeetingData.observations || '',
       });
 
       // 如果是新增模式，直接啟用編輯模式
@@ -110,10 +123,13 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
   }, [data]);
 
   // 處理表單資料變化
-  const handleFormDataChange = (field: keyof MeetingRecordData, value: string | number) => {
-    setFormData(prev => ({
+  const handleFormDataChange = (
+    field: keyof MeetingRecordData,
+    value: string | number
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
 
     // 清除驗證錯誤
@@ -135,7 +151,10 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
   };
 
   // 圓圈型百分比圖組件
-  const CircularProgress = ({ percentage, size = 120 }: { percentage: number; size?: number }) => {
+  const CircularProgress = ({
+    percentage,
+    size = 120,
+  }: { percentage: number; size?: number }) => {
     const radius = (size - 8) / 2;
     const circumference = 2 * Math.PI * radius;
     const strokeDasharray = circumference;
@@ -175,7 +194,9 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
         </svg>
         {/* 百分比文字 */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className={`text-2xl font-bold ${getSuccessRateColor(percentage)}`}>
+          <span
+            className={`text-2xl font-bold ${getSuccessRateColor(percentage)}`}
+          >
             {percentage}%
           </span>
         </div>
@@ -184,7 +205,11 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
   };
 
   // 行銷階段流程圖組件
-  const MarketingStageFlowchart = ({ currentStage, isEditing, onStageClick }: {
+  const MarketingStageFlowchart = ({
+    currentStage,
+    isEditing,
+    onStageClick,
+  }: {
     currentStage: string;
     isEditing: boolean;
     onStageClick?: (stage: string) => void;
@@ -201,11 +226,16 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
           {/* 進度線 */}
           <div
             className="absolute top-10 left-8 h-1 bg-gradient-to-r from-green-400 to-blue-500 rounded-full transition-all duration-500"
-            style={{ width: `${(currentIndex / (marketingStages.length - 1)) * 100}%` }}
+            style={{
+              width: `${(currentIndex / (marketingStages.length - 1)) * 100}%`,
+            }}
           ></div>
 
           {/* 階段節點 */}
-          <div className="grid grid-cols-8 gap-0 relative z-10" style={{ paddingTop: '24px' }}>
+          <div
+            className="grid grid-cols-8 gap-0 relative z-10"
+            style={{ paddingTop: '24px' }}
+          >
             {marketingStages.map((stage, index) => {
               const isCompleted = index < currentIndex;
               const isCurrent = index === currentIndex;
@@ -217,17 +247,31 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                   <div
                     className={`
                       w-8 h-8 rounded-full border-3 flex items-center justify-center text-sm font-bold shadow-lg transition-all duration-300 flex-shrink-0 mx-auto
-                      ${isCompleted ? 'bg-gradient-to-br from-green-400 to-green-600 border-green-500 text-white shadow-green-200' :
-                        isCurrent ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-500 text-white shadow-blue-200 animate-pulse -translate-y-4' :
-                        'bg-white border-gray-300 text-gray-400 shadow-gray-100 hover:shadow-gray-200'}
+                      ${
+                        isCompleted
+                          ? 'bg-gradient-to-br from-green-400 to-green-600 border-green-500 text-white shadow-green-200'
+                          : isCurrent
+                            ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-500 text-white shadow-blue-200 animate-pulse -translate-y-4'
+                            : 'bg-white border-gray-300 text-gray-400 shadow-gray-100 hover:shadow-gray-200'
+                      }
                       ${isEditing ? 'cursor-pointer hover:scale-105' : ''}
                     `}
                     style={{ marginTop: '-16px' }}
-                    onClick={isEditing ? () => onStageClick?.(stage) : undefined}
+                    onClick={
+                      isEditing ? () => onStageClick?.(stage) : undefined
+                    }
                   >
                     {isCompleted ? (
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     ) : (
                       <span className="font-bold">{index + 1}</span>
@@ -237,15 +281,23 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                   {/* 階段名稱 */}
                   <div
                     className="mt-3 text-center max-w-20"
-                    onClick={isEditing ? () => onStageClick?.(stage) : undefined}
+                    onClick={
+                      isEditing ? () => onStageClick?.(stage) : undefined
+                    }
                   >
-                    <div className={`
+                    <div
+                      className={`
                       text-xs font-semibold leading-tight transition-colors duration-300
-                      ${isCurrent ? 'text-blue-600 bg-blue-50 px-2 py-1 rounded-md' :
-                        isCompleted ? 'text-green-600' :
-                        'text-gray-500 group-hover:text-gray-700'}
+                      ${
+                        isCurrent
+                          ? 'text-blue-600 bg-blue-50 px-2 py-1 rounded-md'
+                          : isCompleted
+                            ? 'text-green-600'
+                            : 'text-gray-500 group-hover:text-gray-700'
+                      }
                       ${isEditing ? 'cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5' : ''}
-                    `}>
+                    `}
+                    >
                       {stage}
                     </div>
                   </div>
@@ -254,7 +306,6 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
             })}
           </div>
         </div>
-
       </div>
     );
   };
@@ -282,7 +333,10 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
 
     try {
       // 驗證：如果選擇「其他」，main_goal_other 不可為空
-      if (formData.main_goal === '其他' && (!formData.main_goal_other || formData.main_goal_other.trim() === '')) {
+      if (
+        formData.main_goal === '其他' &&
+        (!formData.main_goal_other || formData.main_goal_other.trim() === '')
+      ) {
         setValidationError('選擇「其他」時，請填寫具體的目標內容');
         setIsLoading(false);
         return;
@@ -301,26 +355,29 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
           main_goal_other: formData.main_goal_other || '',
           success_rate: formData.success_rate || 0,
           pain_points: formData.pain_points || '',
-          observations: formData.observations || ''
-        }
+          observations: formData.observations || '',
+        },
       };
 
       const requestBody: any = {
-        meeting_record: updatedMeetingRecord
+        meeting_record: updatedMeetingRecord,
       };
 
       // 如果是新增模式，需要更新 meeting_count
       if (data?.isNew) {
-        requestBody.meeting_count = parseInt(data?.meetingIndex || '1');
+        requestBody.meeting_count = Number.parseInt(data?.meetingIndex || '1');
       }
 
-      const response = await fetch(`/api/customer-interactions/${interactionId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await fetch(
+        `/api/customer-interactions/${interactionId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('儲存失敗');
@@ -329,7 +386,7 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
       // 更新本地資料 - 傳遞更新後的 meeting_record 資料
       const updatedData = {
         ...data,
-        meeting_record: updatedMeetingRecord
+        meeting_record: updatedMeetingRecord,
       };
       onDataUpdate?.(JSON.stringify(updatedData.meeting_record));
 
@@ -364,7 +421,7 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
       main_goal_other: currentMeetingData.main_goal_other || '',
       success_rate: currentMeetingData.success_rate || 0,
       pain_points: currentMeetingData.pain_points || '',
-      observations: currentMeetingData.observations || ''
+      observations: currentMeetingData.observations || '',
     });
 
     setEditContent(data?.content || '');
@@ -416,13 +473,13 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
           <div className="flex items-center gap-2">
             <div className="p-2 bg-blue-100 rounded-lg">
               <MessageSquare className="h-5 w-5 text-blue-600" />
-              </div>
-            <h4 className="text-lg font-semibold text-gray-900">
-                {data?.meetingNumber || '會面紀錄'}
-              </h4>
             </div>
+            <h4 className="text-lg font-semibold text-gray-900">
+              {data?.meetingNumber || '會面紀錄'}
+            </h4>
+          </div>
 
-              {isEditing ? (
+          {isEditing ? (
             /* 編輯模式 - 與檢視模式保持一致的佈局 */
             <div className="space-y-6">
               {/* 行銷階段流程圖 */}
@@ -435,7 +492,9 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                 <MarketingStageFlowchart
                   currentStage={formData.marketing_stage || ''}
                   isEditing={isEditing}
-                  onStageClick={(stage) => handleFormDataChange('marketing_stage', stage)}
+                  onStageClick={(stage) =>
+                    handleFormDataChange('marketing_stage', stage)
+                  }
                 />
               </div>
 
@@ -452,7 +511,9 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                     <input
                       type="date"
                       value={formData.appointment_date || ''}
-                      onChange={(e) => handleFormDataChange('appointment_date', e.target.value)}
+                      onChange={(e) =>
+                        handleFormDataChange('appointment_date', e.target.value)
+                      }
                       className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
@@ -466,7 +527,9 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                     <div className="flex gap-2">
                       <select
                         value={formData.main_goal || ''}
-                        onChange={(e) => handleFormDataChange('main_goal', e.target.value)}
+                        onChange={(e) =>
+                          handleFormDataChange('main_goal', e.target.value)
+                        }
                         className="w-1/2 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                       >
                         <option value="">請選擇</option>
@@ -481,7 +544,12 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                         <input
                           type="text"
                           value={formData.main_goal_other || ''}
-                          onChange={(e) => handleFormDataChange('main_goal_other', e.target.value)}
+                          onChange={(e) =>
+                            handleFormDataChange(
+                              'main_goal_other',
+                              e.target.value
+                            )
+                          }
                           placeholder="請輸入其他目標"
                           className="w-1/2 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
@@ -500,7 +568,10 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
 
                   {/* 中間：圓圈，垂直置中 */}
                   <div className="flex-1 flex justify-center items-center">
-                    <CircularProgress percentage={formData.success_rate || 0} size={100} />
+                    <CircularProgress
+                      percentage={formData.success_rate || 0}
+                      size={100}
+                    />
                   </div>
 
                   {/* 底部：滑桿控制區域 */}
@@ -512,7 +583,12 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                           min="0"
                           max="100"
                           value={formData.success_rate || 0}
-                          onChange={(e) => handleFormDataChange('success_rate', parseInt(e.target.value))}
+                          onChange={(e) =>
+                            handleFormDataChange(
+                              'success_rate',
+                              Number.parseInt(e.target.value)
+                            )
+                          }
                           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                         />
                       </div>
@@ -529,7 +605,9 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                 </div>
                 <textarea
                   value={formData.pain_points || ''}
-                  onChange={(e) => handleFormDataChange('pain_points', e.target.value)}
+                  onChange={(e) =>
+                    handleFormDataChange('pain_points', e.target.value)
+                  }
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="請輸入觀察到的痛點..."
@@ -544,7 +622,9 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                 </div>
                 <textarea
                   value={formData.observations || ''}
-                  onChange={(e) => handleFormDataChange('observations', e.target.value)}
+                  onChange={(e) =>
+                    handleFormDataChange('observations', e.target.value)
+                  }
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="請輸入過程中的觀察與發現..."
@@ -565,7 +645,9 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                 <MarketingStageFlowchart
                   currentStage={formData.marketing_stage || ''}
                   isEditing={isEditing}
-                  onStageClick={(stage) => handleFormDataChange('marketing_stage', stage)}
+                  onStageClick={(stage) =>
+                    handleFormDataChange('marketing_stage', stage)
+                  }
                 />
               </div>
 
@@ -608,7 +690,10 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
 
                   {/* 中間：圓圈，垂直置中 */}
                   <div className="flex-1 flex justify-center items-center">
-                    <CircularProgress percentage={formData.success_rate || 0} size={100} />
+                    <CircularProgress
+                      percentage={formData.success_rate || 0}
+                      size={100}
+                    />
                   </div>
 
                   {/* 底部：空區域，確保與約訪主軸目標底部對齊 */}
@@ -637,7 +722,6 @@ export function MeetingRecordDetailCard({ isOpen, onClose, data, interactionId, 
                   {formData.observations || '尚未填寫相關資訊'}
                 </p>
               </div>
-
             </div>
           )}
         </div>

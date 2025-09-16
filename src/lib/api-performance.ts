@@ -1,5 +1,5 @@
 // API 性能監控工具
-import { NextResponse } from 'next/server';
+import type { NextResponse } from 'next/server';
 
 export function withPerformanceMonitoring(
   handler: (req: Request) => Promise<NextResponse>

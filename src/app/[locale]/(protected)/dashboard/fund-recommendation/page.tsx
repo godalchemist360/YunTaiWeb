@@ -1,10 +1,10 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import {
+  ArrowLeft,
+  BarChart3,
+  DollarSign,
   PieChart,
   TrendingUp,
-  DollarSign,
-  BarChart3,
-  ArrowLeft,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -48,7 +48,9 @@ export default async function FundRecommendationPage() {
                     <h1 className="text-3xl font-bold text-gray-900">
                       基金推薦
                     </h1>
-                    <p className="text-gray-600">專業基金投資建議與投資組合管理</p>
+                    <p className="text-gray-600">
+                      專業基金投資建議與投資組合管理
+                    </p>
                   </div>
                 </div>
 
@@ -95,47 +97,65 @@ export default async function FundRecommendationPage() {
                   <div className="grid gap-4 md:grid-cols-3">
                     <div className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex items-center justify-center h-full">
-                        <h3 className="text-lg font-semibold text-gray-900">卡片1</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          卡片1
+                        </h3>
                       </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex items-center justify-center h-full">
-                        <h3 className="text-lg font-semibold text-gray-900">卡片2</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          卡片2
+                        </h3>
                       </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex items-center justify-center h-full">
-                        <h3 className="text-lg font-semibold text-gray-900">卡片3</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          卡片3
+                        </h3>
                       </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex items-center justify-center h-full">
-                        <h3 className="text-lg font-semibold text-gray-900">卡片4</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          卡片4
+                        </h3>
                       </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex items-center justify-center h-full">
-                        <h3 className="text-lg font-semibold text-gray-900">卡片5</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          卡片5
+                        </h3>
                       </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex items-center justify-center h-full">
-                        <h3 className="text-lg font-semibold text-gray-900">卡片6</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          卡片6
+                        </h3>
                       </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex items-center justify-center h-full">
-                        <h3 className="text-lg font-semibold text-gray-900">卡片7</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          卡片7
+                        </h3>
                       </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex items-center justify-center h-full">
-                        <h3 className="text-lg font-semibold text-gray-900">卡片8</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          卡片8
+                        </h3>
                       </div>
                     </div>
                     <div className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex items-center justify-center h-full">
-                        <h3 className="text-lg font-semibold text-gray-900">卡片9</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          卡片9
+                        </h3>
                       </div>
                     </div>
                   </div>

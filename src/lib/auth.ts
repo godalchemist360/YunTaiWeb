@@ -242,13 +242,16 @@ export async function getCurrentUserId(req?: Request): Promise<string> {
 
     if (cookieHeader) {
       // 解析 cookie 字符串
-      const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-        const [key, value] = cookie.trim().split('=');
-        if (key && value) {
-          acc[key] = decodeURIComponent(value);
-        }
-        return acc;
-      }, {} as Record<string, string>);
+      const cookies = cookieHeader.split(';').reduce(
+        (acc, cookie) => {
+          const [key, value] = cookie.trim().split('=');
+          if (key && value) {
+            acc[key] = decodeURIComponent(value);
+          }
+          return acc;
+        },
+        {} as Record<string, string>
+      );
 
       // 先獲取 session ID
       const sessionId = cookies['session-id'];

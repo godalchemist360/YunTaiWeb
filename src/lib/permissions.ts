@@ -64,7 +64,10 @@ export const PERMISSIONS: Record<UserRole, PermissionAction[]> = {
  * @param action 權限動作
  * @returns 是否有權限
  */
-export function hasPermission(userRole: UserRole | undefined, action: PermissionAction): boolean {
+export function hasPermission(
+  userRole: UserRole | undefined,
+  action: PermissionAction
+): boolean {
   if (!userRole) {
     return false;
   }
@@ -114,7 +117,9 @@ export function canViewAnnouncement(userRole: UserRole | undefined): boolean {
  * @param userRole 用戶角色
  * @returns 是否可以創建客戶追蹤記錄
  */
-export function canCreateCustomerTracking(userRole: UserRole | undefined): boolean {
+export function canCreateCustomerTracking(
+  userRole: UserRole | undefined
+): boolean {
   return hasPermission(userRole, 'customer-tracking.create');
 }
 
@@ -123,7 +128,9 @@ export function canCreateCustomerTracking(userRole: UserRole | undefined): boole
  * @param userRole 用戶角色
  * @returns 是否可以刪除客戶追蹤記錄
  */
-export function canDeleteCustomerTracking(userRole: UserRole | undefined): boolean {
+export function canDeleteCustomerTracking(
+  userRole: UserRole | undefined
+): boolean {
   return hasPermission(userRole, 'customer-tracking.delete');
 }
 
@@ -132,7 +139,9 @@ export function canDeleteCustomerTracking(userRole: UserRole | undefined): boole
  * @param userRole 用戶角色
  * @returns 是否可以編輯客戶追蹤記錄
  */
-export function canEditCustomerTracking(userRole: UserRole | undefined): boolean {
+export function canEditCustomerTracking(
+  userRole: UserRole | undefined
+): boolean {
   return hasPermission(userRole, 'customer-tracking.edit');
 }
 
@@ -141,7 +150,9 @@ export function canEditCustomerTracking(userRole: UserRole | undefined): boolean
  * @param userRole 用戶角色
  * @returns 是否可以查看客戶追蹤記錄
  */
-export function canViewCustomerTracking(userRole: UserRole | undefined): boolean {
+export function canViewCustomerTracking(
+  userRole: UserRole | undefined
+): boolean {
   return hasPermission(userRole, 'customer-tracking.view');
 }
 

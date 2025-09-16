@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
       const conditions: any[] = [];
 
       if (q && q.trim()) {
-        conditions.push(sql`(lower(account) like lower(${'%' + q + '%'}) OR lower(display_name) like lower(${'%' + q + '%'}))`);
+        conditions.push(
+          sql`(lower(account) like lower(${'%' + q + '%'}) OR lower(display_name) like lower(${'%' + q + '%'}))`
+        );
       }
 
       if (status) {
@@ -42,7 +44,9 @@ export async function GET(request: NextRequest) {
         SELECT COUNT(*) FROM app_users
         WHERE ${whereCondition}
       `);
-      filteredTotal = Number.parseInt(filteredCountResult.rows[0].count as string);
+      filteredTotal = Number.parseInt(
+        filteredCountResult.rows[0].count as string
+      );
 
       // 查詢篩選後的資料
       dataResult = await db.execute(sql`
@@ -60,7 +64,9 @@ export async function GET(request: NextRequest) {
       `);
     } else {
       // 無篩選條件時
-      const totalCountResult = await db.execute(sql`SELECT COUNT(*) FROM app_users`);
+      const totalCountResult = await db.execute(
+        sql`SELECT COUNT(*) FROM app_users`
+      );
       filteredTotal = Number.parseInt(totalCountResult.rows[0].count as string);
 
       dataResult = await db.execute(sql`

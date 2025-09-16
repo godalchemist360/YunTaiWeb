@@ -4,7 +4,10 @@ import { AddAnnouncementDialog } from '@/components/announcements/add-announceme
 import { ViewAnnouncementDialog } from '@/components/announcements/view-announcement-dialog';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { UserAvatar } from '@/components/layout/user-avatar';
-import { AnnouncementCreateGate, AnnouncementDeleteGate } from '@/components/permission-gate';
+import {
+  AnnouncementCreateGate,
+  AnnouncementDeleteGate,
+} from '@/components/permission-gate';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +21,21 @@ import {
 import { Button } from '@/components/ui/button';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import {
+  formatDate,
+  getTypeColor,
+  getTypeIcon,
+  getTypeLabel,
+  getTypeTagColor,
+  handleApiError,
+  showErrorToast,
+  showSuccessToast,
+} from '@/lib/announcement-utils';
+import {
+  extractPermissionError,
+  handlePermissionError,
+  showPermissionError,
+} from '@/lib/permission-utils';
+import {
   AlertTriangle,
   Bell,
   Calendar,
@@ -27,21 +45,6 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
-import {
-  getTypeLabel,
-  getTypeIcon,
-  getTypeColor,
-  getTypeTagColor,
-  formatDate,
-  handleApiError,
-  showErrorToast,
-  showSuccessToast,
-} from '@/lib/announcement-utils';
-import { 
-  handlePermissionError, 
-  extractPermissionError,
-  showPermissionError 
-} from '@/lib/permission-utils';
 import { useEffect, useState } from 'react';
 
 interface Announcement {
@@ -158,7 +161,10 @@ export default function AnnouncementsPage() {
       } else {
         // 檢查是否為權限錯誤
         if (response.status === 403) {
-          const errorMessage = await extractPermissionError(response, 'announcements.delete');
+          const errorMessage = await extractPermissionError(
+            response,
+            'announcements.delete'
+          );
           showPermissionError(errorMessage);
         } else {
           const errorMessage = handleApiError(response, '刪除失敗，請稍後再試');
@@ -255,11 +261,17 @@ export default function AnnouncementsPage() {
       } else {
         // 檢查是否為權限錯誤
         if (response.status === 403) {
-          const errorMessage = await extractPermissionError(response, 'announcements.create');
+          const errorMessage = await extractPermissionError(
+            response,
+            'announcements.create'
+          );
           showPermissionError(errorMessage);
         } else {
           const errorData = await response.json().catch(() => ({}));
-          const errorMessage = handleApiError(errorData, '新增公告失敗，請稍後再試');
+          const errorMessage = handleApiError(
+            errorData,
+            '新增公告失敗，請稍後再試'
+          );
           showErrorToast(errorMessage);
         }
       }

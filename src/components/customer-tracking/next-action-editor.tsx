@@ -1,7 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, Calendar, Clock, CalendarDays, AlertTriangle, Save } from 'lucide-react';
+import {
+  AlertTriangle,
+  Calendar,
+  CalendarDays,
+  Clock,
+  Save,
+  X,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface NextActionEditorProps {
   isOpen: boolean;
@@ -20,7 +27,7 @@ export function NextActionEditor({
   initialAction = '',
   initialDate = '',
   initialTime = '09:00',
-  isLoading = false
+  isLoading = false,
 }: NextActionEditorProps) {
   const [action, setAction] = useState(initialAction);
   const [selectedDate, setSelectedDate] = useState(initialDate);
@@ -64,21 +71,21 @@ export function NextActionEditor({
   const handleDateChange = (value: string) => {
     setSelectedDate(value);
     if (validationErrors.date) {
-      setValidationErrors(prev => ({ ...prev, date: undefined }));
+      setValidationErrors((prev) => ({ ...prev, date: undefined }));
     }
   };
 
   const handleTimeChange = (value: string) => {
     setSelectedTime(value);
     if (validationErrors.time) {
-      setValidationErrors(prev => ({ ...prev, time: undefined }));
+      setValidationErrors((prev) => ({ ...prev, time: undefined }));
     }
   };
 
   const handleActionChange = (value: string) => {
     setAction(value);
     if (validationErrors.action) {
-      setValidationErrors(prev => ({ ...prev, action: undefined }));
+      setValidationErrors((prev) => ({ ...prev, action: undefined }));
     }
   };
 
@@ -152,7 +159,9 @@ export function NextActionEditor({
                     value={selectedTime}
                     onChange={(e) => handleTimeChange(e.target.value)}
                     className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      validationErrors.time ? 'border-red-500' : 'border-gray-300'
+                      validationErrors.time
+                        ? 'border-red-500'
+                        : 'border-gray-300'
                     }`}
                   />
                   {validationErrors.time && (
@@ -187,7 +196,6 @@ export function NextActionEditor({
               </p>
             )}
           </div>
-
         </div>
 
         {/* Footer with gradient background */}
@@ -219,7 +227,6 @@ export function NextActionEditor({
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );

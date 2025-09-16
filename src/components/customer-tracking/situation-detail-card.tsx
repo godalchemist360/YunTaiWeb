@@ -1,7 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, Heart, Target, Users, FileText, Edit, Save, AlertTriangle } from 'lucide-react';
+import {
+  AlertTriangle,
+  Edit,
+  FileText,
+  Heart,
+  Save,
+  Target,
+  Users,
+  X,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface SituationDetailCardProps {
   isOpen: boolean;
@@ -17,7 +26,14 @@ interface SituationDetailCardProps {
   onError?: (error: string) => void;
 }
 
-export function SituationDetailCard({ isOpen, onClose, data, interactionId, onSuccess, onError }: SituationDetailCardProps) {
+export function SituationDetailCard({
+  isOpen,
+  onClose,
+  data,
+  interactionId,
+  onSuccess,
+  onError,
+}: SituationDetailCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -30,7 +46,7 @@ export function SituationDetailCard({ isOpen, onClose, data, interactionId, onSu
     痛點: '',
     目標: '',
     關係: '',
-    其他: ''
+    其他: '',
   });
   const [validationErrors, setValidationErrors] = useState<{
     痛點?: string;
@@ -55,7 +71,7 @@ export function SituationDetailCard({ isOpen, onClose, data, interactionId, onSu
         痛點: data.痛點 || '',
         目標: data.目標 || '',
         關係: data.關係 || '',
-        其他: data.其他 || ''
+        其他: data.其他 || '',
       });
     }
   }, [data]);
@@ -72,20 +88,20 @@ export function SituationDetailCard({ isOpen, onClose, data, interactionId, onSu
 
   // 即時驗證
   const handleInputChange = (field: keyof typeof editData, value: string) => {
-    setEditData(prev => ({ ...prev, [field]: value }));
+    setEditData((prev) => ({ ...prev, [field]: value }));
 
     // 即時驗證
     const error = validateJsonbString(value);
-    setValidationErrors(prev => ({
+    setValidationErrors((prev) => ({
       ...prev,
-      [field]: error
+      [field]: error,
     }));
   };
 
   // 儲存
   const handleSave = async () => {
     // 檢查是否有驗證錯誤
-    const hasErrors = Object.values(validationErrors).some(error => error);
+    const hasErrors = Object.values(validationErrors).some((error) => error);
     if (hasErrors) {
       onError?.('請修正輸入錯誤後再儲存');
       return;
@@ -93,15 +109,18 @@ export function SituationDetailCard({ isOpen, onClose, data, interactionId, onSu
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/customer-interactions/${interactionId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          situation_data: editData
-        }),
-      });
+      const response = await fetch(
+        `/api/customer-interactions/${interactionId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            situation_data: editData,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('儲存失敗');
@@ -127,7 +146,7 @@ export function SituationDetailCard({ isOpen, onClose, data, interactionId, onSu
       痛點: data?.痛點 || '',
       目標: data?.目標 || '',
       關係: data?.關係 || '',
-      其他: data?.其他 || ''
+      其他: data?.其他 || '',
     });
     setIsEditing(false);
     setShowCancelConfirm(false);
@@ -192,7 +211,9 @@ export function SituationDetailCard({ isOpen, onClose, data, interactionId, onSu
               ) : (
                 <p className="text-base text-gray-700 leading-relaxed">
                   {data?.痛點 || (
-                    <span className="text-gray-400 italic">尚未填寫相關資訊</span>
+                    <span className="text-gray-400 italic">
+                      尚未填寫相關資訊
+                    </span>
                   )}
                 </p>
               )}
@@ -228,7 +249,9 @@ export function SituationDetailCard({ isOpen, onClose, data, interactionId, onSu
               ) : (
                 <p className="text-base text-gray-700 leading-relaxed">
                   {data?.目標 || (
-                    <span className="text-gray-400 italic">尚未填寫相關資訊</span>
+                    <span className="text-gray-400 italic">
+                      尚未填寫相關資訊
+                    </span>
                   )}
                 </p>
               )}
@@ -264,7 +287,9 @@ export function SituationDetailCard({ isOpen, onClose, data, interactionId, onSu
               ) : (
                 <p className="text-base text-gray-700 leading-relaxed">
                   {data?.關係 || (
-                    <span className="text-gray-400 italic">尚未填寫相關資訊</span>
+                    <span className="text-gray-400 italic">
+                      尚未填寫相關資訊
+                    </span>
                   )}
                 </p>
               )}
@@ -300,7 +325,9 @@ export function SituationDetailCard({ isOpen, onClose, data, interactionId, onSu
               ) : (
                 <p className="text-base text-gray-700 leading-relaxed">
                   {data?.其他 || (
-                    <span className="text-gray-400 italic">尚未填寫相關資訊</span>
+                    <span className="text-gray-400 italic">
+                      尚未填寫相關資訊
+                    </span>
                   )}
                 </p>
               )}
@@ -359,7 +386,9 @@ export function SituationDetailCard({ isOpen, onClose, data, interactionId, onSu
                   <div className="p-2 bg-yellow-100 rounded-lg">
                     <AlertTriangle className="h-6 w-6 text-yellow-600" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">確認取消編輯</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    確認取消編輯
+                  </h3>
                 </div>
                 <p className="text-gray-700 mb-6">
                   您確定要放棄目前的修改嗎？未儲存的變更將會遺失。

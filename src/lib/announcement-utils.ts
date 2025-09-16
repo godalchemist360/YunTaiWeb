@@ -2,16 +2,16 @@ import {
   AlertTriangle,
   Calendar,
   CheckCircle,
-  Info,
-  FileText,
-  Play,
-  Image,
-  Video,
-  Music,
   File,
-  FileImage,
-  FileVideo,
   FileAudio,
+  FileImage,
+  FileText,
+  FileVideo,
+  Image,
+  Info,
+  Music,
+  Play,
+  Video,
 } from 'lucide-react';
 
 // 公告類型相關函數
@@ -116,7 +116,10 @@ export const formatDate = (dateString: string): string => {
 };
 
 // 錯誤處理
-export const handleApiError = (error: any, defaultMessage: string = '操作失敗'): string => {
+export const handleApiError = (
+  error: any,
+  defaultMessage = '操作失敗'
+): string => {
   console.error('API Error:', error);
 
   // 處理資料庫連接錯誤

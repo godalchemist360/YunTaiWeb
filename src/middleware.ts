@@ -12,7 +12,6 @@ import {
   routesNotAllowedByLoggedInUsers,
 } from './routes';
 
-
 const intlMiddleware = createMiddleware(routing);
 
 /**
@@ -52,7 +51,8 @@ export default async function middleware(req: NextRequest) {
   // 檢查自定義認證 cookie
   const customAuthCookie = req.cookies.get('custom-auth');
   const sessionIdCookie = req.cookies.get('session-id');
-  const isLoggedIn = customAuthCookie?.value === 'true' && sessionIdCookie?.value;
+  const isLoggedIn =
+    customAuthCookie?.value === 'true' && sessionIdCookie?.value;
 
   // console.log('middleware, isLoggedIn', isLoggedIn);
 

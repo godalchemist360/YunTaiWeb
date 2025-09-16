@@ -16,10 +16,7 @@ export function UserButton({ user }: UserButtonProps) {
   return (
     <div className="flex items-center gap-2">
       <div className="relative">
-        <UserAvatar
-          name={user.name}
-          image={user.image}
-        />
+        <UserAvatar name={user.name} image={user.image} />
         {/* 在線狀態指示器 */}
         <div className="absolute -bottom-0.5 -right-0.5 size-2.5 bg-green-500 border border-white dark:border-gray-800 rounded-full"></div>
       </div>

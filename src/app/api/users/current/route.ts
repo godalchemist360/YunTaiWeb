@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
@@ -13,20 +13,20 @@ export async function GET(request: NextRequest) {
 
     if (!cookieHeader) {
       console.log('GET /api/users/current: 未找到 cookie header');
-      return NextResponse.json(
-        { error: '未找到認證資訊' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: '未找到認證資訊' }, { status: 401 });
     }
 
     // 解析 cookie
-    const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-      const [key, value] = cookie.trim().split('=');
-      if (key && value) {
-        acc[key] = decodeURIComponent(value);
-      }
-      return acc;
-    }, {} as Record<string, string>);
+    const cookies = cookieHeader.split(';').reduce(
+      (acc, cookie) => {
+        const [key, value] = cookie.trim().split('=');
+        if (key && value) {
+          acc[key] = decodeURIComponent(value);
+        }
+        return acc;
+      },
+      {} as Record<string, string>
+    );
 
     console.log('GET /api/users/current: 解析的 cookies:', cookies);
 
@@ -36,10 +36,7 @@ export async function GET(request: NextRequest) {
 
     if (!sessionId) {
       console.log('GET /api/users/current: 未找到 session-id');
-      return NextResponse.json(
-        { error: '未找到 session ID' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: '未找到 session ID' }, { status: 401 });
     }
 
     const userAccountKey = `user-account-${sessionId}`;
@@ -49,13 +46,13 @@ export async function GET(request: NextRequest) {
 
     if (!userAccount) {
       console.log('GET /api/users/current: 未找到用戶帳號');
-      return NextResponse.json(
-        { error: '未找到用戶帳號' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: '未找到用戶帳號' }, { status: 401 });
     }
 
-    console.log('GET /api/users/current: 查詢 app_users 表，帳號:', userAccount);
+    console.log(
+      'GET /api/users/current: 查詢 app_users 表，帳號:',
+      userAccount
+    );
 
     // 從 app_users 表查詢用戶資料
     const result = await query(
@@ -69,10 +66,7 @@ export async function GET(request: NextRequest) {
 
     if (result.rows.length === 0) {
       console.log('GET /api/users/current: 用戶不存在於 app_users 表中');
-      return NextResponse.json(
-        { error: '用戶不存在' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: '用戶不存在' }, { status: 404 });
     }
 
     const user = result.rows[0];

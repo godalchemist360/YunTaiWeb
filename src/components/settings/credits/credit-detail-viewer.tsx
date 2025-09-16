@@ -10,6 +10,7 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer';
 import { Separator } from '@/components/ui/separator';
+import { CREDIT_TRANSACTION_TYPE } from '@/credits/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatDate } from '@/lib/formatter';
 import {
@@ -23,7 +24,6 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { CREDIT_TRANSACTION_TYPE } from '../../../credits/types';
 
 // Define the credit transaction interface (matching the one in the table)
 export interface CreditTransaction {

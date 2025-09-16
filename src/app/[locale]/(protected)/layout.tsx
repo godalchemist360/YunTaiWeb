@@ -1,6 +1,6 @@
+import { AutoLogoutProvider } from '@/components/auto-logout/auto-logout-provider';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { AutoLogoutProvider } from '@/components/auto-logout/auto-logout-provider';
 import type { PropsWithChildren } from 'react';
 
 /**

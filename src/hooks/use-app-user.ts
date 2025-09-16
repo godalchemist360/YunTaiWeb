@@ -16,7 +16,7 @@ interface AppUser {
 
 // 全局緩存和請求管理
 let userCache: AppUser | null = null;
-let cacheTimestamp: number = 0;
+let cacheTimestamp = 0;
 let currentRequest: Promise<AppUser | null> | null = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5分鐘緩存
 
@@ -75,7 +75,7 @@ export function useAppUser() {
       const now = Date.now();
 
       // 如果有緩存且未過期，直接使用
-      if (userCache && (now - cacheTimestamp) < CACHE_DURATION) {
+      if (userCache && now - cacheTimestamp < CACHE_DURATION) {
         setUser(userCache);
         setIsLoading(false);
         setError(null);

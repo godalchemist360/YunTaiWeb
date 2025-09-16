@@ -37,6 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { usePermissions } from '@/hooks/use-permissions';
 import {
   createUser,
   deleteUser,
@@ -44,7 +45,6 @@ import {
   fetchUsers,
   updateUser,
 } from '@/lib/usersClient';
-import { usePermissions } from '@/hooks/use-permissions';
 import {
   ChevronLeft,
   ChevronRight,
@@ -88,7 +88,9 @@ export default function AccountManagementPage() {
   // 搜尋和篩選狀態
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
   // 刪除確認對話框狀態
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -105,7 +107,12 @@ export default function AccountManagementPage() {
   ];
 
   // 定義 loadData 函數（必須在 useEffect 之前）
-  const loadData = async (page = currentPage, size = pageSize, search = searchQuery, role = selectedRole) => {
+  const loadData = async (
+    page = currentPage,
+    size = pageSize,
+    search = searchQuery,
+    role = selectedRole
+  ) => {
     try {
       setLoading(true);
 
@@ -115,7 +122,7 @@ export default function AccountManagementPage() {
           page,
           pageSize: size,
           q: search || undefined,
-          role: role === 'all' ? undefined : role
+          role: role === 'all' ? undefined : role,
         }),
       ]);
 
@@ -386,9 +393,7 @@ export default function AccountManagementPage() {
                       <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">
-                        {stats.total}
-                      </div>
+                      <div className="text-2xl font-bold">{stats.total}</div>
                     </CardContent>
                   </Card>
                   <Card>
@@ -451,9 +456,13 @@ export default function AccountManagementPage() {
                           篩選
                           {selectedRole !== 'all' && (
                             <Badge variant="secondary" className="ml-2">
-                              {selectedRole === 'admin' ? '管理員' :
-                               selectedRole === 'management' ? '管理層' :
-                               selectedRole === 'sales' ? '業務員' : selectedRole}
+                              {selectedRole === 'admin'
+                                ? '管理員'
+                                : selectedRole === 'management'
+                                  ? '管理層'
+                                  : selectedRole === 'sales'
+                                    ? '業務員'
+                                    : selectedRole}
                             </Badge>
                           )}
                         </Button>
@@ -467,19 +476,25 @@ export default function AccountManagementPage() {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleRoleFilter('admin')}
-                          className={selectedRole === 'admin' ? 'bg-accent' : ''}
+                          className={
+                            selectedRole === 'admin' ? 'bg-accent' : ''
+                          }
                         >
                           管理員
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleRoleFilter('management')}
-                          className={selectedRole === 'management' ? 'bg-accent' : ''}
+                          className={
+                            selectedRole === 'management' ? 'bg-accent' : ''
+                          }
                         >
                           管理層
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleRoleFilter('sales')}
-                          className={selectedRole === 'sales' ? 'bg-accent' : ''}
+                          className={
+                            selectedRole === 'sales' ? 'bg-accent' : ''
+                          }
                         >
                           業務員
                         </DropdownMenuItem>
@@ -524,7 +539,10 @@ export default function AccountManagementPage() {
                           </TableRow>
                         ) : accounts.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                            <TableCell
+                              colSpan={6}
+                              className="text-center py-8 text-muted-foreground"
+                            >
                               無符合條件的帳號
                             </TableCell>
                           </TableRow>
@@ -535,7 +553,9 @@ export default function AccountManagementPage() {
                                 {account.display_name}
                               </TableCell>
                               <TableCell>{account.account}</TableCell>
-                              <TableCell>{getLevelBadge(account.role)}</TableCell>
+                              <TableCell>
+                                {getLevelBadge(account.role)}
+                              </TableCell>
                               <TableCell>
                                 {getStatusBadge(account.status, account.id)}
                               </TableCell>
@@ -545,7 +565,9 @@ export default function AccountManagementPage() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleOpenEditDialog(account)}
+                                    onClick={() =>
+                                      handleOpenEditDialog(account)
+                                    }
                                   >
                                     <Edit className="h-4 w-4" />
                                   </Button>
@@ -580,7 +602,9 @@ export default function AccountManagementPage() {
                         </p>
                         <select
                           value={pageSize}
-                          onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            handlePageSizeChange(Number(e.target.value))
+                          }
                           className="h-8 w-16 rounded border border-input bg-background px-2 text-sm"
                         >
                           <option value={5}>5</option>
@@ -595,7 +619,8 @@ export default function AccountManagementPage() {
 
                       <div className="flex items-center space-x-2">
                         <p className="text-sm text-muted-foreground">
-                          第 {currentPage} 頁，共 {Math.ceil(totalCount / pageSize)} 頁
+                          第 {currentPage} 頁，共{' '}
+                          {Math.ceil(totalCount / pageSize)} 頁
                         </p>
 
                         <div className="flex items-center space-x-1">
@@ -617,38 +642,59 @@ export default function AccountManagementPage() {
                           </Button>
 
                           {/* 頁碼按鈕 */}
-                          {Array.from({ length: Math.min(5, Math.ceil(totalCount / pageSize)) }, (_, i) => {
-                            const startPage = Math.max(1, currentPage - 2);
-                            const pageNum = startPage + i;
-                            if (pageNum > Math.ceil(totalCount / pageSize)) return null;
+                          {Array.from(
+                            {
+                              length: Math.min(
+                                5,
+                                Math.ceil(totalCount / pageSize)
+                              ),
+                            },
+                            (_, i) => {
+                              const startPage = Math.max(1, currentPage - 2);
+                              const pageNum = startPage + i;
+                              if (pageNum > Math.ceil(totalCount / pageSize))
+                                return null;
 
-                            return (
-                              <Button
-                                key={pageNum}
-                                variant={pageNum === currentPage ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => handlePageChange(pageNum)}
-                                disabled={loading}
-                                className="w-8 h-8 p-0"
-                              >
-                                {pageNum}
-                              </Button>
-                            );
-                          })}
+                              return (
+                                <Button
+                                  key={pageNum}
+                                  variant={
+                                    pageNum === currentPage
+                                      ? 'default'
+                                      : 'outline'
+                                  }
+                                  size="sm"
+                                  onClick={() => handlePageChange(pageNum)}
+                                  disabled={loading}
+                                  className="w-8 h-8 p-0"
+                                >
+                                  {pageNum}
+                                </Button>
+                              );
+                            }
+                          )}
 
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage >= Math.ceil(totalCount / pageSize) || loading}
+                            disabled={
+                              currentPage >= Math.ceil(totalCount / pageSize) ||
+                              loading
+                            }
                           >
                             <ChevronRight className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handlePageChange(Math.ceil(totalCount / pageSize))}
-                            disabled={currentPage >= Math.ceil(totalCount / pageSize) || loading}
+                            onClick={() =>
+                              handlePageChange(Math.ceil(totalCount / pageSize))
+                            }
+                            disabled={
+                              currentPage >= Math.ceil(totalCount / pageSize) ||
+                              loading
+                            }
                           >
                             <ChevronsRight className="h-4 w-4" />
                           </Button>

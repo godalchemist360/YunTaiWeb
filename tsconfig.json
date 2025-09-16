@@ -38,5 +38,10 @@
     ".next/types/**/*.ts",
     "global.d.ts"
   ],
-  "exclude": ["node_modules", ".next", "out", "src/components/tailark/preview/**/*"]
+  "exclude": [
+    "node_modules",
+    ".next",
+    "out",
+    "src/components/tailark/preview/**/*"
+  ]
 }

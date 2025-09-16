@@ -4,8 +4,8 @@
  */
 
 import { usePermissions } from '@/hooks/use-permissions';
-import { type PermissionAction } from '@/lib/permissions';
-import { ReactNode } from 'react';
+import type { PermissionAction } from '@/lib/permissions';
+import type { ReactNode } from 'react';
 
 interface PermissionGateProps {
   /** 需要的權限動作 */
@@ -22,34 +22,38 @@ interface PermissionGateProps {
  * 權限控制組件
  * 只有當用戶有指定權限時才顯示子組件
  */
-export function PermissionGate({ 
-  permission, 
-  children, 
-  fallback = null, 
-  showFallback = false 
+export function PermissionGate({
+  permission,
+  children,
+  fallback = null,
+  showFallback = false,
 }: PermissionGateProps) {
   const { hasPermission } = usePermissions();
-  
+
   const hasAccess = hasPermission(permission);
-  
+
   if (hasAccess) {
     return <>{children}</>;
   }
-  
+
   if (showFallback) {
     return <>{fallback}</>;
   }
-  
+
   return null;
 }
 
 /**
  * 公告創建權限組件
  */
-export function AnnouncementCreateGate({ children, fallback, showFallback }: Omit<PermissionGateProps, 'permission'>) {
+export function AnnouncementCreateGate({
+  children,
+  fallback,
+  showFallback,
+}: Omit<PermissionGateProps, 'permission'>) {
   return (
-    <PermissionGate 
-      permission="announcements.create" 
+    <PermissionGate
+      permission="announcements.create"
       fallback={fallback}
       showFallback={showFallback}
     >
@@ -61,10 +65,14 @@ export function AnnouncementCreateGate({ children, fallback, showFallback }: Omi
 /**
  * 公告刪除權限組件
  */
-export function AnnouncementDeleteGate({ children, fallback, showFallback }: Omit<PermissionGateProps, 'permission'>) {
+export function AnnouncementDeleteGate({
+  children,
+  fallback,
+  showFallback,
+}: Omit<PermissionGateProps, 'permission'>) {
   return (
-    <PermissionGate 
-      permission="announcements.delete" 
+    <PermissionGate
+      permission="announcements.delete"
       fallback={fallback}
       showFallback={showFallback}
     >
@@ -76,10 +84,14 @@ export function AnnouncementDeleteGate({ children, fallback, showFallback }: Omi
 /**
  * 公告編輯權限組件
  */
-export function AnnouncementEditGate({ children, fallback, showFallback }: Omit<PermissionGateProps, 'permission'>) {
+export function AnnouncementEditGate({
+  children,
+  fallback,
+  showFallback,
+}: Omit<PermissionGateProps, 'permission'>) {
   return (
-    <PermissionGate 
-      permission="announcements.edit" 
+    <PermissionGate
+      permission="announcements.edit"
       fallback={fallback}
       showFallback={showFallback}
     >
@@ -91,10 +103,14 @@ export function AnnouncementEditGate({ children, fallback, showFallback }: Omit<
 /**
  * 公告查看權限組件
  */
-export function AnnouncementViewGate({ children, fallback, showFallback }: Omit<PermissionGateProps, 'permission'>) {
+export function AnnouncementViewGate({
+  children,
+  fallback,
+  showFallback,
+}: Omit<PermissionGateProps, 'permission'>) {
   return (
-    <PermissionGate 
-      permission="announcements.view" 
+    <PermissionGate
+      permission="announcements.view"
       fallback={fallback}
       showFallback={showFallback}
     >

@@ -35,7 +35,10 @@ export async function query(
 
     // 記錄慢查詢（超過 100ms）
     if (duration > 100) {
-      console.warn(`🐌 慢資料庫查詢 (${duration}ms):`, sql.substring(0, 100) + '...');
+      console.warn(
+        `🐌 慢資料庫查詢 (${duration}ms):`,
+        sql.substring(0, 100) + '...'
+      );
     }
 
     return result;

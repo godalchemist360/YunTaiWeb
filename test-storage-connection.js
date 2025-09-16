@@ -12,19 +12,20 @@ async function testStorageConnection() {
     'STORAGE_ACCESS_KEY_ID',
     'STORAGE_SECRET_ACCESS_KEY',
     'STORAGE_ENDPOINT',
-    'STORAGE_PUBLIC_URL'
+    'STORAGE_PUBLIC_URL',
   ];
 
   console.log('📋 檢查環境變數：');
   let envVarsOk = true;
 
-  requiredEnvVars.forEach(varName => {
+  requiredEnvVars.forEach((varName) => {
     const value = process.env[varName];
     if (value) {
       if (varName.includes('SECRET') || varName.includes('KEY')) {
-        const maskedValue = value.length > 8 ?
-          value.substring(0, 4) + '...' + value.substring(value.length - 4) :
-          '***';
+        const maskedValue =
+          value.length > 8
+            ? value.substring(0, 4) + '...' + value.substring(value.length - 4)
+            : '***';
         console.log(`✅ ${varName}: ${maskedValue}`);
       } else {
         console.log(`✅ ${varName}: ${value}`);
@@ -72,7 +73,10 @@ async function testStorageConnection() {
         });
       }
     } catch (listError) {
-      console.log('⚠️  列出物件失敗（可能是空儲存桶或權限問題）：', listError.message);
+      console.log(
+        '⚠️  列出物件失敗（可能是空儲存桶或權限問題）：',
+        listError.message
+      );
     }
 
     // 測試上傳小檔案
@@ -82,7 +86,11 @@ async function testStorageConnection() {
     const testKey = `test-connection-${Date.now()}.txt`;
 
     try {
-      const uploadResult = await s3.putObject(testKey, testContent, 'text/plain');
+      const uploadResult = await s3.putObject(
+        testKey,
+        testContent,
+        'text/plain'
+      );
 
       if (uploadResult.ok) {
         console.log(`✅ 測試檔案上傳成功: ${testKey}`);
@@ -103,8 +111,13 @@ async function testStorageConnection() {
               console.log('原始內容:', testContent);
               console.log('下載內容:', downloadedContent);
             }
-          } else {關ㄩ
-            console.log('❌ 測試檔案下載失敗:', response.status, response.statusText);
+          } else {
+            關ㄩ;
+            console.log(
+              '❌ 測試檔案下載失敗:',
+              response.status,
+              response.statusText
+            );
           }
         } catch (downloadError) {
           console.log('❌ 測試檔案下載失敗:', downloadError.message);
@@ -122,7 +135,6 @@ async function testStorageConnection() {
         } catch (deleteError) {
           console.log('⚠️  測試檔案清理失敗:', deleteError.message);
         }
-
       } else {
         console.log('❌ 測試檔案上傳失敗:', uploadResult.statusText);
       }
@@ -131,7 +143,6 @@ async function testStorageConnection() {
     }
 
     console.log('\n�� 儲存連接測試完成！');
-
   } catch (error) {
     console.error('❌ 儲存連接測試失敗:', error.message);
     console.error('錯誤詳情:', error);

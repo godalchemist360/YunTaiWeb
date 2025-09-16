@@ -16,12 +16,15 @@ export async function GET() {
     return NextResponse.json({
       message: 'Test successful',
       count: Number(count),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error('Test API error:', error);
     return NextResponse.json(
-      { error: 'Test failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: 'Test failed',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }

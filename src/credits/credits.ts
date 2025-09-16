@@ -55,7 +55,7 @@ export async function updateUserCredits(userId: string, credits: number) {
     const db = await getDb();
     await db
       .update(userCredit)
-      .set({ currentCredits: credits, updatedAt: new Date() })
+      .set({ currentCredits: credits, updatedAt: new Date() } as any)
       .where(eq(userCredit.userId, userId));
 
     // 清除相關快取
@@ -75,7 +75,7 @@ export async function updateUserLastRefreshAt(userId: string, date: Date) {
     const db = await getDb();
     await db
       .update(userCredit)
-      .set({ lastRefreshAt: date, updatedAt: new Date() })
+      .set({ lastRefreshAt: date, updatedAt: new Date() } as any)
       .where(eq(userCredit.userId, userId));
   } catch (error) {
     console.error('updateUserLastRefreshAt, error:', error);

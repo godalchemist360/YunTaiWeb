@@ -48,7 +48,7 @@ export function Navbar({ scroll }: NavBarProps) {
     currentUser,
     customUser,
     customUserLoading,
-    hasCustomUser
+    hasCustomUser,
   });
 
   return (

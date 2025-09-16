@@ -3,20 +3,20 @@
  * 提供當前用戶的權限檢查功能
  */
 
-import { useAppUser } from './use-app-user';
 import {
-  hasPermission,
-  canCreateAnnouncement,
-  canDeleteAnnouncement,
-  canEditAnnouncement,
-  canViewAnnouncement,
-  canCreateCustomerTracking,
-  canDeleteCustomerTracking,
-  canEditCustomerTracking,
-  canViewCustomerTracking,
   type PermissionAction,
-  type UserRole
+  type UserRole,
+  canCreateAnnouncement,
+  canCreateCustomerTracking,
+  canDeleteAnnouncement,
+  canDeleteCustomerTracking,
+  canEditAnnouncement,
+  canEditCustomerTracking,
+  canViewAnnouncement,
+  canViewCustomerTracking,
+  hasPermission,
 } from '@/lib/permissions';
+import { useAppUser } from './use-app-user';
 
 export function usePermissions() {
   const { user, isLoading, error } = useAppUser();
@@ -30,7 +30,8 @@ export function usePermissions() {
     error,
 
     // 通用權限檢查
-    hasPermission: (action: PermissionAction) => hasPermission(userRole, action),
+    hasPermission: (action: PermissionAction) =>
+      hasPermission(userRole, action),
 
     // 公告相關權限
     canCreateAnnouncement: () => canCreateAnnouncement(userRole),

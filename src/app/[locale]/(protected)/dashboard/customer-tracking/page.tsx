@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { EconomicStatusDetailCard } from '@/components/customer-tracking';
-import { SituationDetailCard } from '@/components/customer-tracking/situation-detail-card';
-import { MeetingRecordDetailCard } from '@/components/customer-tracking/meeting-record-detail-card';
-import { ConsultationMotiveEditor } from '@/components/customer-tracking/consultation-motive-editor';
-import { LeadSourceEditor } from '@/components/customer-tracking/lead-source-editor';
-import { CustomerNameEditor } from '@/components/customer-tracking/customer-name-editor';
-import { NextActionEditor } from '@/components/customer-tracking/next-action-editor';
 import { AddRecordDialog } from '@/components/customer-tracking/add-record-dialog';
-import { CustomerInteraction, CustomerInteractionsResponse } from '@/types/customer-interactions';
+import { ConsultationMotiveEditor } from '@/components/customer-tracking/consultation-motive-editor';
+import { CustomerNameEditor } from '@/components/customer-tracking/customer-name-editor';
+import { LeadSourceEditor } from '@/components/customer-tracking/lead-source-editor';
+import { MeetingRecordDetailCard } from '@/components/customer-tracking/meeting-record-detail-card';
+import { NextActionEditor } from '@/components/customer-tracking/next-action-editor';
+import { SituationDetailCard } from '@/components/customer-tracking/situation-detail-card';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { NotificationDialog } from '@/components/ui/notification-dialog';
+import type {
+  CustomerInteraction,
+  CustomerInteractionsResponse,
+} from '@/types/customer-interactions';
 import {
   AlertTriangle,
   Building,
@@ -24,6 +26,7 @@ import {
   UserCheck,
   Users,
 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export default function CustomerTrackingPage() {
   const breadcrumbs = [
@@ -34,13 +37,15 @@ export default function CustomerTrackingPage() {
   ];
 
   // 資料狀態管理
-  const [customerInteractions, setCustomerInteractions] = useState<CustomerInteraction[]>([]);
+  const [customerInteractions, setCustomerInteractions] = useState<
+    CustomerInteraction[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   // 獲取客戶互動資料
-  const fetchCustomerInteractions = async (query: string = '') => {
+  const fetchCustomerInteractions = async (query = '') => {
     try {
       setLoading(true);
       setError(null);
@@ -50,7 +55,9 @@ export default function CustomerTrackingPage() {
       params.append('page', '1');
       params.append('pageSize', '100'); // 暫時設大一點，之後可以實作分頁
 
-      const response = await fetch(`/api/customer-interactions?${params.toString()}`);
+      const response = await fetch(
+        `/api/customer-interactions?${params.toString()}`
+      );
 
       if (!response.ok) {
         throw new Error('Failed to fetch customer interactions');
@@ -160,7 +167,7 @@ export default function CustomerTrackingPage() {
     isOpen: false,
     type: 'success',
     title: '',
-    message: ''
+    message: '',
   });
 
   // 輔助函數：格式化日期時間
@@ -187,7 +194,10 @@ export default function CustomerTrackingPage() {
         date: `${year}-${month}-${day}`, // YYYY-MM-DD 格式
         time: `${hours}:${minutes}`, // HH:mm 格式
         displayDate: date.toLocaleDateString('zh-TW'), // 用於顯示
-        displayTime: date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) // 用於顯示
+        displayTime: date.toLocaleTimeString('zh-TW', {
+          hour: '2-digit',
+          minute: '2-digit',
+        }), // 用於顯示
       };
     } catch (error) {
       console.error('Error formatting date:', dateTime, error);
@@ -202,14 +212,17 @@ export default function CustomerTrackingPage() {
     for (let i = 1; i <= meetingCount; i++) {
       options.push({
         value: i.toString(),
-        label: `第${i}次`
+        label: `第${i}次`,
       });
     }
     return options;
   }, []);
 
   // 輔助函數：獲取會面紀錄內容
-  const getMeetingRecord = (meetingRecord: { [key: string]: string } | null | undefined, meetingNumber: string) => {
+  const getMeetingRecord = (
+    meetingRecord: { [key: string]: string } | null | undefined,
+    meetingNumber: string
+  ) => {
     if (!meetingRecord || typeof meetingRecord !== 'object') {
       return '無會面紀錄';
     }
@@ -233,9 +246,13 @@ export default function CustomerTrackingPage() {
   // 計算統計數據（使用 useMemo 優化）
   const statistics = useMemo(() => {
     const total = customerInteractions.length;
-    const active = customerInteractions.filter(item => item.meeting_count && item.meeting_count > 0).length;
-    const potential = customerInteractions.filter(item => !item.meeting_count || item.meeting_count === 0).length;
-    const churnRisk = customerInteractions.filter(item => {
+    const active = customerInteractions.filter(
+      (item) => item.meeting_count && item.meeting_count > 0
+    ).length;
+    const potential = customerInteractions.filter(
+      (item) => !item.meeting_count || item.meeting_count === 0
+    ).length;
+    const churnRisk = customerInteractions.filter((item) => {
       if (!item.next_action_date) return false;
 
       try {
@@ -248,10 +265,16 @@ export default function CustomerTrackingPage() {
         }
 
         const now = new Date();
-        const daysDiff = Math.ceil((nextActionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        const daysDiff = Math.ceil(
+          (nextActionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        );
         return daysDiff < 0; // 已過期的下一步行動
       } catch (error) {
-        console.error('Error processing next_action_date:', item.next_action_date, error);
+        console.error(
+          'Error processing next_action_date:',
+          item.next_action_date,
+          error
+        );
         return false;
       }
     }).length;
@@ -278,11 +301,18 @@ export default function CustomerTrackingPage() {
       // 重新載入資料
       await fetchCustomerInteractions(searchQuery);
     } catch (error) {
-      showNotification('error', '新增失敗', error instanceof Error ? error.message : '新增記錄失敗');
+      showNotification(
+        'error',
+        '新增失敗',
+        error instanceof Error ? error.message : '新增記錄失敗'
+      );
     }
   };
 
-  const handleConsultationMotiveSave = (standardMotives: string[], customMotives: string[]) => {
+  const handleConsultationMotiveSave = (
+    standardMotives: string[],
+    customMotives: string[]
+  ) => {
     console.log('儲存諮詢動機:', { standardMotives, customMotives });
     // 這裡之後會連接到 API 更新資料
   };
@@ -293,12 +323,16 @@ export default function CustomerTrackingPage() {
   };
 
   // 顯示通知的輔助函數
-  const showNotification = (type: 'success' | 'error', title: string, message: string) => {
+  const showNotification = (
+    type: 'success' | 'error',
+    title: string,
+    message: string
+  ) => {
     setNotification({
       isOpen: true,
       type,
       title,
-      message
+      message,
     });
   };
 
@@ -306,10 +340,14 @@ export default function CustomerTrackingPage() {
   const handleCustomerNameSuccess = (newName: string, rowIndex: number) => {
     console.log('客戶名稱樂觀更新:', { newName, rowIndex });
     // 樂觀更新：立即更新本地狀態
-    setCustomerInteractions(prev => {
+    setCustomerInteractions((prev) => {
       const updated = prev.map((item, index) =>
         index === rowIndex
-          ? { ...item, customer_name: newName, updated_at: new Date().toISOString() }
+          ? {
+              ...item,
+              customer_name: newName,
+              updated_at: new Date().toISOString(),
+            }
           : item
       );
       console.log('更新後的數據:', updated[rowIndex]);
@@ -329,10 +367,14 @@ export default function CustomerTrackingPage() {
   const handleLeadSourceSuccess = (newLeadSource: string, rowIndex: number) => {
     console.log('名單來源樂觀更新:', { newLeadSource, rowIndex });
     // 樂觀更新：立即更新本地狀態
-    setCustomerInteractions(prev => {
+    setCustomerInteractions((prev) => {
       const updated = prev.map((item, index) =>
         index === rowIndex
-          ? { ...item, lead_source: newLeadSource, updated_at: new Date().toISOString() }
+          ? {
+              ...item,
+              lead_source: newLeadSource,
+              updated_at: new Date().toISOString(),
+            }
           : item
       );
       console.log('更新後的數據:', updated[rowIndex]);
@@ -360,28 +402,36 @@ export default function CustomerTrackingPage() {
 
   // 監聽 customerInteractions 變化，自動更新經濟狀況卡片資料
   useEffect(() => {
-    if (economicStatusCard.isOpen && economicStatusCard.rowIndex !== undefined) {
-      const updatedInteraction = customerInteractions[economicStatusCard.rowIndex];
+    if (
+      economicStatusCard.isOpen &&
+      economicStatusCard.rowIndex !== undefined
+    ) {
+      const updatedInteraction =
+        customerInteractions[economicStatusCard.rowIndex];
       if (updatedInteraction) {
-        setEconomicStatusCard(prev => ({
+        setEconomicStatusCard((prev) => ({
           ...prev,
           data: {
             asset_liability_data: updatedInteraction.asset_liability_data,
-            income_expense_data: updatedInteraction.income_expense_data
-          }
+            income_expense_data: updatedInteraction.income_expense_data,
+          },
         }));
       }
     }
-  }, [customerInteractions, economicStatusCard.isOpen, economicStatusCard.rowIndex]);
+  }, [
+    customerInteractions,
+    economicStatusCard.isOpen,
+    economicStatusCard.rowIndex,
+  ]);
 
   // 監聽 customerInteractions 變化，自動更新現況說明卡片資料
   useEffect(() => {
     if (situationCard.isOpen && situationCard.rowIndex !== undefined) {
       const updatedInteraction = customerInteractions[situationCard.rowIndex];
       if (updatedInteraction && updatedInteraction.situation_data) {
-        setSituationCard(prev => ({
+        setSituationCard((prev) => ({
           ...prev,
-          data: updatedInteraction.situation_data
+          data: updatedInteraction.situation_data,
         }));
       }
     }
@@ -397,7 +447,7 @@ export default function CustomerTrackingPage() {
     '稅務規劃',
     '資產傳承',
     '企業相關',
-    '其他'
+    '其他',
   ];
 
   const handleCustomerNameSave = (customerName: string) => {
@@ -405,8 +455,15 @@ export default function CustomerTrackingPage() {
     // 這裡之後會連接到 API 更新資料
   };
 
-  const handleNextActionSave = async (action: string, date: string, time: string) => {
-    if (nextActionEditor.rowIndex === undefined || nextActionEditor.rowIndex === null) {
+  const handleNextActionSave = async (
+    action: string,
+    date: string,
+    time: string
+  ) => {
+    if (
+      nextActionEditor.rowIndex === undefined ||
+      nextActionEditor.rowIndex === null
+    ) {
       return;
     }
 
@@ -416,7 +473,7 @@ export default function CustomerTrackingPage() {
     }
 
     // 設置載入狀態
-    setNextActionEditor(prev => ({ ...prev, isLoading: true }));
+    setNextActionEditor((prev) => ({ ...prev, isLoading: true }));
 
     try {
       // 組合日期和時間為完整的 timestamp
@@ -431,16 +488,19 @@ export default function CustomerTrackingPage() {
         nextActionDate = dateTimeString;
       }
 
-      const response = await fetch(`/api/customer-interactions/${interaction.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          next_action_date: nextActionDate,
-          next_action_description: action || null
-        }),
-      });
+      const response = await fetch(
+        `/api/customer-interactions/${interaction.id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            next_action_date: nextActionDate,
+            next_action_description: action || null,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('儲存失敗');
@@ -455,7 +515,7 @@ export default function CustomerTrackingPage() {
       showNotification('error', '儲存失敗', '網路連線中斷或伺服器錯誤');
     } finally {
       // 清除載入狀態
-      setNextActionEditor(prev => ({ ...prev, isLoading: false }));
+      setNextActionEditor((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -578,8 +638,12 @@ export default function CustomerTrackingPage() {
                       </h3>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <span>共 {statistics.total} 筆記錄</span>
-                        {loading && <span className="text-blue-500">載入中...</span>}
-                        {error && <span className="text-red-500">載入失敗</span>}
+                        {loading && (
+                          <span className="text-blue-500">載入中...</span>
+                        )}
+                        {error && (
+                          <span className="text-red-500">載入失敗</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -588,9 +652,9 @@ export default function CustomerTrackingPage() {
                     <table className="w-full">
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
-                                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-             業務員
-           </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            業務員
+                          </th>
                           <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                             客戶名稱
                           </th>
@@ -617,29 +681,45 @@ export default function CustomerTrackingPage() {
                       <tbody className="bg-white divide-y divide-gray-200">
                         {loading ? (
                           <tr>
-                            <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                            <td
+                              colSpan={8}
+                              className="px-6 py-8 text-center text-gray-500"
+                            >
                               載入中...
                             </td>
                           </tr>
                         ) : error ? (
                           <tr>
-                            <td colSpan={8} className="px-6 py-8 text-center text-red-500">
+                            <td
+                              colSpan={8}
+                              className="px-6 py-8 text-center text-red-500"
+                            >
                               載入失敗: {error}
                             </td>
                           </tr>
                         ) : statistics.total === 0 ? (
                           <tr>
-                            <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                            <td
+                              colSpan={8}
+                              className="px-6 py-8 text-center text-gray-500"
+                            >
                               暫無客戶互動記錄
                             </td>
                           </tr>
                         ) : (
                           customerInteractions.map((interaction, index) => {
-                            const nextActionDateTime = formatDateTime(interaction.next_action_date);
-                            const meetingOptions = getMeetingOptions(interaction.meeting_count);
+                            const nextActionDateTime = formatDateTime(
+                              interaction.next_action_date
+                            );
+                            const meetingOptions = getMeetingOptions(
+                              interaction.meeting_count
+                            );
 
                             return (
-                              <tr key={interaction.id} className="hover:bg-gray-50">
+                              <tr
+                                key={interaction.id}
+                                className="hover:bg-gray-50"
+                              >
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                                   {interaction.salesperson}
                                 </td>
@@ -647,11 +727,14 @@ export default function CustomerTrackingPage() {
                                   <div className="flex items-center justify-center gap-2">
                                     <span>{interaction.customer_name}</span>
                                     <button
-                                      onClick={() => setCustomerNameEditor({
-                                        isOpen: true,
-                                        rowIndex: index,
-                                        initialCustomerName: interaction.customer_name
-                                      })}
+                                      onClick={() =>
+                                        setCustomerNameEditor({
+                                          isOpen: true,
+                                          rowIndex: index,
+                                          initialCustomerName:
+                                            interaction.customer_name,
+                                        })
+                                      }
                                       className="p-1 hover:bg-gray-100 rounded transition-colors"
                                       title="編輯客戶名稱"
                                     >
@@ -661,15 +744,20 @@ export default function CustomerTrackingPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                   <div
-                                    onClick={() => setLeadSourceEditor({
-                                      isOpen: true,
-                                      rowIndex: index,
-                                      initialLeadSource: interaction.lead_source,
-                                      initialCustomSource: undefined
-                                    })}
+                                    onClick={() =>
+                                      setLeadSourceEditor({
+                                        isOpen: true,
+                                        rowIndex: index,
+                                        initialLeadSource:
+                                          interaction.lead_source,
+                                        initialCustomSource: undefined,
+                                      })
+                                    }
                                     className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors flex justify-center"
                                   >
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLeadSourceStyle(interaction.lead_source)}`}>
+                                    <span
+                                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLeadSourceStyle(interaction.lead_source)}`}
+                                    >
                                       {interaction.lead_source}
                                     </span>
                                   </div>
@@ -678,40 +766,57 @@ export default function CustomerTrackingPage() {
                                   <div
                                     onClick={() => {
                                       // 分離標準動機和自定義動機
-                                      const standardMotives = interaction.consultation_motives.filter(motive =>
-                                        standardConsultationMotiveOptions.includes(motive)
-                                      );
-                                      const customMotives = interaction.consultation_motives.filter(motive =>
-                                        !standardConsultationMotiveOptions.includes(motive)
-                                      );
+                                      const standardMotives =
+                                        interaction.consultation_motives.filter(
+                                          (motive) =>
+                                            standardConsultationMotiveOptions.includes(
+                                              motive
+                                            )
+                                        );
+                                      const customMotives =
+                                        interaction.consultation_motives.filter(
+                                          (motive) =>
+                                            !standardConsultationMotiveOptions.includes(
+                                              motive
+                                            )
+                                        );
 
                                       setConsultationMotiveEditor({
                                         isOpen: true,
                                         rowIndex: index,
                                         initialStandardMotives: standardMotives,
-                                        initialCustomMotives: customMotives
+                                        initialCustomMotives: customMotives,
                                       });
                                     }}
                                     className="flex flex-wrap gap-1 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                                   >
-                                    {interaction.consultation_motives.map((motive, motiveIndex) => (
-                                      <span key={motiveIndex} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800">
-                                        {motive}
-                                      </span>
-                                    ))}
+                                    {interaction.consultation_motives.map(
+                                      (motive, motiveIndex) => (
+                                        <span
+                                          key={motiveIndex}
+                                          className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800"
+                                        >
+                                          {motive}
+                                        </span>
+                                      )
+                                    )}
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                   <button
-                                    onClick={() => setEconomicStatusCard({
-                                      isOpen: true,
-                                      data: {
-                                        asset_liability_data: interaction.asset_liability_data,
-                                        income_expense_data: interaction.income_expense_data
-                                      },
-                                      interactionId: interaction.id,
-                                      rowIndex: index
-                                    })}
+                                    onClick={() =>
+                                      setEconomicStatusCard({
+                                        isOpen: true,
+                                        data: {
+                                          asset_liability_data:
+                                            interaction.asset_liability_data,
+                                          income_expense_data:
+                                            interaction.income_expense_data,
+                                        },
+                                        interactionId: interaction.id,
+                                        rowIndex: index,
+                                      })
+                                    }
                                     className="text-blue-600 hover:text-blue-800 font-medium"
                                   >
                                     點擊查看詳情
@@ -719,12 +824,14 @@ export default function CustomerTrackingPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                   <button
-                                    onClick={() => setSituationCard({
-                                      isOpen: true,
-                                      data: interaction.situation_data,
-                                      interactionId: interaction.id,
-                                      rowIndex: index
-                                    })}
+                                    onClick={() =>
+                                      setSituationCard({
+                                        isOpen: true,
+                                        data: interaction.situation_data,
+                                        interactionId: interaction.id,
+                                        rowIndex: index,
+                                      })
+                                    }
                                     className="text-blue-600 hover:text-blue-800 font-medium"
                                   >
                                     點擊查看詳情
@@ -732,23 +839,36 @@ export default function CustomerTrackingPage() {
                                 </td>
                                 <td className="px-6 py-4 text-sm text-gray-900 text-center">
                                   <div
-                                    onClick={() => setNextActionEditor({
-                                      isOpen: true,
-                                      rowIndex: index,
-                                      initialAction: interaction.next_action_description || '',
-                                      initialDate: nextActionDateTime?.date || '',
-                                      initialTime: nextActionDateTime?.time || ''
-                                    })}
+                                    onClick={() =>
+                                      setNextActionEditor({
+                                        isOpen: true,
+                                        rowIndex: index,
+                                        initialAction:
+                                          interaction.next_action_description ||
+                                          '',
+                                        initialDate:
+                                          nextActionDateTime?.date || '',
+                                        initialTime:
+                                          nextActionDateTime?.time || '',
+                                      })
+                                    }
                                     className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                                   >
                                     <div className="flex flex-col items-center">
                                       {nextActionDateTime && (
                                         <div className="flex items-center gap-2">
-                                          <span className="text-xs text-gray-500">{nextActionDateTime.displayDate}</span>
-                                          <span className="text-xs text-gray-500">{nextActionDateTime.displayTime}</span>
+                                          <span className="text-xs text-gray-500">
+                                            {nextActionDateTime.displayDate}
+                                          </span>
+                                          <span className="text-xs text-gray-500">
+                                            {nextActionDateTime.displayTime}
+                                          </span>
                                         </div>
                                       )}
-                                      <span className="text-sm">{interaction.next_action_description || '無下一步行動'}</span>
+                                      <span className="text-sm">
+                                        {interaction.next_action_description ||
+                                          '無下一步行動'}
+                                      </span>
                                     </div>
                                   </div>
                                 </td>
@@ -761,17 +881,28 @@ export default function CustomerTrackingPage() {
                                           data-interaction-id={interaction.id}
                                           defaultValue="1"
                                         >
-                                          {meetingOptions.map(option => (
-                                            <option key={option.value} value={option.value}>
+                                          {meetingOptions.map((option) => (
+                                            <option
+                                              key={option.value}
+                                              value={option.value}
+                                            >
                                               {option.label}
                                             </option>
                                           ))}
                                         </select>
                                         <button
                                           onClick={() => {
-                                            const selectElement = document.querySelector(`select[data-interaction-id="${interaction.id}"]`) as HTMLSelectElement;
-                                            const selectedMeeting = selectElement?.value || '1';
-                                            const meetingContent = getMeetingRecord(interaction.meeting_record, selectedMeeting);
+                                            const selectElement =
+                                              document.querySelector(
+                                                `select[data-interaction-id="${interaction.id}"]`
+                                              ) as HTMLSelectElement;
+                                            const selectedMeeting =
+                                              selectElement?.value || '1';
+                                            const meetingContent =
+                                              getMeetingRecord(
+                                                interaction.meeting_record,
+                                                selectedMeeting
+                                              );
                                             setMeetingRecordCard({
                                               isOpen: true,
                                               data: {
@@ -779,10 +910,11 @@ export default function CustomerTrackingPage() {
                                                 content: meetingContent,
                                                 meetingIndex: selectedMeeting,
                                                 isNew: false,
-                                                meeting_record: interaction.meeting_record
+                                                meeting_record:
+                                                  interaction.meeting_record,
                                               },
                                               interactionId: interaction.id,
-                                              rowIndex: index
+                                              rowIndex: index,
                                             });
                                           }}
                                           className="text-blue-600 hover:text-blue-800 font-medium text-xs"
@@ -791,22 +923,27 @@ export default function CustomerTrackingPage() {
                                         </button>
                                       </>
                                     ) : (
-                                      <span className="text-gray-500 text-xs">無會面</span>
+                                      <span className="text-gray-500 text-xs">
+                                        無會面
+                                      </span>
                                     )}
                                     <button
                                       onClick={() => {
-                                        const newMeetingCount = (interaction.meeting_count || 0) + 1;
+                                        const newMeetingCount =
+                                          (interaction.meeting_count || 0) + 1;
                                         setMeetingRecordCard({
                                           isOpen: true,
                                           data: {
                                             meetingNumber: `第${newMeetingCount}次`,
                                             content: '',
-                                            meetingIndex: newMeetingCount.toString(),
+                                            meetingIndex:
+                                              newMeetingCount.toString(),
                                             isNew: true,
-                                            meeting_record: interaction.meeting_record
+                                            meeting_record:
+                                              interaction.meeting_record,
                                           },
                                           interactionId: interaction.id,
-                                          rowIndex: index
+                                          rowIndex: index,
                                         });
                                       }}
                                       className="text-blue-600 hover:text-blue-800 font-medium text-xs ml-2"
@@ -873,12 +1010,12 @@ export default function CustomerTrackingPage() {
         interactionId={meetingRecordCard.interactionId || ''}
         onDataUpdate={(newMeetingRecord: string) => {
           // 即時更新卡片中的 meeting_record 資料
-          setMeetingRecordCard(prev => ({
+          setMeetingRecordCard((prev) => ({
             ...prev,
             data: {
               ...prev.data,
-              meeting_record: JSON.parse(newMeetingRecord)
-            }
+              meeting_record: JSON.parse(newMeetingRecord),
+            },
           }));
         }}
         onSuccess={async () => {
@@ -897,7 +1034,9 @@ export default function CustomerTrackingPage() {
         onSave={handleConsultationMotiveSave}
         initialStandardMotives={consultationMotiveEditor.initialStandardMotives}
         initialCustomMotives={consultationMotiveEditor.initialCustomMotives}
-        interactionId={customerInteractions[consultationMotiveEditor.rowIndex || 0]?.id}
+        interactionId={
+          customerInteractions[consultationMotiveEditor.rowIndex || 0]?.id
+        }
         onSuccess={handleConsultationMotiveSuccess}
         onError={handleConsultationMotiveError}
       />
@@ -909,7 +1048,9 @@ export default function CustomerTrackingPage() {
         initialLeadSource={leadSourceEditor.initialLeadSource}
         initialCustomSource={leadSourceEditor.initialCustomSource}
         interactionId={customerInteractions[leadSourceEditor.rowIndex || 0]?.id}
-        onSuccess={(newLeadSource) => handleLeadSourceSuccess(newLeadSource, leadSourceEditor.rowIndex || 0)}
+        onSuccess={(newLeadSource) =>
+          handleLeadSourceSuccess(newLeadSource, leadSourceEditor.rowIndex || 0)
+        }
         onError={handleLeadSourceError}
       />
 
@@ -918,8 +1059,12 @@ export default function CustomerTrackingPage() {
         onClose={() => setCustomerNameEditor({ isOpen: false })}
         onSave={handleCustomerNameSave}
         initialCustomerName={customerNameEditor.initialCustomerName}
-        interactionId={customerInteractions[customerNameEditor.rowIndex || 0]?.id}
-        onSuccess={(newName) => handleCustomerNameSuccess(newName, customerNameEditor.rowIndex || 0)}
+        interactionId={
+          customerInteractions[customerNameEditor.rowIndex || 0]?.id
+        }
+        onSuccess={(newName) =>
+          handleCustomerNameSuccess(newName, customerNameEditor.rowIndex || 0)
+        }
         onError={handleCustomerNameError}
       />
 
@@ -935,7 +1080,7 @@ export default function CustomerTrackingPage() {
 
       <NotificationDialog
         isOpen={notification.isOpen}
-        onClose={() => setNotification(prev => ({ ...prev, isOpen: false }))}
+        onClose={() => setNotification((prev) => ({ ...prev, isOpen: false }))}
         type={notification.type}
         title={notification.title}
         message={notification.message}

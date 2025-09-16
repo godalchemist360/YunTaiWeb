@@ -5,13 +5,13 @@ console.log('🔍 檢查環境變數配置...\n');
 
 // 檢查必要的環境變數
 const requiredVars = {
-  'DATABASE_URL': '資料庫連接字串',
-  'STORAGE_REGION': '儲存區域',
-  'STORAGE_BUCKET_NAME': '儲存桶名稱',
-  'STORAGE_ACCESS_KEY_ID': '存取金鑰 ID',
-  'STORAGE_SECRET_ACCESS_KEY': '秘密存取金鑰',
-  'STORAGE_ENDPOINT': '儲存端點',
-  'STORAGE_PUBLIC_URL': '公開 URL'
+  DATABASE_URL: '資料庫連接字串',
+  STORAGE_REGION: '儲存區域',
+  STORAGE_BUCKET_NAME: '儲存桶名稱',
+  STORAGE_ACCESS_KEY_ID: '存取金鑰 ID',
+  STORAGE_SECRET_ACCESS_KEY: '秘密存取金鑰',
+  STORAGE_ENDPOINT: '儲存端點',
+  STORAGE_PUBLIC_URL: '公開 URL',
 };
 
 console.log('📋 必要環境變數檢查：');
@@ -22,9 +22,10 @@ Object.entries(requiredVars).forEach(([varName, description]) => {
   if (value) {
     // 隱藏敏感資訊
     if (varName.includes('SECRET') || varName.includes('KEY')) {
-      const maskedValue = value.length > 8 ?
-        `${value.substring(0, 4)}...${value.substring(value.length - 4)}` :
-        '***';
+      const maskedValue =
+        value.length > 8
+          ? `${value.substring(0, 4)}...${value.substring(value.length - 4)}`
+          : '***';
       console.log(`✅ ${varName}: ${maskedValue} (${description})`);
     } else {
       console.log(`✅ ${varName}: ${value} (${description})`);
@@ -42,15 +43,23 @@ const storageConfig = {
   accessKeyId: process.env.STORAGE_ACCESS_KEY_ID,
   secretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY,
   endpoint: process.env.STORAGE_ENDPOINT,
-  publicUrl: process.env.STORAGE_PUBLIC_URL
+  publicUrl: process.env.STORAGE_PUBLIC_URL,
 };
 
 // 檢查 Cloudflare R2 特定配置
-if (storageConfig.endpoint && storageConfig.endpoint.includes('r2.cloudflarestorage.com')) {
+if (
+  storageConfig.endpoint &&
+  storageConfig.endpoint.includes('r2.cloudflarestorage.com')
+) {
   console.log('✅ 檢測到 Cloudflare R2 配置');
 
   // 檢查 R2 配置是否完整
-  if (storageConfig.region && storageConfig.bucketName && storageConfig.accessKeyId && storageConfig.secretAccessKey) {
+  if (
+    storageConfig.region &&
+    storageConfig.bucketName &&
+    storageConfig.accessKeyId &&
+    storageConfig.secretAccessKey
+  ) {
     console.log('✅ R2 配置完整');
   } else {
     console.log('❌ R2 配置不完整');
@@ -92,9 +101,10 @@ if (fs.existsSync(envPath)) {
   console.log(`📄 .env 檔案包含 ${lines.length} 行`);
 
   // 檢查是否有註解或空行
-  const nonEmptyLines = lines.filter(line => line.trim() && !line.startsWith('#'));
+  const nonEmptyLines = lines.filter(
+    (line) => line.trim() && !line.startsWith('#')
+  );
   console.log(`📝 非空行數量: ${nonEmptyLines.length}`);
-
 } else {
   console.log('\n❌ .env 檔案不存在');
   console.log('💡 請創建 .env 檔案並設定必要的環境變數');

@@ -1,10 +1,10 @@
 'use client';
 
+import { LoginWrapper } from '@/components/auth/login-wrapper';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
-import { LoginWrapper } from '@/components/auth/login-wrapper';
 
 export function LoginFloating() {
   const t = useTranslations();
@@ -18,7 +18,11 @@ export function LoginFloating() {
         <Skeleton className="size-8 border rounded-full" />
       ) : (
         <LoginWrapper mode="modal" asChild>
-          <Button variant="outline" size="sm" className="cursor-pointer bg-white border-white text-black hover:bg-gray-100">
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer bg-white border-white text-black hover:bg-gray-100"
+          >
             {t('Common.login')}
           </Button>
         </LoginWrapper>

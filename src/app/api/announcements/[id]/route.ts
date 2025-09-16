@@ -95,18 +95,14 @@ export async function DELETE(
   try {
     // 權限檢查：只有 admin 和 management 可以刪除公告
     const userId = await getCurrentUserId(req);
-    const userResult = await query(
-      'SELECT role FROM app_users WHERE id = $1',
-      [userId]
-    );
-    
+    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
+      userId,
+    ]);
+
     if (userResult.rows.length === 0) {
-      return NextResponse.json(
-        { error: '用戶不存在' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: '用戶不存在' }, { status: 404 });
     }
-    
+
     const userRole = userResult.rows[0].role;
     if (userRole === 'sales') {
       return NextResponse.json(
@@ -139,7 +135,10 @@ export async function DELETE(
 
     // 刪除雲端儲存的檔案
     const cloudDeletionPromises = attachmentsRes.rows
-      .filter(attachment => attachment.storage_type === 'cloud' && attachment.cloud_key)
+      .filter(
+        (attachment) =>
+          attachment.storage_type === 'cloud' && attachment.cloud_key
+      )
       .map(async (attachment) => {
         try {
           console.log(`正在刪除雲端檔案: ${attachment.cloud_key}`);
@@ -177,7 +176,7 @@ export async function DELETE(
     return NextResponse.json({
       success: true,
       deletedAttachments: attachmentsRes.rows.length,
-      deletedCloudFiles: cloudDeletionPromises.length
+      deletedCloudFiles: cloudDeletionPromises.length,
     });
   } catch (error) {
     console.error('刪除公告失敗:', error);

@@ -1,6 +1,7 @@
 'use client';
 
 import { CreditDetailViewer } from '@/components/settings/credits/credit-detail-viewer';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -74,8 +76,6 @@ import {
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Badge } from '../../ui/badge';
-import { Label } from '../../ui/label';
 
 // Define the credit transaction interface
 export interface CreditTransaction {

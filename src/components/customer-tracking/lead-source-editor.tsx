@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, Building } from 'lucide-react';
+import { Building, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface LeadSourceEditorProps {
   isOpen: boolean;
@@ -22,7 +22,7 @@ export function LeadSourceEditor({
   initialCustomSource = '',
   interactionId,
   onSuccess,
-  onError
+  onError,
 }: LeadSourceEditorProps) {
   const [selectedSource, setSelectedSource] = useState<string>('');
   const [customSource, setCustomSource] = useState<string>('');
@@ -31,9 +31,15 @@ export function LeadSourceEditor({
 
   const leadSourceOptions = [
     { value: '原顧', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-    { value: '客戶轉介', color: 'bg-green-100 text-green-800 border-green-200' },
-    { value: '公司名單', color: 'bg-purple-100 text-purple-800 border-purple-200' },
-    { value: '其他', color: 'bg-pink-100 text-pink-800 border-pink-200' }
+    {
+      value: '客戶轉介',
+      color: 'bg-green-100 text-green-800 border-green-200',
+    },
+    {
+      value: '公司名單',
+      color: 'bg-purple-100 text-purple-800 border-purple-200',
+    },
+    { value: '其他', color: 'bg-pink-100 text-pink-800 border-pink-200' },
   ];
 
   // 只在組件打開時初始化狀態
@@ -91,17 +97,21 @@ export function LeadSourceEditor({
     try {
       if (interactionId) {
         // 如果有 interactionId，直接呼叫 API
-        const finalLeadSource = selectedSource === '其他' ? customSource.trim() : selectedSource;
+        const finalLeadSource =
+          selectedSource === '其他' ? customSource.trim() : selectedSource;
 
-        const response = await fetch(`/api/customer-interactions/${interactionId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            lead_source: finalLeadSource
-          })
-        });
+        const response = await fetch(
+          `/api/customer-interactions/${interactionId}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              lead_source: finalLeadSource,
+            }),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -113,7 +123,10 @@ export function LeadSourceEditor({
         onSuccess?.(finalLeadSource);
       } else {
         // 如果沒有 interactionId，使用原有的 onSave 回調
-        onSave(selectedSource, selectedSource === '其他' ? customSource : undefined);
+        onSave(
+          selectedSource,
+          selectedSource === '其他' ? customSource : undefined
+        );
         onClose();
       }
     } catch (error) {
@@ -150,12 +163,19 @@ export function LeadSourceEditor({
         <div className="p-6 space-y-4">
           {/* 名單來源選項 */}
           <div>
-            <h4 className="text-md font-semibold text-gray-900 mb-3">請選擇名單來源</h4>
+            <h4 className="text-md font-semibold text-gray-900 mb-3">
+              請選擇名單來源
+            </h4>
             <div className="space-y-2">
-              {leadSourceOptions.map(option => (
-                <label key={option.value} className={`flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors ${
-                  selectedSource === option.value ? option.color : 'border-gray-200'
-                }`}>
+              {leadSourceOptions.map((option) => (
+                <label
+                  key={option.value}
+                  className={`flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors ${
+                    selectedSource === option.value
+                      ? option.color
+                      : 'border-gray-200'
+                  }`}
+                >
                   <input
                     type="radio"
                     name="leadSource"
@@ -164,9 +184,13 @@ export function LeadSourceEditor({
                     onChange={(e) => handleSourceChange(e.target.value)}
                     className="text-blue-600 focus:ring-blue-500"
                   />
-                  <span className={`text-sm font-medium ${
-                    selectedSource === option.value ? 'text-current' : 'text-gray-700'
-                  }`}>
+                  <span
+                    className={`text-sm font-medium ${
+                      selectedSource === option.value
+                        ? 'text-current'
+                        : 'text-gray-700'
+                    }`}
+                  >
                     {option.value}
                   </span>
                 </label>
@@ -177,7 +201,9 @@ export function LeadSourceEditor({
           {/* 自定義輸入 */}
           {selectedSource === '其他' && (
             <div>
-              <h4 className="text-md font-semibold text-gray-900 mb-3">請輸入其他名單來源</h4>
+              <h4 className="text-md font-semibold text-gray-900 mb-3">
+                請輸入其他名單來源
+              </h4>
               <input
                 type="text"
                 value={customSource}
@@ -211,7 +237,11 @@ export function LeadSourceEditor({
             </button>
             <button
               onClick={handleSave}
-              disabled={!selectedSource || (selectedSource === '其他' && !customSource.trim()) || isLoading}
+              disabled={
+                !selectedSource ||
+                (selectedSource === '其他' && !customSource.trim()) ||
+                isLoading
+              }
               className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               {isLoading ? '儲存中...' : '儲存'}

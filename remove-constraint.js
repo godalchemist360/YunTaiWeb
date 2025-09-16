@@ -26,7 +26,7 @@ async function removeConstraint() {
     `);
 
     console.log('\n剩餘的約束:');
-    result.rows.forEach(row => {
+    result.rows.forEach((row) => {
       console.log(`約束名稱: ${row.constraint_name}`);
       console.log(`約束類型: ${row.constraint_type}`);
       console.log(`約束定義: ${row.constraint_definition}`);

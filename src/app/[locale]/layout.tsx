@@ -1,8 +1,5 @@
 import { Analytics } from '@/analytics/analytics';
-import {
-  fontNotoSans,
-  fontNotoSansMono,
-} from '@/assets/fonts';
+import { fontNotoSans, fontNotoSansMono } from '@/assets/fonts';
 import AffonsoScript from '@/components/affiliate/affonso';
 import PromotekitScript from '@/components/affiliate/promotekit';
 import { routing } from '@/i18n/routing';

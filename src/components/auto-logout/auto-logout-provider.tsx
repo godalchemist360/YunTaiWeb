@@ -1,7 +1,7 @@
 'use client';
 
-import { useAutoLogout } from '@/hooks/use-auto-logout';
 import { useAppUser } from '@/hooks/use-app-user';
+import { useAutoLogout } from '@/hooks/use-auto-logout';
 import type { ReactNode } from 'react';
 
 interface AutoLogoutProviderProps {

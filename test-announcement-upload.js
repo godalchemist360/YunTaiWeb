@@ -14,17 +14,18 @@ const requiredVars = [
   'STORAGE_ACCESS_KEY_ID',
   'STORAGE_SECRET_ACCESS_KEY',
   'STORAGE_ENDPOINT',
-  'STORAGE_PUBLIC_URL'
+  'STORAGE_PUBLIC_URL',
 ];
 
 let envVarsOk = true;
-requiredVars.forEach(varName => {
+requiredVars.forEach((varName) => {
   const value = process.env[varName];
   if (value) {
     if (varName.includes('SECRET') || varName.includes('KEY')) {
-      const maskedValue = value.length > 8 ?
-        value.substring(0, 4) + '...' + value.substring(value.length - 4) :
-        '***';
+      const maskedValue =
+        value.length > 8
+          ? value.substring(0, 4) + '...' + value.substring(value.length - 4)
+          : '***';
       console.log(`✅ ${varName}: ${maskedValue}`);
     } else {
       console.log(`✅ ${varName}: ${value}`);
@@ -81,7 +82,6 @@ try {
   } else {
     console.log('❌ 測試檔案上傳失敗');
   }
-
 } catch (error) {
   console.log('❌ 儲存連接測試失敗:', error.message);
 }

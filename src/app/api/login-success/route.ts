@@ -24,16 +24,19 @@ export async function POST(req: Request) {
     // 從請求中獲取現有的 cookies
     const cookieHeader = req.headers.get('cookie');
     if (cookieHeader) {
-      const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-        const [key, value] = cookie.trim().split('=');
-        if (key && value) {
-          acc[key] = decodeURIComponent(value);
-        }
-        return acc;
-      }, {} as Record<string, string>);
+      const cookies = cookieHeader.split(';').reduce(
+        (acc, cookie) => {
+          const [key, value] = cookie.trim().split('=');
+          if (key && value) {
+            acc[key] = decodeURIComponent(value);
+          }
+          return acc;
+        },
+        {} as Record<string, string>
+      );
 
       // 找到所有 user-account-* cookies 並清除它們
-      Object.keys(cookies).forEach(cookieName => {
+      Object.keys(cookies).forEach((cookieName) => {
         if (cookieName.startsWith('user-account-')) {
           response.cookies.set(cookieName, '', {
             httpOnly: false,

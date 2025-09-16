@@ -10,16 +10,16 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { useCustomUser } from '@/hooks/use-custom-user';
+import { authClient } from '@/lib/auth-client';
 import { isDemoWebsite } from '@/lib/demo';
 import React, { type ReactNode } from 'react';
 import { CreditsBalanceButton } from '../layout/credits-balance-button';
+import { CustomUserButton } from '../layout/custom-user-button';
 import LocaleSwitcher from '../layout/locale-switcher';
 import { ModeSwitcher } from '../layout/mode-switcher';
 import { ThemeSelector } from '../layout/theme-selector';
-import { CustomUserButton } from '../layout/custom-user-button';
 import { UserButton } from '../layout/user-button';
-import { useCustomUser } from '@/hooks/use-custom-user';
-import { authClient } from '@/lib/auth-client';
 import { Skeleton } from '../ui/skeleton';
 
 interface DashboardBreadcrumbItem {
@@ -56,7 +56,7 @@ export function DashboardHeader({
     currentUser,
     customUser,
     customUserLoading,
-    hasCustomUser
+    hasCustomUser,
   });
 
   return (
@@ -87,7 +87,9 @@ export function DashboardHeader({
                   {item.isCurrentPage ? (
                     <BreadcrumbPage>{item.label}</BreadcrumbPage>
                   ) : item.href ? (
-                    <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+                    <BreadcrumbLink href={item.href}>
+                      {item.label}
+                    </BreadcrumbLink>
                   ) : (
                     item.label
                   )}

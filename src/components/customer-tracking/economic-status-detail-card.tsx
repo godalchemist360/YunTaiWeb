@@ -1,7 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, Plus, Save, Edit, DollarSign, TrendingUp, XCircle, TrendingDown } from 'lucide-react';
+import {
+  DollarSign,
+  Edit,
+  Plus,
+  Save,
+  TrendingDown,
+  TrendingUp,
+  X,
+  XCircle,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface EconomicStatusDetailCardProps {
   isOpen: boolean;
@@ -19,19 +28,19 @@ interface EconomicStatusDetailCardProps {
 const PREDEFINED_FIELDS = {
   income: {
     mainIncome: '主業收入',
-    sideIncome: '副業收入'
+    sideIncome: '副業收入',
   },
   expense: {
     livingExpense: '生活費',
     rentOrMortgage: '房租或房貸',
-    insurance: '保費'
+    insurance: '保費',
   },
   assets: {
     realEstate: '不動產',
     cash: '現金',
     stocks: '股票、ETF',
     funds: '基金',
-    insurance: '保險'
+    insurance: '保險',
   },
   liabilities: {
     mortgage: '房貸',
@@ -39,57 +48,58 @@ const PREDEFINED_FIELDS = {
     creditLoan: '信貸',
     creditCard: '卡循',
     studentLoan: '學貸',
-    installment: '融資分期'
-  }
+    installment: '融資分期',
+  },
 };
 
 // 中文到英文的映射
 const CHINESE_TO_ENGLISH_MAPPING: { [key: string]: string } = {
   // 收入映射
-  '主業收入': 'mainIncome',
-  '副業收入': 'sideIncome',
+  主業收入: 'mainIncome',
+  副業收入: 'sideIncome',
   // 支出映射
-  '生活費': 'livingExpense',
-  '房租或房貸': 'rentOrMortgage',
-  '保費': 'insurance',
+  生活費: 'livingExpense',
+  房租或房貸: 'rentOrMortgage',
+  保費: 'insurance',
   // 資產映射
-  '不動產': 'realEstate',
-  '不動產價值': 'realEstate',
-  '現金': 'cash',
-  '股票': 'stocks',
+  不動產: 'realEstate',
+  不動產價值: 'realEstate',
+  現金: 'cash',
+  股票: 'stocks',
   '股票、ETF': 'stocks',
-  'ETF': 'stocks',
-  '基金': 'funds',
-  '保險': 'insurance',
+  ETF: 'stocks',
+  基金: 'funds',
+  保險: 'insurance',
   // 負債映射
-  '房貸': 'mortgage',
-  '車貸': 'carLoan',
-  '信貸': 'creditLoan',
-  '卡循': 'creditCard',
-  '學貸': 'studentLoan',
-  '融資': 'installment',
-  '融資分期': 'installment'
+  房貸: 'mortgage',
+  車貸: 'carLoan',
+  信貸: 'creditLoan',
+  卡循: 'creditCard',
+  學貸: 'studentLoan',
+  融資: 'installment',
+  融資分期: 'installment',
 };
 
 // 將原始資料轉換為編輯用的結構
 const transformToEditFormat = (data: any) => {
-  if (!data) return {
-    income: {},
-    expense: {},
-    assets: {},
-    liabilities: {}
-  };
+  if (!data)
+    return {
+      income: {},
+      expense: {},
+      assets: {},
+      liabilities: {},
+    };
 
   const nested: any = {
     income: {},
     expense: {},
     assets: {},
-    liabilities: {}
+    liabilities: {},
   };
 
   // 處理收入支出資料
   if (data.income_expense_data) {
-    Object.keys(data.income_expense_data).forEach(key => {
+    Object.keys(data.income_expense_data).forEach((key) => {
       const value = data.income_expense_data[key];
 
       if (key.startsWith('收入_')) {
@@ -107,13 +117,21 @@ const transformToEditFormat = (data: any) => {
             nested.expense[englishKey] = value;
           }
         } else {
-          if (['主業', '副業', '收入'].some(income =>
-            key.includes(income) || key.toLowerCase().includes(income.toLowerCase())
-          )) {
+          if (
+            ['主業', '副業', '收入'].some(
+              (income) =>
+                key.includes(income) ||
+                key.toLowerCase().includes(income.toLowerCase())
+            )
+          ) {
             nested.income[key] = value;
-          } else if (['生活費', '房租', '房貸', '保費', '支出'].some(expense =>
-            key.includes(expense) || key.toLowerCase().includes(expense.toLowerCase())
-          )) {
+          } else if (
+            ['生活費', '房租', '房貸', '保費', '支出'].some(
+              (expense) =>
+                key.includes(expense) ||
+                key.toLowerCase().includes(expense.toLowerCase())
+            )
+          ) {
             nested.expense[key] = value;
           }
         }
@@ -123,7 +141,7 @@ const transformToEditFormat = (data: any) => {
 
   // 處理資產負債資料
   if (data.asset_liability_data) {
-    Object.keys(data.asset_liability_data).forEach(key => {
+    Object.keys(data.asset_liability_data).forEach((key) => {
       const value = data.asset_liability_data[key];
 
       if (key.startsWith('資產_')) {
@@ -141,13 +159,30 @@ const transformToEditFormat = (data: any) => {
             nested.liabilities[englishKey] = value;
           }
         } else {
-          if (['現金', '股票', '不動產', '基金', '保險', 'ETF', '黃金', '加密貨幣'].some(asset =>
-            key.includes(asset) || key.toLowerCase().includes(asset.toLowerCase())
-          )) {
+          if (
+            [
+              '現金',
+              '股票',
+              '不動產',
+              '基金',
+              '保險',
+              'ETF',
+              '黃金',
+              '加密貨幣',
+            ].some(
+              (asset) =>
+                key.includes(asset) ||
+                key.toLowerCase().includes(asset.toLowerCase())
+            )
+          ) {
             nested.assets[key] = value;
-          } else if (['房貸', '車貸', '信貸', '卡循', '學貸', '融資', '貸款'].some(liability =>
-            key.includes(liability) || key.toLowerCase().includes(liability.toLowerCase())
-          )) {
+          } else if (
+            ['房貸', '車貸', '信貸', '卡循', '學貸', '融資', '貸款'].some(
+              (liability) =>
+                key.includes(liability) ||
+                key.toLowerCase().includes(liability.toLowerCase())
+            )
+          ) {
             nested.liabilities[key] = value;
           }
         }
@@ -166,7 +201,7 @@ const cleanValue = (value: any): number => {
 
   if (typeof value === 'string') {
     const cleaned = value.replace(/[^\d.-]/g, '');
-    const num = parseFloat(cleaned);
+    const num = Number.parseFloat(cleaned);
     return isNaN(num) ? 0 : num;
   }
 
@@ -185,12 +220,14 @@ const transformToOriginalFormat = (nestedData: any) => {
 
   // 處理收入
   if (nestedData.income) {
-    Object.keys(nestedData.income).forEach(key => {
+    Object.keys(nestedData.income).forEach((key) => {
       const value = nestedData.income[key];
       const cleanedValue = cleanValue(value);
 
       if (PREDEFINED_FIELDS.income.hasOwnProperty(key)) {
-        flatData[PREDEFINED_FIELDS.income[key as keyof typeof PREDEFINED_FIELDS.income]] = cleanedValue;
+        flatData[
+          PREDEFINED_FIELDS.income[key as keyof typeof PREDEFINED_FIELDS.income]
+        ] = cleanedValue;
       } else {
         flatData[`收入_${key}`] = cleanedValue;
       }
@@ -199,12 +236,16 @@ const transformToOriginalFormat = (nestedData: any) => {
 
   // 處理支出
   if (nestedData.expense) {
-    Object.keys(nestedData.expense).forEach(key => {
+    Object.keys(nestedData.expense).forEach((key) => {
       const value = nestedData.expense[key];
       const cleanedValue = cleanValue(value);
 
       if (PREDEFINED_FIELDS.expense.hasOwnProperty(key)) {
-        flatData[PREDEFINED_FIELDS.expense[key as keyof typeof PREDEFINED_FIELDS.expense]] = cleanedValue;
+        flatData[
+          PREDEFINED_FIELDS.expense[
+            key as keyof typeof PREDEFINED_FIELDS.expense
+          ]
+        ] = cleanedValue;
       } else {
         flatData[`支出_${key}`] = cleanedValue;
       }
@@ -213,12 +254,14 @@ const transformToOriginalFormat = (nestedData: any) => {
 
   // 處理資產
   if (nestedData.assets) {
-    Object.keys(nestedData.assets).forEach(key => {
+    Object.keys(nestedData.assets).forEach((key) => {
       const value = nestedData.assets[key];
       const cleanedValue = cleanValue(value);
 
       if (PREDEFINED_FIELDS.assets.hasOwnProperty(key)) {
-        flatData[PREDEFINED_FIELDS.assets[key as keyof typeof PREDEFINED_FIELDS.assets]] = cleanedValue;
+        flatData[
+          PREDEFINED_FIELDS.assets[key as keyof typeof PREDEFINED_FIELDS.assets]
+        ] = cleanedValue;
       } else {
         flatData[`資產_${key}`] = cleanedValue;
       }
@@ -227,12 +270,16 @@ const transformToOriginalFormat = (nestedData: any) => {
 
   // 處理負債
   if (nestedData.liabilities) {
-    Object.keys(nestedData.liabilities).forEach(key => {
+    Object.keys(nestedData.liabilities).forEach((key) => {
       const value = nestedData.liabilities[key];
       const cleanedValue = cleanValue(value);
 
       if (PREDEFINED_FIELDS.liabilities.hasOwnProperty(key)) {
-        flatData[PREDEFINED_FIELDS.liabilities[key as keyof typeof PREDEFINED_FIELDS.liabilities]] = cleanedValue;
+        flatData[
+          PREDEFINED_FIELDS.liabilities[
+            key as keyof typeof PREDEFINED_FIELDS.liabilities
+          ]
+        ] = cleanedValue;
       } else {
         flatData[`負債_${key}`] = cleanedValue;
       }
@@ -250,7 +297,7 @@ const formatValue = (value: any): string => {
 
   if (typeof value === 'string') {
     const cleaned = value.replace(/[^\d.-]/g, '');
-    const num = parseFloat(cleaned);
+    const num = Number.parseFloat(cleaned);
     return isNaN(num) ? '0' : num.toString();
   }
 
@@ -263,22 +310,37 @@ const formatValue = (value: any): string => {
 
 // 計算月結餘
 const calculateMonthlyBalance = (incomeData: any, expenseData: any): number => {
-  const totalIncome = Object.values(incomeData).reduce((sum: number, value: any) => {
-    return sum + cleanValue(value);
-  }, 0) as number;
+  const totalIncome = Object.values(incomeData).reduce(
+    (sum: number, value: any) => {
+      return sum + cleanValue(value);
+    },
+    0
+  ) as number;
 
-  const totalExpense = Object.values(expenseData).reduce((sum: number, value: any) => {
-    return sum + cleanValue(value);
-  }, 0) as number;
+  const totalExpense = Object.values(expenseData).reduce(
+    (sum: number, value: any) => {
+      return sum + cleanValue(value);
+    },
+    0
+  ) as number;
 
   return totalIncome - totalExpense;
 };
 
-export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId, onSuccess, onError }: EconomicStatusDetailCardProps) {
+export function EconomicStatusDetailCard({
+  isOpen,
+  onClose,
+  data,
+  interactionId,
+  onSuccess,
+  onError,
+}: EconomicStatusDetailCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [editData, setEditData] = useState<any>(null);
-  const [newItemInputs, setNewItemInputs] = useState<{[key: string]: {name: string, value: string}}>({});
+  const [newItemInputs, setNewItemInputs] = useState<{
+    [key: string]: { name: string; value: string };
+  }>({});
 
   // 當卡片關閉時重置編輯狀態
   useEffect(() => {
@@ -296,7 +358,7 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
         income: { ...transformedData.income },
         expense: { ...transformedData.expense },
         assets: { ...transformedData.assets },
-        liabilities: { ...transformedData.liabilities }
+        liabilities: { ...transformedData.liabilities },
       });
       setNewItemInputs({});
     }
@@ -310,8 +372,8 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
       ...prev,
       [category]: {
         ...prev[category],
-        [key]: value
-      }
+        [key]: value,
+      },
     }));
   };
 
@@ -323,11 +385,11 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
       return;
     }
 
-    const cleanValue = parseFloat(input.value) || 0;
+    const cleanValue = Number.parseFloat(input.value) || 0;
     updateEditData(category, input.name, cleanValue.toString());
 
     // 清除輸入
-    setNewItemInputs(prev => {
+    setNewItemInputs((prev) => {
       const newInputs = { ...prev };
       delete newInputs[inputKey];
       return newInputs;
@@ -353,25 +415,31 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
       const incomeExpenseData: any = {};
       const assetLiabilityData: any = {};
 
-      Object.keys(originalFormat).forEach(key => {
-        if (key.startsWith('收入_') || key.startsWith('支出_') ||
-            ['主業收入', '副業收入', '生活費', '房租或房貸', '保費'].includes(key)) {
+      Object.keys(originalFormat).forEach((key) => {
+        if (
+          key.startsWith('收入_') ||
+          key.startsWith('支出_') ||
+          ['主業收入', '副業收入', '生活費', '房租或房貸', '保費'].includes(key)
+        ) {
           incomeExpenseData[key] = originalFormat[key];
         } else {
           assetLiabilityData[key] = originalFormat[key];
         }
       });
 
-      const response = await fetch(`/api/customer-interactions/${interactionId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          income_expense_data: incomeExpenseData,
-          asset_liability_data: assetLiabilityData
-        }),
-      });
+      const response = await fetch(
+        `/api/customer-interactions/${interactionId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            income_expense_data: incomeExpenseData,
+            asset_liability_data: assetLiabilityData,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('儲存失敗');
@@ -401,7 +469,10 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
   if (!isOpen) return null;
 
   const currentData = isEditing ? editData : transformedData;
-  const monthlyBalance = calculateMonthlyBalance(currentData.income || {}, currentData.expense || {});
+  const monthlyBalance = calculateMonthlyBalance(
+    currentData.income || {},
+    currentData.expense || {}
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -446,62 +517,88 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       const incomeData = currentData.income || {};
                       const incomeKeys = Object.keys(incomeFields);
 
-                      return incomeKeys.map(key => {
-                        const value = formatValue(incomeData[key]);
-                        return (
-                          <div key={key} className="flex items-center justify-between py-3 px-4 bg-green-50 rounded-lg border border-green-100 hover:bg-green-100 transition-colors">
-                            <span className="text-sm font-medium text-gray-700">{incomeFields[key as keyof typeof incomeFields]}</span>
-                            {isEditing ? (
-                              <input
-                                type="text"
-                                value={incomeData[key] || ''}
-                                onChange={(e) => updateEditData('income', key, e.target.value)}
-                                className="w-28 px-3 py-2 text-sm border border-green-300 rounded-lg text-right focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                placeholder="0"
-                              />
-                            ) : (
-                              <span className="text-sm font-bold text-green-700 bg-white px-3 py-1 rounded-lg border border-green-200">
-                                {value}
+                      return incomeKeys
+                        .map((key) => {
+                          const value = formatValue(incomeData[key]);
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-center justify-between py-3 px-4 bg-green-50 rounded-lg border border-green-100 hover:bg-green-100 transition-colors"
+                            >
+                              <span className="text-sm font-medium text-gray-700">
+                                {incomeFields[key as keyof typeof incomeFields]}
                               </span>
-                            )}
-                          </div>
-                        );
-                      }).concat(
-                        // 顯示額外的收入欄位
-                        Object.keys(incomeData)
-                          .filter(key => !incomeFields.hasOwnProperty(key))
-                          .map(key => {
-                            const value = formatValue(incomeData[key]);
-                            return (
-                              <div key={`extra-${key}`} className="flex items-center justify-between py-3 px-4 bg-green-50 rounded-lg border border-green-100 hover:bg-green-100 transition-colors">
-                                <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">{key}</span>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                  {isEditing ? (
-                                    <input
-                                      type="text"
-                                      value={incomeData[key] || ''}
-                                      onChange={(e) => updateEditData('income', key, e.target.value)}
-                                      className="w-28 px-3 py-2 text-sm border border-green-300 rounded-lg text-right focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                      placeholder="0"
-                                    />
-                                  ) : (
-                                    <span className="text-sm font-bold text-green-700 bg-white px-3 py-1 rounded-lg border border-green-200">
-                                      {value}
-                                    </span>
-                                  )}
-                                  {isEditing && (
-                                    <button
-                                      onClick={() => removeItem('income', key)}
-                                      className="p-1.5 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </button>
-                                  )}
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={incomeData[key] || ''}
+                                  onChange={(e) =>
+                                    updateEditData(
+                                      'income',
+                                      key,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-28 px-3 py-2 text-sm border border-green-300 rounded-lg text-right focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                  placeholder="0"
+                                />
+                              ) : (
+                                <span className="text-sm font-bold text-green-700 bg-white px-3 py-1 rounded-lg border border-green-200">
+                                  {value}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })
+                        .concat(
+                          // 顯示額外的收入欄位
+                          Object.keys(incomeData)
+                            .filter((key) => !incomeFields.hasOwnProperty(key))
+                            .map((key) => {
+                              const value = formatValue(incomeData[key]);
+                              return (
+                                <div
+                                  key={`extra-${key}`}
+                                  className="flex items-center justify-between py-3 px-4 bg-green-50 rounded-lg border border-green-100 hover:bg-green-100 transition-colors"
+                                >
+                                  <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">
+                                    {key}
+                                  </span>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    {isEditing ? (
+                                      <input
+                                        type="text"
+                                        value={incomeData[key] || ''}
+                                        onChange={(e) =>
+                                          updateEditData(
+                                            'income',
+                                            key,
+                                            e.target.value
+                                          )
+                                        }
+                                        className="w-28 px-3 py-2 text-sm border border-green-300 rounded-lg text-right focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                        placeholder="0"
+                                      />
+                                    ) : (
+                                      <span className="text-sm font-bold text-green-700 bg-white px-3 py-1 rounded-lg border border-green-200">
+                                        {value}
+                                      </span>
+                                    )}
+                                    {isEditing && (
+                                      <button
+                                        onClick={() =>
+                                          removeItem('income', key)
+                                        }
+                                        className="p-1.5 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })
-                      );
+                              );
+                            })
+                        );
                     })()}
                   </div>
 
@@ -511,9 +608,9 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       <button
                         onClick={() => {
                           const inputKey = `income-${Date.now()}`;
-                          setNewItemInputs(prev => ({
+                          setNewItemInputs((prev) => ({
                             ...prev,
-                            [inputKey]: { name: '', value: '' }
+                            [inputKey]: { name: '', value: '' },
                           }));
                         }}
                         className="flex items-center gap-2 text-green-600 hover:text-green-700 text-sm font-medium bg-green-50 hover:bg-green-100 px-4 py-2 rounded-lg border border-green-200 transition-colors"
@@ -523,58 +620,79 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       </button>
 
                       {/* 收入新增項目輸入框 */}
-                      {Object.keys(newItemInputs).filter(key => key.startsWith('income-')).map(inputKey => (
-                        <div key={inputKey} className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">項目名稱</label>
-                              <input
-                                type="text"
-                                value={newItemInputs[inputKey]?.name || ''}
-                                onChange={(e) => setNewItemInputs(prev => ({
-                                  ...prev,
-                                  [inputKey]: { ...prev[inputKey], name: e.target.value }
-                                }))}
-                                className="w-full px-3 py-2 border border-green-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                placeholder="請輸入項目名稱"
-                              />
+                      {Object.keys(newItemInputs)
+                        .filter((key) => key.startsWith('income-'))
+                        .map((inputKey) => (
+                          <div
+                            key={inputKey}
+                            className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg"
+                          >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  項目名稱
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newItemInputs[inputKey]?.name || ''}
+                                  onChange={(e) =>
+                                    setNewItemInputs((prev) => ({
+                                      ...prev,
+                                      [inputKey]: {
+                                        ...prev[inputKey],
+                                        name: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  className="w-full px-3 py-2 border border-green-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                  placeholder="請輸入項目名稱"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  金額
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newItemInputs[inputKey]?.value || ''}
+                                  onChange={(e) =>
+                                    setNewItemInputs((prev) => ({
+                                      ...prev,
+                                      [inputKey]: {
+                                        ...prev[inputKey],
+                                        value: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  className="w-full px-3 py-2 border border-green-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                  placeholder="0"
+                                />
+                              </div>
                             </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">金額</label>
-                              <input
-                                type="text"
-                                value={newItemInputs[inputKey]?.value || ''}
-                                onChange={(e) => setNewItemInputs(prev => ({
-                                  ...prev,
-                                  [inputKey]: { ...prev[inputKey], value: e.target.value }
-                                }))}
-                                className="w-full px-3 py-2 border border-green-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                placeholder="0"
-                              />
+                            <div className="flex gap-3 mt-4">
+                              <button
+                                onClick={() => addNewItem('income', inputKey)}
+                                className="flex items-center gap-2 text-green-600 hover:text-green-700 text-sm font-medium bg-green-100 hover:bg-green-200 px-4 py-2 rounded-lg border border-green-300 transition-colors"
+                              >
+                                <Plus className="h-4 w-4" />
+                                新增項目
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setNewItemInputs((prev) => {
+                                    const newInputs = { ...prev };
+                                    delete newInputs[inputKey];
+                                    return newInputs;
+                                  })
+                                }
+                                className="flex items-center gap-2 text-gray-600 hover:text-gray-700 text-sm font-medium bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border border-gray-300 transition-colors"
+                              >
+                                <X className="h-4 w-4" />
+                                取消
+                              </button>
                             </div>
                           </div>
-                          <div className="flex gap-3 mt-4">
-                            <button
-                              onClick={() => addNewItem('income', inputKey)}
-                              className="flex items-center gap-2 text-green-600 hover:text-green-700 text-sm font-medium bg-green-100 hover:bg-green-200 px-4 py-2 rounded-lg border border-green-300 transition-colors"
-                            >
-                              <Plus className="h-4 w-4" />
-                              新增項目
-                            </button>
-                            <button
-                              onClick={() => setNewItemInputs(prev => {
-                                const newInputs = { ...prev };
-                                delete newInputs[inputKey];
-                                return newInputs;
-                              })}
-                              className="flex items-center gap-2 text-gray-600 hover:text-gray-700 text-sm font-medium bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border border-gray-300 transition-colors"
-                            >
-                              <X className="h-4 w-4" />
-                              取消
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   )}
                 </div>
@@ -597,62 +715,88 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       const assetData = currentData.assets || {};
                       const assetKeys = Object.keys(assetFields);
 
-                      return assetKeys.map(key => {
-                        const value = formatValue(assetData[key]);
-                        return (
-                          <div key={key} className="flex items-center justify-between py-3 px-4 bg-blue-50 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors">
-                            <span className="text-sm font-medium text-gray-700">{assetFields[key as keyof typeof assetFields]}</span>
-                            {isEditing ? (
-                              <input
-                                type="text"
-                                value={assetData[key] || ''}
-                                onChange={(e) => updateEditData('assets', key, e.target.value)}
-                                className="w-28 px-3 py-2 text-sm border border-blue-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="0"
-                              />
-                            ) : (
-                              <span className="text-sm font-bold text-blue-700 bg-white px-3 py-1 rounded-lg border border-blue-200">
-                                {value}
+                      return assetKeys
+                        .map((key) => {
+                          const value = formatValue(assetData[key]);
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-center justify-between py-3 px-4 bg-blue-50 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors"
+                            >
+                              <span className="text-sm font-medium text-gray-700">
+                                {assetFields[key as keyof typeof assetFields]}
                               </span>
-                            )}
-                          </div>
-                        );
-                      }).concat(
-                        // 顯示額外的資產欄位
-                        Object.keys(assetData)
-                          .filter(key => !assetFields.hasOwnProperty(key))
-                          .map(key => {
-                            const value = formatValue(assetData[key]);
-                            return (
-                              <div key={`extra-${key}`} className="flex items-center justify-between py-3 px-4 bg-blue-50 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors">
-                                <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">{key}</span>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                  {isEditing ? (
-                                    <input
-                                      type="text"
-                                      value={assetData[key] || ''}
-                                      onChange={(e) => updateEditData('assets', key, e.target.value)}
-                                      className="w-28 px-3 py-2 text-sm border border-blue-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                      placeholder="0"
-                                    />
-                                  ) : (
-                                    <span className="text-sm font-bold text-blue-700 bg-white px-3 py-1 rounded-lg border border-blue-200">
-                                      {value}
-                                    </span>
-                                  )}
-                                  {isEditing && (
-                                    <button
-                                      onClick={() => removeItem('assets', key)}
-                                      className="p-1.5 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </button>
-                                  )}
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={assetData[key] || ''}
+                                  onChange={(e) =>
+                                    updateEditData(
+                                      'assets',
+                                      key,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-28 px-3 py-2 text-sm border border-blue-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  placeholder="0"
+                                />
+                              ) : (
+                                <span className="text-sm font-bold text-blue-700 bg-white px-3 py-1 rounded-lg border border-blue-200">
+                                  {value}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })
+                        .concat(
+                          // 顯示額外的資產欄位
+                          Object.keys(assetData)
+                            .filter((key) => !assetFields.hasOwnProperty(key))
+                            .map((key) => {
+                              const value = formatValue(assetData[key]);
+                              return (
+                                <div
+                                  key={`extra-${key}`}
+                                  className="flex items-center justify-between py-3 px-4 bg-blue-50 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors"
+                                >
+                                  <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">
+                                    {key}
+                                  </span>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    {isEditing ? (
+                                      <input
+                                        type="text"
+                                        value={assetData[key] || ''}
+                                        onChange={(e) =>
+                                          updateEditData(
+                                            'assets',
+                                            key,
+                                            e.target.value
+                                          )
+                                        }
+                                        className="w-28 px-3 py-2 text-sm border border-blue-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="0"
+                                      />
+                                    ) : (
+                                      <span className="text-sm font-bold text-blue-700 bg-white px-3 py-1 rounded-lg border border-blue-200">
+                                        {value}
+                                      </span>
+                                    )}
+                                    {isEditing && (
+                                      <button
+                                        onClick={() =>
+                                          removeItem('assets', key)
+                                        }
+                                        className="p-1.5 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })
-                      );
+                              );
+                            })
+                        );
                     })()}
                   </div>
 
@@ -662,9 +806,9 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       <button
                         onClick={() => {
                           const inputKey = `assets-${Date.now()}`;
-                          setNewItemInputs(prev => ({
+                          setNewItemInputs((prev) => ({
                             ...prev,
-                            [inputKey]: { name: '', value: '' }
+                            [inputKey]: { name: '', value: '' },
                           }));
                         }}
                         className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg border border-blue-200 transition-colors"
@@ -674,58 +818,79 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       </button>
 
                       {/* 資產新增項目輸入框 */}
-                      {Object.keys(newItemInputs).filter(key => key.startsWith('assets-')).map(inputKey => (
-                        <div key={inputKey} className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">項目名稱</label>
-                              <input
-                                type="text"
-                                value={newItemInputs[inputKey]?.name || ''}
-                                onChange={(e) => setNewItemInputs(prev => ({
-                                  ...prev,
-                                  [inputKey]: { ...prev[inputKey], name: e.target.value }
-                                }))}
-                                className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="請輸入項目名稱"
-                              />
+                      {Object.keys(newItemInputs)
+                        .filter((key) => key.startsWith('assets-'))
+                        .map((inputKey) => (
+                          <div
+                            key={inputKey}
+                            className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
+                          >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  項目名稱
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newItemInputs[inputKey]?.name || ''}
+                                  onChange={(e) =>
+                                    setNewItemInputs((prev) => ({
+                                      ...prev,
+                                      [inputKey]: {
+                                        ...prev[inputKey],
+                                        name: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  placeholder="請輸入項目名稱"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  金額
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newItemInputs[inputKey]?.value || ''}
+                                  onChange={(e) =>
+                                    setNewItemInputs((prev) => ({
+                                      ...prev,
+                                      [inputKey]: {
+                                        ...prev[inputKey],
+                                        value: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  placeholder="0"
+                                />
+                              </div>
                             </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">金額</label>
-                              <input
-                                type="text"
-                                value={newItemInputs[inputKey]?.value || ''}
-                                onChange={(e) => setNewItemInputs(prev => ({
-                                  ...prev,
-                                  [inputKey]: { ...prev[inputKey], value: e.target.value }
-                                }))}
-                                className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="0"
-                              />
+                            <div className="flex gap-3 mt-4">
+                              <button
+                                onClick={() => addNewItem('assets', inputKey)}
+                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg border border-blue-300 transition-colors"
+                              >
+                                <Plus className="h-4 w-4" />
+                                新增項目
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setNewItemInputs((prev) => {
+                                    const newInputs = { ...prev };
+                                    delete newInputs[inputKey];
+                                    return newInputs;
+                                  })
+                                }
+                                className="flex items-center gap-2 text-gray-600 hover:text-gray-700 text-sm font-medium bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border border-gray-300 transition-colors"
+                              >
+                                <X className="h-4 w-4" />
+                                取消
+                              </button>
                             </div>
                           </div>
-                          <div className="flex gap-3 mt-4">
-                            <button
-                              onClick={() => addNewItem('assets', inputKey)}
-                              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg border border-blue-300 transition-colors"
-                            >
-                              <Plus className="h-4 w-4" />
-                              新增項目
-                            </button>
-                            <button
-                              onClick={() => setNewItemInputs(prev => {
-                                const newInputs = { ...prev };
-                                delete newInputs[inputKey];
-                                return newInputs;
-                              })}
-                              className="flex items-center gap-2 text-gray-600 hover:text-gray-700 text-sm font-medium bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border border-gray-300 transition-colors"
-                            >
-                              <X className="h-4 w-4" />
-                              取消
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   )}
                 </div>
@@ -751,62 +916,92 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       const expenseData = currentData.expense || {};
                       const expenseKeys = Object.keys(expenseFields);
 
-                      return expenseKeys.map(key => {
-                        const value = formatValue(expenseData[key]);
-                        return (
-                          <div key={key} className="flex items-center justify-between py-3 px-4 bg-red-50 rounded-lg border border-red-100 hover:bg-red-100 transition-colors">
-                            <span className="text-sm font-medium text-gray-700">{expenseFields[key as keyof typeof expenseFields]}</span>
-                            {isEditing ? (
-                              <input
-                                type="text"
-                                value={expenseData[key] || ''}
-                                onChange={(e) => updateEditData('expense', key, e.target.value)}
-                                className="w-28 px-3 py-2 text-sm border border-red-300 rounded-lg text-right focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                                placeholder="0"
-                              />
-                            ) : (
-                              <span className="text-sm font-bold text-red-700 bg-white px-3 py-1 rounded-lg border border-red-200">
-                                {value}
+                      return expenseKeys
+                        .map((key) => {
+                          const value = formatValue(expenseData[key]);
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-center justify-between py-3 px-4 bg-red-50 rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
+                            >
+                              <span className="text-sm font-medium text-gray-700">
+                                {
+                                  expenseFields[
+                                    key as keyof typeof expenseFields
+                                  ]
+                                }
                               </span>
-                            )}
-                          </div>
-                        );
-                      }).concat(
-                        // 顯示額外的支出欄位
-                        Object.keys(expenseData)
-                          .filter(key => !expenseFields.hasOwnProperty(key))
-                          .map(key => {
-                            const value = formatValue(expenseData[key]);
-                            return (
-                              <div key={`extra-${key}`} className="flex items-center justify-between py-3 px-4 bg-red-50 rounded-lg border border-red-100 hover:bg-red-100 transition-colors">
-                                <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">{key}</span>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                  {isEditing ? (
-                                    <input
-                                      type="text"
-                                      value={expenseData[key] || ''}
-                                      onChange={(e) => updateEditData('expense', key, e.target.value)}
-                                      className="w-28 px-3 py-2 text-sm border border-red-300 rounded-lg text-right focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                                      placeholder="0"
-                                    />
-                                  ) : (
-                                    <span className="text-sm font-bold text-red-700 bg-white px-3 py-1 rounded-lg border border-red-200">
-                                      {value}
-                                    </span>
-                                  )}
-                                  {isEditing && (
-                                    <button
-                                      onClick={() => removeItem('expense', key)}
-                                      className="p-1.5 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </button>
-                                  )}
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={expenseData[key] || ''}
+                                  onChange={(e) =>
+                                    updateEditData(
+                                      'expense',
+                                      key,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-28 px-3 py-2 text-sm border border-red-300 rounded-lg text-right focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                  placeholder="0"
+                                />
+                              ) : (
+                                <span className="text-sm font-bold text-red-700 bg-white px-3 py-1 rounded-lg border border-red-200">
+                                  {value}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })
+                        .concat(
+                          // 顯示額外的支出欄位
+                          Object.keys(expenseData)
+                            .filter((key) => !expenseFields.hasOwnProperty(key))
+                            .map((key) => {
+                              const value = formatValue(expenseData[key]);
+                              return (
+                                <div
+                                  key={`extra-${key}`}
+                                  className="flex items-center justify-between py-3 px-4 bg-red-50 rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
+                                >
+                                  <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">
+                                    {key}
+                                  </span>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    {isEditing ? (
+                                      <input
+                                        type="text"
+                                        value={expenseData[key] || ''}
+                                        onChange={(e) =>
+                                          updateEditData(
+                                            'expense',
+                                            key,
+                                            e.target.value
+                                          )
+                                        }
+                                        className="w-28 px-3 py-2 text-sm border border-red-300 rounded-lg text-right focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                        placeholder="0"
+                                      />
+                                    ) : (
+                                      <span className="text-sm font-bold text-red-700 bg-white px-3 py-1 rounded-lg border border-red-200">
+                                        {value}
+                                      </span>
+                                    )}
+                                    {isEditing && (
+                                      <button
+                                        onClick={() =>
+                                          removeItem('expense', key)
+                                        }
+                                        className="p-1.5 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })
-                      );
+                              );
+                            })
+                        );
                     })()}
                   </div>
 
@@ -816,9 +1011,9 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       <button
                         onClick={() => {
                           const inputKey = `expense-${Date.now()}`;
-                          setNewItemInputs(prev => ({
+                          setNewItemInputs((prev) => ({
                             ...prev,
-                            [inputKey]: { name: '', value: '' }
+                            [inputKey]: { name: '', value: '' },
                           }));
                         }}
                         className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm font-medium bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg border border-red-200 transition-colors"
@@ -828,58 +1023,79 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       </button>
 
                       {/* 支出新增項目輸入框 */}
-                      {Object.keys(newItemInputs).filter(key => key.startsWith('expense-')).map(inputKey => (
-                        <div key={inputKey} className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">項目名稱</label>
-                              <input
-                                type="text"
-                                value={newItemInputs[inputKey]?.name || ''}
-                                onChange={(e) => setNewItemInputs(prev => ({
-                                  ...prev,
-                                  [inputKey]: { ...prev[inputKey], name: e.target.value }
-                                }))}
-                                className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                                placeholder="請輸入項目名稱"
-                              />
+                      {Object.keys(newItemInputs)
+                        .filter((key) => key.startsWith('expense-'))
+                        .map((inputKey) => (
+                          <div
+                            key={inputKey}
+                            className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
+                          >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  項目名稱
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newItemInputs[inputKey]?.name || ''}
+                                  onChange={(e) =>
+                                    setNewItemInputs((prev) => ({
+                                      ...prev,
+                                      [inputKey]: {
+                                        ...prev[inputKey],
+                                        name: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                  placeholder="請輸入項目名稱"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  金額
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newItemInputs[inputKey]?.value || ''}
+                                  onChange={(e) =>
+                                    setNewItemInputs((prev) => ({
+                                      ...prev,
+                                      [inputKey]: {
+                                        ...prev[inputKey],
+                                        value: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                  placeholder="0"
+                                />
+                              </div>
                             </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">金額</label>
-                              <input
-                                type="text"
-                                value={newItemInputs[inputKey]?.value || ''}
-                                onChange={(e) => setNewItemInputs(prev => ({
-                                  ...prev,
-                                  [inputKey]: { ...prev[inputKey], value: e.target.value }
-                                }))}
-                                className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                                placeholder="0"
-                              />
+                            <div className="flex gap-3 mt-4">
+                              <button
+                                onClick={() => addNewItem('expense', inputKey)}
+                                className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm font-medium bg-red-100 hover:bg-red-200 px-4 py-2 rounded-lg border border-red-300 transition-colors"
+                              >
+                                <Plus className="h-4 w-4" />
+                                新增項目
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setNewItemInputs((prev) => {
+                                    const newInputs = { ...prev };
+                                    delete newInputs[inputKey];
+                                    return newInputs;
+                                  })
+                                }
+                                className="flex items-center gap-2 text-gray-600 hover:text-gray-700 text-sm font-medium bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border border-gray-300 transition-colors"
+                              >
+                                <X className="h-4 w-4" />
+                                取消
+                              </button>
                             </div>
                           </div>
-                          <div className="flex gap-3 mt-4">
-                            <button
-                              onClick={() => addNewItem('expense', inputKey)}
-                              className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm font-medium bg-red-100 hover:bg-red-200 px-4 py-2 rounded-lg border border-red-300 transition-colors"
-                            >
-                              <Plus className="h-4 w-4" />
-                              新增項目
-                            </button>
-                            <button
-                              onClick={() => setNewItemInputs(prev => {
-                                const newInputs = { ...prev };
-                                delete newInputs[inputKey];
-                                return newInputs;
-                              })}
-                              className="flex items-center gap-2 text-gray-600 hover:text-gray-700 text-sm font-medium bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border border-gray-300 transition-colors"
-                            >
-                              <X className="h-4 w-4" />
-                              取消
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   )}
                 </div>
@@ -902,62 +1118,94 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       const liabilityData = currentData.liabilities || {};
                       const liabilityKeys = Object.keys(liabilityFields);
 
-                      return liabilityKeys.map(key => {
-                        const value = formatValue(liabilityData[key]);
-                        return (
-                          <div key={key} className="flex items-center justify-between py-3 px-4 bg-orange-50 rounded-lg border border-orange-100 hover:bg-orange-100 transition-colors">
-                            <span className="text-sm font-medium text-gray-700">{liabilityFields[key as keyof typeof liabilityFields]}</span>
-                            {isEditing ? (
-                              <input
-                                type="text"
-                                value={liabilityData[key] || ''}
-                                onChange={(e) => updateEditData('liabilities', key, e.target.value)}
-                                className="w-28 px-3 py-2 text-sm border border-orange-300 rounded-lg text-right focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                placeholder="0"
-                              />
-                            ) : (
-                              <span className="text-sm font-bold text-orange-700 bg-white px-3 py-1 rounded-lg border border-orange-200">
-                                {value}
+                      return liabilityKeys
+                        .map((key) => {
+                          const value = formatValue(liabilityData[key]);
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-center justify-between py-3 px-4 bg-orange-50 rounded-lg border border-orange-100 hover:bg-orange-100 transition-colors"
+                            >
+                              <span className="text-sm font-medium text-gray-700">
+                                {
+                                  liabilityFields[
+                                    key as keyof typeof liabilityFields
+                                  ]
+                                }
                               </span>
-                            )}
-                          </div>
-                        );
-                      }).concat(
-                        // 顯示額外的負債欄位
-                        Object.keys(liabilityData)
-                          .filter(key => !liabilityFields.hasOwnProperty(key))
-                          .map(key => {
-                            const value = formatValue(liabilityData[key]);
-                            return (
-                              <div key={`extra-${key}`} className="flex items-center justify-between py-3 px-4 bg-orange-50 rounded-lg border border-orange-100 hover:bg-orange-100 transition-colors">
-                                <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">{key}</span>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                  {isEditing ? (
-                                    <input
-                                      type="text"
-                                      value={liabilityData[key] || ''}
-                                      onChange={(e) => updateEditData('liabilities', key, e.target.value)}
-                                      className="w-28 px-3 py-2 text-sm border border-orange-300 rounded-lg text-right focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                      placeholder="0"
-                                    />
-                                  ) : (
-                                    <span className="text-sm font-bold text-orange-700 bg-white px-3 py-1 rounded-lg border border-orange-200">
-                                      {value}
-                                    </span>
-                                  )}
-                                  {isEditing && (
-                                    <button
-                                      onClick={() => removeItem('liabilities', key)}
-                                      className="p-1.5 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </button>
-                                  )}
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={liabilityData[key] || ''}
+                                  onChange={(e) =>
+                                    updateEditData(
+                                      'liabilities',
+                                      key,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-28 px-3 py-2 text-sm border border-orange-300 rounded-lg text-right focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                  placeholder="0"
+                                />
+                              ) : (
+                                <span className="text-sm font-bold text-orange-700 bg-white px-3 py-1 rounded-lg border border-orange-200">
+                                  {value}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })
+                        .concat(
+                          // 顯示額外的負債欄位
+                          Object.keys(liabilityData)
+                            .filter(
+                              (key) => !liabilityFields.hasOwnProperty(key)
+                            )
+                            .map((key) => {
+                              const value = formatValue(liabilityData[key]);
+                              return (
+                                <div
+                                  key={`extra-${key}`}
+                                  className="flex items-center justify-between py-3 px-4 bg-orange-50 rounded-lg border border-orange-100 hover:bg-orange-100 transition-colors"
+                                >
+                                  <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">
+                                    {key}
+                                  </span>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    {isEditing ? (
+                                      <input
+                                        type="text"
+                                        value={liabilityData[key] || ''}
+                                        onChange={(e) =>
+                                          updateEditData(
+                                            'liabilities',
+                                            key,
+                                            e.target.value
+                                          )
+                                        }
+                                        className="w-28 px-3 py-2 text-sm border border-orange-300 rounded-lg text-right focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                        placeholder="0"
+                                      />
+                                    ) : (
+                                      <span className="text-sm font-bold text-orange-700 bg-white px-3 py-1 rounded-lg border border-orange-200">
+                                        {value}
+                                      </span>
+                                    )}
+                                    {isEditing && (
+                                      <button
+                                        onClick={() =>
+                                          removeItem('liabilities', key)
+                                        }
+                                        className="p-1.5 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })
-                      );
+                              );
+                            })
+                        );
                     })()}
                   </div>
 
@@ -967,9 +1215,9 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       <button
                         onClick={() => {
                           const inputKey = `liabilities-${Date.now()}`;
-                          setNewItemInputs(prev => ({
+                          setNewItemInputs((prev) => ({
                             ...prev,
-                            [inputKey]: { name: '', value: '' }
+                            [inputKey]: { name: '', value: '' },
                           }));
                         }}
                         className="flex items-center gap-2 text-orange-600 hover:text-orange-700 text-sm font-medium bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-lg border border-orange-200 transition-colors"
@@ -979,58 +1227,81 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
                       </button>
 
                       {/* 負債新增項目輸入框 */}
-                      {Object.keys(newItemInputs).filter(key => key.startsWith('liabilities-')).map(inputKey => (
-                        <div key={inputKey} className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">項目名稱</label>
-                              <input
-                                type="text"
-                                value={newItemInputs[inputKey]?.name || ''}
-                                onChange={(e) => setNewItemInputs(prev => ({
-                                  ...prev,
-                                  [inputKey]: { ...prev[inputKey], name: e.target.value }
-                                }))}
-                                className="w-full px-3 py-2 border border-orange-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                placeholder="請輸入項目名稱"
-                              />
+                      {Object.keys(newItemInputs)
+                        .filter((key) => key.startsWith('liabilities-'))
+                        .map((inputKey) => (
+                          <div
+                            key={inputKey}
+                            className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg"
+                          >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  項目名稱
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newItemInputs[inputKey]?.name || ''}
+                                  onChange={(e) =>
+                                    setNewItemInputs((prev) => ({
+                                      ...prev,
+                                      [inputKey]: {
+                                        ...prev[inputKey],
+                                        name: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  className="w-full px-3 py-2 border border-orange-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                  placeholder="請輸入項目名稱"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  金額
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newItemInputs[inputKey]?.value || ''}
+                                  onChange={(e) =>
+                                    setNewItemInputs((prev) => ({
+                                      ...prev,
+                                      [inputKey]: {
+                                        ...prev[inputKey],
+                                        value: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  className="w-full px-3 py-2 border border-orange-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                  placeholder="0"
+                                />
+                              </div>
                             </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">金額</label>
-                              <input
-                                type="text"
-                                value={newItemInputs[inputKey]?.value || ''}
-                                onChange={(e) => setNewItemInputs(prev => ({
-                                  ...prev,
-                                  [inputKey]: { ...prev[inputKey], value: e.target.value }
-                                }))}
-                                className="w-full px-3 py-2 border border-orange-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                placeholder="0"
-                              />
+                            <div className="flex gap-3 mt-4">
+                              <button
+                                onClick={() =>
+                                  addNewItem('liabilities', inputKey)
+                                }
+                                className="flex items-center gap-2 text-orange-600 hover:text-orange-700 text-sm font-medium bg-orange-100 hover:bg-orange-200 px-4 py-2 rounded-lg border border-orange-300 transition-colors"
+                              >
+                                <Plus className="h-4 w-4" />
+                                新增項目
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setNewItemInputs((prev) => {
+                                    const newInputs = { ...prev };
+                                    delete newInputs[inputKey];
+                                    return newInputs;
+                                  })
+                                }
+                                className="flex items-center gap-2 text-gray-600 hover:text-gray-700 text-sm font-medium bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border border-gray-300 transition-colors"
+                              >
+                                <X className="h-4 w-4" />
+                                取消
+                              </button>
                             </div>
                           </div>
-                          <div className="flex gap-3 mt-4">
-                            <button
-                              onClick={() => addNewItem('liabilities', inputKey)}
-                              className="flex items-center gap-2 text-orange-600 hover:text-orange-700 text-sm font-medium bg-orange-100 hover:bg-orange-200 px-4 py-2 rounded-lg border border-orange-300 transition-colors"
-                            >
-                              <Plus className="h-4 w-4" />
-                              新增項目
-                            </button>
-                            <button
-                              onClick={() => setNewItemInputs(prev => {
-                                const newInputs = { ...prev };
-                                delete newInputs[inputKey];
-                                return newInputs;
-                              })}
-                              className="flex items-center gap-2 text-gray-600 hover:text-gray-700 text-sm font-medium bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border border-gray-300 transition-colors"
-                            >
-                              <X className="h-4 w-4" />
-                              取消
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   )}
                 </div>
@@ -1043,29 +1314,35 @@ export function EconomicStatusDetailCard({ isOpen, onClose, data, interactionId,
             <div className="px-6 py-6">
               <div className="text-center">
                 <div className="mb-2">
-                  <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">本月結餘</span>
+                  <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                    本月結餘
+                  </span>
                 </div>
-                <div className={`inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 ${
-                  monthlyBalance >= 0
-                    ? 'text-green-700 bg-green-50 border-green-200'
-                    : 'text-red-700 bg-red-50 border-red-200'
-                }`}>
+                <div
+                  className={`inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 ${
+                    monthlyBalance >= 0
+                      ? 'text-green-700 bg-green-50 border-green-200'
+                      : 'text-red-700 bg-red-50 border-red-200'
+                  }`}
+                >
                   <span className="text-3xl font-bold">
-                    {monthlyBalance >= 0 ? '+' : ''}{monthlyBalance.toLocaleString()}
+                    {monthlyBalance >= 0 ? '+' : ''}
+                    {monthlyBalance.toLocaleString()}
                   </span>
                   <span className="ml-2 text-lg font-medium">元</span>
                 </div>
                 <div className="mt-3">
-                  <span className={`text-sm font-medium ${
-                    monthlyBalance >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
+                  <span
+                    className={`text-sm font-medium ${
+                      monthlyBalance >= 0 ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
                     {monthlyBalance >= 0 ? '收入大於支出' : '支出大於收入'}
                   </span>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
 
         {/* Footer with gradient background */}

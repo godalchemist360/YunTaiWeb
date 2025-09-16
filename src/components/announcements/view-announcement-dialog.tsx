@@ -10,23 +10,19 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  CheckCircle,
-  Download,
-  Calendar,
-} from 'lucide-react';
-import {
-  getTypeLabel,
-  getTypeIcon,
-  getTypeColor,
-  getTypeTagColor,
+  formatDate,
   getFileIcon,
   getFileSizeText,
-  getStorageTypeText,
   getStorageTypeColor,
-  formatDate,
+  getStorageTypeText,
+  getTypeColor,
+  getTypeIcon,
+  getTypeLabel,
+  getTypeTagColor,
   handleApiError,
   showErrorToast,
 } from '@/lib/announcement-utils';
+import { Calendar, CheckCircle, Download } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface Announcement {
@@ -243,10 +239,7 @@ export function ViewAnnouncementDialog({
                   {displayAnnouncement.attachments.map((attachment) => {
                     const FileIcon = getFileIcon(attachment.mimeType);
                     return (
-                      <div
-                        key={attachment.id}
-                        className="space-y-2"
-                      >
+                      <div key={attachment.id} className="space-y-2">
                         <div
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
                           onClick={() => handleDownload(attachment)}
@@ -259,7 +252,9 @@ export function ViewAnnouncementDialog({
                               </p>
                               <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                                 {attachment.fileSize && (
-                                  <span>{getFileSizeText(attachment.fileSize)}</span>
+                                  <span>
+                                    {getFileSizeText(attachment.fileSize)}
+                                  </span>
                                 )}
                                 <span
                                   className={`px-2 py-1 rounded ${getStorageTypeColor(attachment.storageType)}`}

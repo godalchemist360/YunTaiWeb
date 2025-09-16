@@ -3,7 +3,10 @@
  * 提供權限錯誤處理和用戶友好的錯誤訊息
  */
 
-import { getPermissionErrorMessage, type PermissionAction } from './permissions';
+import {
+  type PermissionAction,
+  getPermissionErrorMessage,
+} from './permissions';
 
 /**
  * 處理權限相關的 API 錯誤
@@ -11,7 +14,10 @@ import { getPermissionErrorMessage, type PermissionAction } from './permissions'
  * @param action 權限動作
  * @returns 用戶友好的錯誤訊息
  */
-export function handlePermissionError(error: any, action: PermissionAction): string {
+export function handlePermissionError(
+  error: any,
+  action: PermissionAction
+): string {
   console.error('Permission Error:', error);
 
   // 如果是 403 權限錯誤，返回權限錯誤訊息
@@ -51,7 +57,10 @@ export function isPermissionError(response: Response): boolean {
  * @param action 權限動作
  * @returns 錯誤訊息
  */
-export async function extractPermissionError(response: Response, action: PermissionAction): Promise<string> {
+export async function extractPermissionError(
+  response: Response,
+  action: PermissionAction
+): Promise<string> {
   try {
     const errorData = await response.json();
     return handlePermissionError(errorData, action);

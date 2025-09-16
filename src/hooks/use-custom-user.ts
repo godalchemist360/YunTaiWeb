@@ -34,7 +34,10 @@ export const useCustomUser = () => {
         const userAccountCookie = cookies.find((cookie) =>
           cookie.trim().startsWith(`user-account-${sessionId}=`)
         );
-        console.log('useCustomUser: 對應的 user-account cookie:', userAccountCookie);
+        console.log(
+          'useCustomUser: 對應的 user-account cookie:',
+          userAccountCookie
+        );
 
         if (userAccountCookie) {
           const account = userAccountCookie.split('=')[1];

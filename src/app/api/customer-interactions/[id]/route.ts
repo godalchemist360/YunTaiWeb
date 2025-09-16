@@ -13,10 +13,32 @@ export async function PUT(
     const { id } = await params;
 
     const body = await req.json();
-    const { customer_name, lead_source, consultation_motives, asset_liability_data, income_expense_data, situation_data, next_action_date, next_action_description, meeting_record, meeting_count } = body;
+    const {
+      customer_name,
+      lead_source,
+      consultation_motives,
+      asset_liability_data,
+      income_expense_data,
+      situation_data,
+      next_action_date,
+      next_action_description,
+      meeting_record,
+      meeting_count,
+    } = body;
 
     // 驗證輸入 - 至少要有其中一個欄位要更新
-    if (!customer_name && !lead_source && !consultation_motives && !asset_liability_data && !income_expense_data && !situation_data && next_action_date === undefined && next_action_description === undefined && meeting_record === undefined && meeting_count === undefined) {
+    if (
+      !customer_name &&
+      !lead_source &&
+      !consultation_motives &&
+      !asset_liability_data &&
+      !income_expense_data &&
+      !situation_data &&
+      next_action_date === undefined &&
+      next_action_description === undefined &&
+      meeting_record === undefined &&
+      meeting_count === undefined
+    ) {
       return NextResponse.json(
         { error: '至少需要提供一個要更新的欄位' },
         { status: 400 }
@@ -54,7 +76,10 @@ export async function PUT(
 
     // 驗證諮詢動機（如果提供）
     if (consultation_motives !== undefined) {
-      if (!Array.isArray(consultation_motives) || consultation_motives.length === 0) {
+      if (
+        !Array.isArray(consultation_motives) ||
+        consultation_motives.length === 0
+      ) {
         return NextResponse.json(
           { error: '至少需要選擇一個諮詢動機' },
           { status: 400 }
@@ -74,7 +99,10 @@ export async function PUT(
 
     // 驗證資產負債資料（如果提供）
     if (asset_liability_data !== undefined) {
-      if (typeof asset_liability_data !== 'object' || asset_liability_data === null) {
+      if (
+        typeof asset_liability_data !== 'object' ||
+        asset_liability_data === null
+      ) {
         return NextResponse.json(
           { error: '資產負債資料格式不正確' },
           { status: 400 }
@@ -84,7 +112,10 @@ export async function PUT(
 
     // 驗證收支狀況資料（如果提供）
     if (income_expense_data !== undefined) {
-      if (typeof income_expense_data !== 'object' || income_expense_data === null) {
+      if (
+        typeof income_expense_data !== 'object' ||
+        income_expense_data === null
+      ) {
         return NextResponse.json(
           { error: '收支狀況資料格式不正確' },
           { status: 400 }
@@ -113,7 +144,10 @@ export async function PUT(
     }
 
     // 驗證下一步行動描述（如果提供）
-    if (next_action_description !== undefined && next_action_description !== null) {
+    if (
+      next_action_description !== undefined &&
+      next_action_description !== null
+    ) {
       if (typeof next_action_description !== 'string') {
         return NextResponse.json(
           { error: '下一步行動描述格式不正確' },
@@ -174,7 +208,9 @@ export async function PUT(
 
     if (consultation_motives !== undefined) {
       updateFields.push(`consultation_motives = $${paramIndex}`);
-      updateValues.push(consultation_motives.map((motive: string) => motive.trim()));
+      updateValues.push(
+        consultation_motives.map((motive: string) => motive.trim())
+      );
       paramIndex++;
     }
 
@@ -210,7 +246,9 @@ export async function PUT(
 
     if (meeting_record !== undefined) {
       // 對於 meeting_record，需要合併到現有資料而不是覆蓋
-      updateFields.push(`meeting_record = COALESCE(meeting_record, '{}'::jsonb) || $${paramIndex}::jsonb`);
+      updateFields.push(
+        `meeting_record = COALESCE(meeting_record, '{}'::jsonb) || $${paramIndex}::jsonb`
+      );
       updateValues.push(JSON.stringify(meeting_record));
       paramIndex++;
     }
@@ -237,17 +275,13 @@ export async function PUT(
     const updateResult = await query(updateQuery, updateValues);
 
     if (updateResult.rows.length === 0) {
-      return NextResponse.json(
-        { error: '更新失敗' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '更新失敗' }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
-      data: updateResult.rows[0]
+      data: updateResult.rows[0],
     });
-
   } catch (error) {
     console.error('Error updating customer name:', error);
     return NextResponse.json(

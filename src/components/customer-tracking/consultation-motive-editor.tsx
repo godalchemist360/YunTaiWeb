@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, Plus, MessageCircle } from 'lucide-react';
+import { MessageCircle, Plus, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface ConsultationMotiveEditorProps {
   isOpen: boolean;
@@ -22,7 +22,7 @@ export function ConsultationMotiveEditor({
   initialCustomMotives = [],
   interactionId,
   onSuccess,
-  onError
+  onError,
 }: ConsultationMotiveEditorProps) {
   const [standardMotives, setStandardMotives] = useState<string[]>([]);
   const [customMotives, setCustomMotives] = useState<string[]>([]);
@@ -39,7 +39,7 @@ export function ConsultationMotiveEditor({
     '稅務規劃',
     '資產傳承',
     '企業相關',
-    '其他'
+    '其他',
   ];
 
   // 只在組件打開時初始化狀態
@@ -47,7 +47,10 @@ export function ConsultationMotiveEditor({
     if (isOpen) {
       // 如果有自定義動機，自動勾選「其他」選項
       const finalStandardMotives = [...initialStandardMotives];
-      if (initialCustomMotives.length > 0 && !finalStandardMotives.includes('其他')) {
+      if (
+        initialCustomMotives.length > 0 &&
+        !finalStandardMotives.includes('其他')
+      ) {
         finalStandardMotives.push('其他');
       }
 
@@ -61,7 +64,7 @@ export function ConsultationMotiveEditor({
     if (checked) {
       setStandardMotives([...standardMotives, motive]);
     } else {
-      setStandardMotives(standardMotives.filter(m => m !== motive));
+      setStandardMotives(standardMotives.filter((m) => m !== motive));
     }
     // 清除驗證錯誤
     if (validationError) {
@@ -70,7 +73,10 @@ export function ConsultationMotiveEditor({
   };
 
   const addCustomMotive = () => {
-    if (newCustomMotive.trim() && !customMotives.includes(newCustomMotive.trim())) {
+    if (
+      newCustomMotive.trim() &&
+      !customMotives.includes(newCustomMotive.trim())
+    ) {
       setCustomMotives([...customMotives, newCustomMotive.trim()]);
       setNewCustomMotive('');
       // 清除驗證錯誤
@@ -86,7 +92,9 @@ export function ConsultationMotiveEditor({
 
   // 驗證諮詢動機
   const validateMotives = (): string => {
-    const filteredStandard = standardMotives.filter(motive => motive !== '其他');
+    const filteredStandard = standardMotives.filter(
+      (motive) => motive !== '其他'
+    );
     const totalMotives = [...filteredStandard, ...customMotives];
 
     if (totalMotives.length === 0) {
@@ -114,18 +122,23 @@ export function ConsultationMotiveEditor({
     try {
       if (interactionId) {
         // 如果有 interactionId，直接呼叫 API
-        const filteredStandard = standardMotives.filter(motive => motive !== '其他');
+        const filteredStandard = standardMotives.filter(
+          (motive) => motive !== '其他'
+        );
         const finalMotives = [...filteredStandard, ...customMotives];
 
-        const response = await fetch(`/api/customer-interactions/${interactionId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            consultation_motives: finalMotives
-          })
-        });
+        const response = await fetch(
+          `/api/customer-interactions/${interactionId}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              consultation_motives: finalMotives,
+            }),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -181,14 +194,18 @@ export function ConsultationMotiveEditor({
         <div className="p-6 space-y-6">
           {/* 標準選項 */}
           <div>
-            <h4 className="text-md font-semibold text-gray-900 mb-3">標準選項</h4>
+            <h4 className="text-md font-semibold text-gray-900 mb-3">
+              標準選項
+            </h4>
             <div className="grid grid-cols-2 gap-3">
-              {standardOptions.map(option => (
+              {standardOptions.map((option) => (
                 <label key={option} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     checked={standardMotives.includes(option)}
-                    onChange={(e) => handleStandardMotiveChange(option, e.target.checked)}
+                    onChange={(e) =>
+                      handleStandardMotiveChange(option, e.target.checked)
+                    }
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span className="text-sm text-gray-700">{option}</span>
@@ -200,7 +217,9 @@ export function ConsultationMotiveEditor({
           {/* 自定義選項 */}
           {standardMotives.includes('其他') && (
             <div>
-              <h4 className="text-md font-semibold text-gray-900 mb-3">自定義選項</h4>
+              <h4 className="text-md font-semibold text-gray-900 mb-3">
+                自定義選項
+              </h4>
 
               {/* 已選擇的自定義選項 */}
               {customMotives.length > 0 && (

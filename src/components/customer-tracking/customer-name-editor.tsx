@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, User } from 'lucide-react';
+import { User, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface CustomerNameEditorProps {
   isOpen: boolean;
@@ -20,7 +20,7 @@ export function CustomerNameEditor({
   initialCustomerName = '',
   interactionId,
   onSuccess,
-  onError
+  onError,
 }: CustomerNameEditorProps) {
   const [customerName, setCustomerName] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -64,15 +64,18 @@ export function CustomerNameEditor({
     try {
       if (interactionId) {
         // 如果有 interactionId，直接呼叫 API
-        const response = await fetch(`/api/customer-interactions/${interactionId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            customer_name: trimmedName
-          })
-        });
+        const response = await fetch(
+          `/api/customer-interactions/${interactionId}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              customer_name: trimmedName,
+            }),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();

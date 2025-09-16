@@ -19,14 +19,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { uploadFileFromBrowser } from '@/storage/client';
-import { Paperclip, X, Upload, CheckCircle } from 'lucide-react';
 import {
   getFileSizeText,
   handleApiError,
   showErrorToast,
   showSuccessToast,
 } from '@/lib/announcement-utils';
+import { uploadFileFromBrowser } from '@/storage/client';
+import { CheckCircle, Paperclip, Upload, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface AddAnnouncementDialogProps {
@@ -58,16 +58,18 @@ export function AddAnnouncementDialog({
   const [type, setType] = useState('');
   const [description, setDescription] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
-  const [uploadingAttachments, setUploadingAttachments] = useState<Array<{
-    fileName: string;
-    fileSize: number;
-    mimeType: string;
-    storageType: 'cloud' | 'database';
-    fileUrl?: string;
-    cloudKey?: string;
-    cloudProvider?: string;
-    data?: Buffer;
-  }>>([]);
+  const [uploadingAttachments, setUploadingAttachments] = useState<
+    Array<{
+      fileName: string;
+      fileSize: number;
+      mimeType: string;
+      storageType: 'cloud' | 'database';
+      fileUrl?: string;
+      cloudKey?: string;
+      cloudProvider?: string;
+      data?: Buffer;
+    }>
+  >([]);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,12 +99,15 @@ export function AddAnnouncementDialog({
             storageType: 'cloud' as const,
             fileUrl: result.url,
             cloudKey: result.key,
-            cloudProvider: 's3'
+            cloudProvider: 's3',
           });
 
           console.log(`檔案 ${file.name} 上傳成功`);
         } catch (error) {
-          const errorMessage = handleApiError(error, `檔案 ${file.name} 處理失敗，請稍後再試`);
+          const errorMessage = handleApiError(
+            error,
+            `檔案 ${file.name} 處理失敗，請稍後再試`
+          );
           showErrorToast(errorMessage);
           return;
         }
@@ -136,10 +141,14 @@ export function AddAnnouncementDialog({
     const files = Array.from(e.target.files || []);
 
     // 驗證檔案類型和大小
-    const validFiles = files.filter(file => {
-      const maxSize = file.type.startsWith('audio/') ? 100 * 1024 * 1024 :
-                     file.type.startsWith('video/') ? 500 * 1024 * 1024 :
-                     file.type.startsWith('image/') ? 10 * 1024 * 1024 : 50 * 1024 * 1024;
+    const validFiles = files.filter((file) => {
+      const maxSize = file.type.startsWith('audio/')
+        ? 100 * 1024 * 1024
+        : file.type.startsWith('video/')
+          ? 500 * 1024 * 1024
+          : file.type.startsWith('image/')
+            ? 10 * 1024 * 1024
+            : 50 * 1024 * 1024;
 
       if (file.size > maxSize) {
         const maxSizeMB = (maxSize / 1024 / 1024).toFixed(0);

@@ -20,7 +20,7 @@ async function checkConstraints() {
     `);
 
     console.log('announcement_attachments 表的約束:');
-    result.rows.forEach(row => {
+    result.rows.forEach((row) => {
       console.log(`約束名稱: ${row.constraint_name}`);
       console.log(`約束類型: ${row.constraint_type}`);
       console.log(`約束定義: ${row.constraint_definition}`);
@@ -36,8 +36,10 @@ async function checkConstraints() {
     `);
 
     console.log('\nannouncement_attachments 表結構:');
-    tableResult.rows.forEach(row => {
-      console.log(`${row.column_name}: ${row.data_type} ${row.is_nullable === 'NO' ? 'NOT NULL' : 'NULL'} ${row.column_default ? `DEFAULT ${row.column_default}` : ''}`);
+    tableResult.rows.forEach((row) => {
+      console.log(
+        `${row.column_name}: ${row.data_type} ${row.is_nullable === 'NO' ? 'NOT NULL' : 'NULL'} ${row.column_default ? `DEFAULT ${row.column_default}` : ''}`
+      );
     });
 
     client.release();

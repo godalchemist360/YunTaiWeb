@@ -12,11 +12,11 @@ const requiredEnvVars = [
   'STORAGE_ACCESS_KEY_ID',
   'STORAGE_SECRET_ACCESS_KEY',
   'STORAGE_ENDPOINT',
-  'STORAGE_PUBLIC_URL'
+  'STORAGE_PUBLIC_URL',
 ];
 
 let envVarsOk = true;
-requiredEnvVars.forEach(varName => {
+requiredEnvVars.forEach((varName) => {
   if (process.env[varName]) {
     console.log(`✅ ${varName}: ${process.env[varName] ? '已設定' : '未設定'}`);
   } else {
