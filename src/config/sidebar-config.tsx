@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { websiteConfig } from './website';
+import { usePermissions } from '@/hooks/use-permissions';
 
 /**
  * Get sidebar config with translations
@@ -38,11 +39,13 @@ import { websiteConfig } from './website';
  */
 export function getSidebarLinks(): NestedMenuItem[] {
   const t = useTranslations('Dashboard');
+  const { isSales, isLoading } = usePermissions();
 
   // if is demo website, allow user to access admin and user pages, but data is fake
   const isDemo = isDemoWebsite();
 
-  return [
+  // 基礎導航項目
+  const baseLinks: NestedMenuItem[] = [
     {
       title: t('announcements.title'),
       icon: <MegaphoneIcon className="size-4 shrink-0" />,
@@ -91,11 +94,18 @@ export function getSidebarLinks(): NestedMenuItem[] {
       href: Routes.DashboardAnalytics,
       external: false,
     },
-    {
+  ];
+
+  // 只有在權限載入完成後才決定是否顯示帳號管理
+  // 這樣可以避免載入期間的閃爍效果
+  if (!isLoading && !isSales()) {
+    baseLinks.push({
       title: t('accountManagement.title'),
       icon: <UsersIcon className="size-4 shrink-0" />,
       href: Routes.DashboardAccountManagement,
       external: false,
-    },
-  ];
+    });
+  }
+
+  return baseLinks;
 }

@@ -7,7 +7,7 @@
 export type UserRole = 'admin' | 'management' | 'sales';
 
 // 權限動作定義
-export type PermissionAction = 
+export type PermissionAction =
   | 'announcements.create'
   | 'announcements.delete'
   | 'announcements.edit'
@@ -15,7 +15,11 @@ export type PermissionAction =
   | 'users.create'
   | 'users.delete'
   | 'users.edit'
-  | 'users.view';
+  | 'users.view'
+  | 'customer-tracking.create'
+  | 'customer-tracking.edit'
+  | 'customer-tracking.view'
+  | 'customer-tracking.delete';
 
 // 權限配置：角色 -> 權限動作映射
 export const PERMISSIONS: Record<UserRole, PermissionAction[]> = {
@@ -28,6 +32,10 @@ export const PERMISSIONS: Record<UserRole, PermissionAction[]> = {
     'users.delete',
     'users.edit',
     'users.view',
+    'customer-tracking.create',
+    'customer-tracking.edit',
+    'customer-tracking.view',
+    'customer-tracking.delete',
   ],
   management: [
     'announcements.create',
@@ -35,10 +43,18 @@ export const PERMISSIONS: Record<UserRole, PermissionAction[]> = {
     'announcements.edit',
     'announcements.view',
     'users.view', // 管理層可以查看用戶，但可能不能創建/刪除
+    'customer-tracking.create',
+    'customer-tracking.edit',
+    'customer-tracking.view',
+    'customer-tracking.delete',
   ],
   sales: [
     'announcements.view',
     // sales 角色不能創建或刪除公告
+    'customer-tracking.create',
+    'customer-tracking.edit',
+    'customer-tracking.view',
+    // sales 不能刪除客戶追蹤記錄
   ],
 };
 
@@ -52,7 +68,7 @@ export function hasPermission(userRole: UserRole | undefined, action: Permission
   if (!userRole) {
     return false;
   }
-  
+
   const rolePermissions = PERMISSIONS[userRole];
   return rolePermissions.includes(action);
 }
@@ -94,6 +110,42 @@ export function canViewAnnouncement(userRole: UserRole | undefined): boolean {
 }
 
 /**
+ * 檢查用戶是否可以創建客戶追蹤記錄
+ * @param userRole 用戶角色
+ * @returns 是否可以創建客戶追蹤記錄
+ */
+export function canCreateCustomerTracking(userRole: UserRole | undefined): boolean {
+  return hasPermission(userRole, 'customer-tracking.create');
+}
+
+/**
+ * 檢查用戶是否可以刪除客戶追蹤記錄
+ * @param userRole 用戶角色
+ * @returns 是否可以刪除客戶追蹤記錄
+ */
+export function canDeleteCustomerTracking(userRole: UserRole | undefined): boolean {
+  return hasPermission(userRole, 'customer-tracking.delete');
+}
+
+/**
+ * 檢查用戶是否可以編輯客戶追蹤記錄
+ * @param userRole 用戶角色
+ * @returns 是否可以編輯客戶追蹤記錄
+ */
+export function canEditCustomerTracking(userRole: UserRole | undefined): boolean {
+  return hasPermission(userRole, 'customer-tracking.edit');
+}
+
+/**
+ * 檢查用戶是否可以查看客戶追蹤記錄
+ * @param userRole 用戶角色
+ * @returns 是否可以查看客戶追蹤記錄
+ */
+export function canViewCustomerTracking(userRole: UserRole | undefined): boolean {
+  return hasPermission(userRole, 'customer-tracking.view');
+}
+
+/**
  * 獲取權限錯誤訊息
  * @param action 權限動作
  * @returns 錯誤訊息
@@ -108,8 +160,12 @@ export function getPermissionErrorMessage(action: PermissionAction): string {
     'users.delete': '身份組無權限進行此操作',
     'users.edit': '身份組無權限進行此操作',
     'users.view': '身份組無權限進行此操作',
+    'customer-tracking.create': '身份組無權限進行此操作',
+    'customer-tracking.delete': '身份組無權限進行此操作',
+    'customer-tracking.edit': '身份組無權限進行此操作',
+    'customer-tracking.view': '身份組無權限進行此操作',
   };
-  
+
   return actionMessages[action] || '身份組無權限進行此操作';
 }
 
@@ -124,6 +180,6 @@ export function getRoleDisplayName(role: UserRole): string {
     management: '管理層',
     sales: '業務員',
   };
-  
+
   return roleNames[role] || role;
 }

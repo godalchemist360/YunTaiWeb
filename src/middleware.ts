@@ -1,4 +1,3 @@
-import { betterFetch } from '@better-fetch/fetch';
 import createMiddleware from 'next-intl/middleware';
 import { type NextRequest, NextResponse } from 'next/server';
 import {
@@ -7,8 +6,6 @@ import {
   LOCALE_COOKIE_NAME,
   routing,
 } from './i18n/routing';
-import type { Session } from './lib/auth-types';
-import { getBaseUrl } from './lib/urls/urls';
 import {
   DEFAULT_LOGIN_REDIRECT,
   protectedRoutes,
@@ -55,22 +52,7 @@ export default async function middleware(req: NextRequest) {
   // 檢查自定義認證 cookie
   const customAuthCookie = req.cookies.get('custom-auth');
   const sessionIdCookie = req.cookies.get('session-id');
-  const isCustomLoggedIn = customAuthCookie?.value === 'true' && sessionIdCookie?.value;
-
-  // 如果沒有自定義認證，則檢查 Better Auth session
-  let isLoggedIn = isCustomLoggedIn;
-  if (!isCustomLoggedIn) {
-    const { data: session } = await betterFetch<Session>(
-      '/api/auth/get-session',
-      {
-        baseURL: getBaseUrl(),
-        headers: {
-          cookie: req.headers.get('cookie') || '', // Forward the cookies from the request
-        },
-      }
-    );
-    isLoggedIn = Boolean(session);
-  }
+  const isLoggedIn = customAuthCookie?.value === 'true' && sessionIdCookie?.value;
 
   // console.log('middleware, isLoggedIn', isLoggedIn);
 

@@ -44,6 +44,7 @@ import {
   fetchUsers,
   updateUser,
 } from '@/lib/usersClient';
+import { usePermissions } from '@/hooks/use-permissions';
 import {
   ChevronLeft,
   ChevronRight,
@@ -63,6 +64,9 @@ import {
 import { useEffect, useState } from 'react';
 
 export default function AccountManagementPage() {
+  const { isSales, isLoading: permissionsLoading } = usePermissions();
+
+  // 所有 hooks 必須在條件性返回之前調用
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
@@ -99,6 +103,7 @@ export default function AccountManagementPage() {
     },
   ];
 
+  // 定義 loadData 函數（必須在 useEffect 之前）
   const loadData = async (page = currentPage, size = pageSize, search = searchQuery, role = selectedRole) => {
     try {
       setLoading(true);
@@ -126,6 +131,7 @@ export default function AccountManagementPage() {
     }
   };
 
+  // 所有 useEffect hooks 必須在條件性返回之前
   useEffect(() => {
     loadData();
   }, []);
@@ -138,6 +144,30 @@ export default function AccountManagementPage() {
       }
     };
   }, [searchTimeout]);
+
+  // 權限檢查：sales 用戶無權限訪問此頁面
+  if (permissionsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">載入中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isSales()) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">無權限訪問</h1>
+          <p className="text-gray-600">您的身份組無權限訪問此頁面</p>
+        </div>
+      </div>
+    );
+  }
 
   // 分頁控制函數
   const handlePageChange = (page: number) => {

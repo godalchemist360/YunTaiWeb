@@ -93,6 +93,16 @@ export const protectedRoutes = [
   Routes.SettingsCredits,
   Routes.SettingsSecurity,
   Routes.SettingsNotifications,
+  // 新增的儀表板頁面
+  Routes.DashboardAnnouncements,
+  Routes.DashboardSalesSupport,
+  Routes.DashboardCustomerData,
+  Routes.DashboardCommissionQuery,
+  Routes.DashboardDataUpload,
+  Routes.DashboardTraining,
+  Routes.DashboardCustomerTracking,
+  Routes.DashboardAnalytics,
+  Routes.DashboardAccountManagement,
 ];
 
 /**

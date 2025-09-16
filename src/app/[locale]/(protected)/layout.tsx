@@ -1,5 +1,6 @@
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { AutoLogoutProvider } from '@/components/auto-logout/auto-logout-provider';
 import type { PropsWithChildren } from 'react';
 
 /**
@@ -16,9 +17,10 @@ export default function DashboardLayout({ children }: PropsWithChildren) {
         } as React.CSSProperties
       }
     >
-      <DashboardSidebar variant="inset" />
-
-      <SidebarInset>{children}</SidebarInset>
+      <AutoLogoutProvider>
+        <DashboardSidebar variant="inset" />
+        <SidebarInset>{children}</SidebarInset>
+      </AutoLogoutProvider>
     </SidebarProvider>
   );
 }

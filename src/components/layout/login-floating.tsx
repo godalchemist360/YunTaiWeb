@@ -1,29 +1,24 @@
 'use client';
 
-import { LoginWrapper } from '@/components/auth/login-wrapper';
-import { UserButton } from '@/components/layout/user-button';
 import { Button } from '@/components/ui/button';
-import { authClient } from '@/lib/auth-client';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
+import { LoginWrapper } from '@/components/auth/login-wrapper';
 
 export function LoginFloating() {
   const t = useTranslations();
-  const { data: session, isPending } = authClient.useSession();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
   return (
     <div className="fixed z-50 top-6 right-6">
-      {!mounted || isPending ? (
+      {!mounted ? (
         <Skeleton className="size-8 border rounded-full" />
-      ) : session?.user ? (
-        <UserButton user={session.user} />
       ) : (
         <LoginWrapper mode="modal" asChild>
-          <Button variant="outline" size="sm" className="cursor-pointer">
+          <Button variant="outline" size="sm" className="cursor-pointer bg-white border-white text-black hover:bg-gray-100">
             {t('Common.login')}
           </Button>
         </LoginWrapper>

@@ -10,6 +10,10 @@ import {
   canDeleteAnnouncement,
   canEditAnnouncement,
   canViewAnnouncement,
+  canCreateCustomerTracking,
+  canDeleteCustomerTracking,
+  canEditCustomerTracking,
+  canViewCustomerTracking,
   type PermissionAction,
   type UserRole
 } from '@/lib/permissions';
@@ -39,6 +43,12 @@ export function usePermissions() {
     canDeleteUser: () => hasPermission(userRole, 'users.delete'),
     canEditUser: () => hasPermission(userRole, 'users.edit'),
     canViewUser: () => hasPermission(userRole, 'users.view'),
+
+    // 客戶追蹤相關權限
+    canCreateCustomerTracking: () => canCreateCustomerTracking(userRole),
+    canDeleteCustomerTracking: () => canDeleteCustomerTracking(userRole),
+    canEditCustomerTracking: () => canEditCustomerTracking(userRole),
+    canViewCustomerTracking: () => canViewCustomerTracking(userRole),
 
     // 角色檢查
     isAdmin: () => userRole === 'admin',

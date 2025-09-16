@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, User, Building, Target, Plus, Trash2, DollarSign, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { usePermissions } from '@/hooks/use-permissions';
 
 interface AddRecordDialogProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface AddRecordDialogProps {
 }
 
 export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogProps) {
+  const { user, isSales, isLoading } = usePermissions();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     salesperson: '',
@@ -222,6 +224,16 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
 
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
 
+  // 當彈出視窗開啟且是 sales 用戶時，自動填入業務員名稱
+  useEffect(() => {
+    if (isOpen && !isLoading && user?.role === 'sales' && user?.display_name) {
+      setFormData(prev => ({
+        ...prev,
+        salesperson: user.display_name
+      }));
+    }
+  }, [isOpen, isLoading, user?.role, user?.display_name]);
+
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
 
@@ -378,19 +390,34 @@ export function AddRecordDialog({ isOpen, onClose, onSubmit }: AddRecordDialogPr
                 <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                   <User className="h-4 w-4 text-gray-500" />
                   業務員 *
+                  {user?.role === 'sales' && (
+                    <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                      自動填入
+                    </span>
+                  )}
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.salesperson}
                   onChange={(e) => handleInputChange('salesperson', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm ${
-                    validationErrors.salesperson ? 'border-red-500' : 'border-gray-300'
+                  disabled={user?.role === 'sales'}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm ${
+                    user?.role === 'sales'
+                      ? 'bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed'
+                      : 'bg-white border-gray-300'
+                  } ${
+                    validationErrors.salesperson ? 'border-red-500' : ''
                   }`}
-                  placeholder="請輸入業務員"
+                  placeholder={user?.role === 'sales' ? "自動填入您的姓名" : "請輸入業務員"}
                 />
                 {validationErrors.salesperson && (
                   <p className="text-sm text-red-600">{validationErrors.salesperson}</p>
+                )}
+                {user?.role === 'sales' && (
+                  <p className="text-xs text-gray-500">
+                    此欄位已自動填入您的姓名，無法修改
+                  </p>
                 )}
               </div>
 

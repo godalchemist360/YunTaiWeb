@@ -119,12 +119,22 @@ export const formatDate = (dateString: string): string => {
 export const handleApiError = (error: any, defaultMessage: string = '操作失敗'): string => {
   console.error('API Error:', error);
 
+  // 處理資料庫連接錯誤
+  if (error?.code === 'ECONNRESET' || error?.code === 'ETIMEDOUT') {
+    return '資料庫連接失敗，請稍後再試';
+  }
+
   if (error?.message) {
     return error.message;
   }
 
   if (typeof error === 'string') {
     return error;
+  }
+
+  // 如果錯誤物件是空的，提供更詳細的信息
+  if (error && typeof error === 'object' && Object.keys(error).length === 0) {
+    return '伺服器暫時無法回應，請稍後再試';
   }
 
   return defaultMessage;
