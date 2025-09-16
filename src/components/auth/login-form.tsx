@@ -51,7 +51,6 @@ export const LoginForm = ({
     locale
   );
   const callbackUrl = propCallbackUrl || paramCallbackUrl || defaultCallbackUrl;
-  console.log('login form, callbackUrl', callbackUrl);
 
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
@@ -135,7 +134,7 @@ export const LoginForm = ({
             window.location.href = callbackUrl;
           }
         } catch (sessionErr) {
-          console.error('設置 session 失敗:', sessionErr);
+          console.error('設置 session 異常:', sessionErr);
           // 即使設置 session 失敗，也跳轉到目標頁面
           window.location.href = callbackUrl;
         }
@@ -205,6 +204,7 @@ export const LoginForm = ({
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
+
 
   return (
     <AuthCard

@@ -33,33 +33,25 @@ import {
  * https://nextjs.org/docs/app/building-your-application/optimizing/fonts#google-fonts
  */
 // https://fonts.google.com/noto/specimen/Noto+Sans
+// 預載入主要字體 - 立即載入
 export const fontNotoSans = Noto_Sans({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-noto-sans',
   weight: ['500', '600', '700'],
-});
-
-// https://fonts.google.com/noto/specimen/Noto+Serif
-export const fontNotoSerif = Noto_Serif({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-noto-serif',
-  weight: ['400'],
+  preload: true, // 預載入
 });
 
 // https://fonts.google.com/noto/specimen/Noto+Sans+Mono
+// 延遲載入等寬字體 - 按需載入
 export const fontNotoSansMono = Noto_Sans_Mono({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-noto-sans-mono',
   weight: ['400'],
+  preload: false, // 不預載入，按需載入
 });
 
-// https://fonts.google.com/specimen/Bricolage+Grotesque
-export const fontBricolageGrotesque = Bricolage_Grotesque({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-bricolage-grotesque',
-  weight: ['400', '500', '600', '700'],
-});
+// 移除未使用的字體以提升性能
+// Noto Serif - 完全未使用，已移除
+// Bricolage Grotesque - 只在未使用的組件中使用，已移除

@@ -49,7 +49,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import * as React from 'react';
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, XAxis } from '@/components/ui/chart-lazy';
 import { toast } from 'sonner';
 import { z } from 'zod';
 

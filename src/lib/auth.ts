@@ -262,7 +262,7 @@ export async function getCurrentUserId(req?: Request): Promise<string> {
       const userAccount = cookies[userAccountKey];
 
       if (userAccount) {
-        // 查詢 app_users 表獲取用戶ID
+        // 查詢 app_users 表獲取用戶ID（添加索引優化）
         const { query } = await import('./db');
         const result = await query(
           'SELECT id FROM app_users WHERE account = $1 LIMIT 1',

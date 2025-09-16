@@ -166,21 +166,33 @@ export default function CustomerTrackingPage() {
   // 輔助函數：格式化日期時間
   const formatDateTime = (dateTime: string | null) => {
     if (!dateTime) return null;
-    const date = new Date(dateTime);
 
-    // 格式化為 HTML input 需要的格式
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+    try {
+      const date = new Date(dateTime);
 
-    return {
-      date: `${year}-${month}-${day}`, // YYYY-MM-DD 格式
-      time: `${hours}:${minutes}`, // HH:mm 格式
-      displayDate: date.toLocaleDateString('zh-TW'), // 用於顯示
-      displayTime: date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) // 用於顯示
-    };
+      // 檢查日期是否有效
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date value:', dateTime);
+        return null;
+      }
+
+      // 格式化為 HTML input 需要的格式
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return {
+        date: `${year}-${month}-${day}`, // YYYY-MM-DD 格式
+        time: `${hours}:${minutes}`, // HH:mm 格式
+        displayDate: date.toLocaleDateString('zh-TW'), // 用於顯示
+        displayTime: date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) // 用於顯示
+      };
+    } catch (error) {
+      console.error('Error formatting date:', dateTime, error);
+      return null;
+    }
   };
 
   // 輔助函數：獲取會面紀錄選項（使用 useMemo 優化）
@@ -197,7 +209,10 @@ export default function CustomerTrackingPage() {
   }, []);
 
   // 輔助函數：獲取會面紀錄內容
-  const getMeetingRecord = (meetingRecord: { [key: string]: string }, meetingNumber: string) => {
+  const getMeetingRecord = (meetingRecord: { [key: string]: string } | null | undefined, meetingNumber: string) => {
+    if (!meetingRecord || typeof meetingRecord !== 'object') {
+      return '無會面紀錄';
+    }
     return meetingRecord[meetingNumber] || '無會面紀錄';
   };
 
@@ -222,10 +237,23 @@ export default function CustomerTrackingPage() {
     const potential = customerInteractions.filter(item => !item.meeting_count || item.meeting_count === 0).length;
     const churnRisk = customerInteractions.filter(item => {
       if (!item.next_action_date) return false;
-      const nextActionDate = new Date(item.next_action_date);
-      const now = new Date();
-      const daysDiff = Math.ceil((nextActionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      return daysDiff < 0; // 已過期的下一步行動
+
+      try {
+        const nextActionDate = new Date(item.next_action_date);
+
+        // 檢查日期是否有效
+        if (isNaN(nextActionDate.getTime())) {
+          console.warn('Invalid next_action_date:', item.next_action_date);
+          return false;
+        }
+
+        const now = new Date();
+        const daysDiff = Math.ceil((nextActionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        return daysDiff < 0; // 已過期的下一步行動
+      } catch (error) {
+        console.error('Error processing next_action_date:', item.next_action_date, error);
+        return false;
+      }
     }).length;
 
     return { total, active, potential, churnRisk };

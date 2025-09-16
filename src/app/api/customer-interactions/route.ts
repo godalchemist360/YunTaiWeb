@@ -2,6 +2,7 @@ export const runtime = 'nodejs';
 
 import { getCurrentUserId } from '@/lib/auth';
 import { query } from '@/lib/db';
+// import { withPerformanceMonitoring, withQueryMonitoring } from '@/lib/api-performance';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
@@ -182,7 +183,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET(req: Request) {
+async function _getCustomerInteractions(req: Request) {
   try {
     const userId = await getCurrentUserId(req);
 
@@ -207,38 +208,44 @@ export async function GET(req: Request) {
 
     const whereSQL = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
-    // 查詢總數
-    const countSQL = `SELECT COUNT(*) FROM customer_interactions ${whereSQL}`;
-    const countResult = await query(countSQL, params);
-    const total = Number(countResult.rows[0].count);
-
-    // 查詢資料
-    const dataSQL = `
+    // 優化：合併 COUNT 和 DATA 查詢為一次查詢
+    console.time('customer_interactions_combined');
+    const combinedSQL = `
+      WITH data_query AS (
+        SELECT
+          id,
+          salesperson,
+          customer_name,
+          lead_source,
+          consultation_motives,
+          next_action_date,
+          next_action_description,
+          meeting_count,
+          meeting_record,
+          created_at
+        FROM customer_interactions
+        ${whereSQL}
+        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+      ),
+      count_query AS (
+        SELECT COUNT(*) as total FROM customer_interactions ${whereSQL}
+      )
       SELECT
-        id,
-        salesperson,
-        customer_name,
-        lead_source,
-        consultation_motives,
-        asset_liability_data,
-        income_expense_data,
-        situation_data,
-        next_action_date,
-        next_action_description,
-        meeting_record,
-        meeting_count,
-        created_at,
-        updated_at
-      FROM customer_interactions
-      ${whereSQL}
-      ORDER BY created_at DESC
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+        (SELECT total FROM count_query) as total_count,
+        json_agg(data_query.*) as items
+      FROM data_query
     `;
 
-    const dataResult = await query(dataSQL, [...params, pageSize, offset]);
+    console.log('🔍 執行合併查詢:', combinedSQL, '參數:', [...params, pageSize, offset]);
+    const result = await query(combinedSQL, [...params, pageSize, offset]);
+    console.timeEnd('customer_interactions_combined');
+
+    const total = Number(result.rows[0].total_count);
+    const items = result.rows[0].items || [];
+    console.log('📊 查詢結果總數:', total, '筆數:', items.length);
 
     return NextResponse.json({
-      items: dataResult.rows,
+      items: items,
       total,
       page,
       pageSize
@@ -252,3 +259,6 @@ export async function GET(req: Request) {
     );
   }
 }
+
+// 恢復正常的 GET 導出
+export { _getCustomerInteractions as GET };

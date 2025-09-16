@@ -71,8 +71,7 @@
   /* fonts */
   --font-sans: var(--font-noto-sans);
   --font-mono: var(--font-noto-sans-mono);
-  --font-serif: var(--font-noto-serif);
-  --font-bricolage-grotesque: var(--font-bricolage-grotesque);
+  /* 移除未使用的字體變數以提升性能 */
 
   /* animate */
   --animate-shiny-text: shiny-text 8s infinite;
@@ -219,7 +218,6 @@
   --sidebar-border: oklch(0.87 0.01 258.34);
   --sidebar-ring: oklch(0.59 0.2 277.12);
   --font-sans: var(--font-noto-sans);
-  --font-serif: var(--font-noto-serif);
   --font-mono: var(--font-noto-sans-mono);
   --radius: 0.5rem;
   --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
@@ -271,7 +269,6 @@
   --sidebar-border: oklch(0.45 0.03 256.8);
   --sidebar-ring: oklch(0.68 0.16 276.93);
   --font-sans: var(--font-noto-sans);
-  --font-serif: var(--font-noto-serif);
   --font-mono: var(--font-noto-sans-mono);
   --radius: 0.5rem;
   --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);

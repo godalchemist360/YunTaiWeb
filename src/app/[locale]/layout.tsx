@@ -1,9 +1,7 @@
 import { Analytics } from '@/analytics/analytics';
 import {
-  fontBricolageGrotesque,
   fontNotoSans,
   fontNotoSansMono,
-  fontNotoSerif,
 } from '@/assets/fonts';
 import AffonsoScript from '@/components/affiliate/affonso';
 import PromotekitScript from '@/components/affiliate/promotekit';
@@ -51,9 +49,7 @@ export default async function LocaleLayout({
         className={cn(
           'size-full antialiased',
           fontNotoSans.className,
-          fontNotoSerif.variable,
-          fontNotoSansMono.variable,
-          fontBricolageGrotesque.variable
+          fontNotoSansMono.variable
         )}
       >
         <NextIntlClientProvider>
