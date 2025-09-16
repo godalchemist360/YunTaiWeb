@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     // 處理諮詢動機
     const allMotives = [...consultationMotives];
     if (consultationMotives.includes('其他') && consultationMotivesOther.length > 0) {
-      allMotives.push(...consultationMotivesOther.filter(motive => motive.trim()));
+      allMotives.push(...consultationMotivesOther.filter((motive: string) => motive.trim()));
     }
 
     if (allMotives.length === 0) {
@@ -196,8 +196,8 @@ async function _getCustomerInteractions(req: Request) {
     const offset = (page - 1) * pageSize;
 
     // 建立搜尋條件
-    const whereConditions = [];
-    const params = [];
+    const whereConditions: string[] = [];
+    const params: any[] = [];
     let paramIndex = 1;
 
     if (q && q.trim()) {

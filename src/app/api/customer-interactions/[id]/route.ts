@@ -156,8 +156,8 @@ export async function PUT(
     }
 
     // 建立動態更新查詢
-    const updateFields = [];
-    const updateValues = [];
+    const updateFields: string[] = [];
+    const updateValues: any[] = [];
     let paramIndex = 1;
 
     if (customer_name !== undefined) {
@@ -174,7 +174,7 @@ export async function PUT(
 
     if (consultation_motives !== undefined) {
       updateFields.push(`consultation_motives = $${paramIndex}`);
-      updateValues.push(consultation_motives.map(motive => motive.trim()));
+      updateValues.push(consultation_motives.map((motive: string) => motive.trim()));
       paramIndex++;
     }
 

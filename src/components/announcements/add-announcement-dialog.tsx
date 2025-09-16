@@ -82,7 +82,7 @@ export function AddAnnouncementDialog({
       setIsUploading(true);
 
       // 處理附件上傳
-      const processedAttachments = [];
+      const processedAttachments: any[] = [];
 
       for (const file of attachments) {
         try {

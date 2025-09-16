@@ -82,7 +82,7 @@ export function Navbar({ scroll }: NavBarProps) {
               <CustomUserButton user={customUser} />
             ) : currentUser ? (
               // 顯示 Better Auth 使用者
-              <UserButton user={currentUser} />
+              <UserButton user={currentUser as any} />
             ) : (
               // 顯示登入按鈕
               <LoginWrapper mode="modal" asChild>

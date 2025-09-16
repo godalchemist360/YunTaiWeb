@@ -116,7 +116,7 @@ export function UrlInputForm({
   // Check credits only when user is authenticated
   useEffect(() => {
     if (isAuthenticated && !isAuthLoading) {
-      checkCredits();
+      checkCredits({});
     }
   }, [isAuthenticated, isAuthLoading, checkCredits]);
 

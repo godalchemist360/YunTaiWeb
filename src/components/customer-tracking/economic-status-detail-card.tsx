@@ -159,7 +159,7 @@ const transformToEditFormat = (data: any) => {
 };
 
 // 清理和格式化數值
-const cleanValue = (value: any): any => {
+const cleanValue = (value: any): number => {
   if (value === null || value === undefined || value === '') {
     return 0;
   }
@@ -265,11 +265,11 @@ const formatValue = (value: any): string => {
 const calculateMonthlyBalance = (incomeData: any, expenseData: any): number => {
   const totalIncome = Object.values(incomeData).reduce((sum: number, value: any) => {
     return sum + cleanValue(value);
-  }, 0);
+  }, 0) as number;
 
   const totalExpense = Object.values(expenseData).reduce((sum: number, value: any) => {
     return sum + cleanValue(value);
-  }, 0);
+  }, 0) as number;
 
   return totalIncome - totalExpense;
 };

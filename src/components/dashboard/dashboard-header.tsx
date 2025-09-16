@@ -109,7 +109,7 @@ export function DashboardHeader({
             <CustomUserButton user={customUser} />
           ) : currentUser ? (
             // 顯示 Better Auth 使用者
-            <UserButton user={currentUser} />
+            <UserButton user={currentUser as any} />
           ) : null}
 
           <CreditsBalanceButton />

@@ -29,8 +29,8 @@ export async function PUT(
     }
 
     // 建立更新欄位
-    const updateFields = [];
-    const queryParams = [];
+    const updateFields: string[] = [];
+    const queryParams: any[] = [];
     let paramIndex = 1;
 
     if (display_name !== undefined) {

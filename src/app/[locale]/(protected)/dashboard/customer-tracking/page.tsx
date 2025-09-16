@@ -198,7 +198,7 @@ export default function CustomerTrackingPage() {
   // 輔助函數：獲取會面紀錄選項（使用 useMemo 優化）
   const getMeetingOptions = useCallback((meetingCount: number | null) => {
     if (!meetingCount) return [];
-    const options = [];
+    const options: { value: string; label: string }[] = [];
     for (let i = 1; i <= meetingCount; i++) {
       options.push({
         value: i.toString(),
@@ -420,7 +420,7 @@ export default function CustomerTrackingPage() {
 
     try {
       // 組合日期和時間為完整的 timestamp
-      let nextActionDate = null;
+      let nextActionDate: string | null = null;
       if (date && time) {
         // 直接使用本地時間格式，不轉換為 UTC
         const dateTimeString = `${date} ${time}:00`;

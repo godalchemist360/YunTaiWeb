@@ -67,7 +67,7 @@ export default function CreditsBalanceCard() {
     console.log('fetchCreditStats, fetch start');
     setIsLoadingStats(true);
     try {
-      const result = await getCreditStatsAction();
+      const result = await getCreditStatsAction({});
       if (result?.data?.success && result.data.data) {
         setCreditStats(result.data.data);
       } else {

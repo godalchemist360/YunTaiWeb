@@ -76,6 +76,7 @@ export default function AccountManagementPage() {
     active: 0,
     disabled: 0,
     admin_count: 0,
+    management_count: 0,
   });
 
   // 分頁狀態

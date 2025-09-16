@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     if ((q && q.trim()) || status || role) {
       // 有篩選條件時，使用條件查詢
-      const conditions = [];
+      const conditions: any[] = [];
 
       if (q && q.trim()) {
         conditions.push(sql`(lower(account) like lower(${'%' + q + '%'}) OR lower(display_name) like lower(${'%' + q + '%'}))`);
