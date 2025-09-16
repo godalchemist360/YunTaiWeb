@@ -4,6 +4,7 @@ import { AddAnnouncementDialog } from '@/components/announcements/add-announceme
 import { ViewAnnouncementDialog } from '@/components/announcements/view-announcement-dialog';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { UserAvatar } from '@/components/layout/user-avatar';
+import { AnnouncementCreateGate, AnnouncementDeleteGate } from '@/components/permission-gate';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +37,11 @@ import {
   showErrorToast,
   showSuccessToast,
 } from '@/lib/announcement-utils';
+import { 
+  handlePermissionError, 
+  extractPermissionError,
+  showPermissionError 
+} from '@/lib/permission-utils';
 import { useEffect, useState } from 'react';
 
 interface Announcement {
@@ -150,8 +156,14 @@ export default function AnnouncementsPage() {
         loadSummary();
         showSuccessToast('公告刪除成功');
       } else {
-        const errorMessage = handleApiError(response, '刪除失敗，請稍後再試');
-        showErrorToast(errorMessage);
+        // 檢查是否為權限錯誤
+        if (response.status === 403) {
+          const errorMessage = await extractPermissionError(response, 'announcements.delete');
+          showPermissionError(errorMessage);
+        } else {
+          const errorMessage = handleApiError(response, '刪除失敗，請稍後再試');
+          showErrorToast(errorMessage);
+        }
       }
     } catch (error) {
       const errorMessage = handleApiError(error, '刪除失敗，請稍後再試');
@@ -241,9 +253,15 @@ export default function AnnouncementsPage() {
         setIsAddDialogOpen(false);
         showSuccessToast('公告新增成功');
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = handleApiError(errorData, '新增公告失敗，請稍後再試');
-        showErrorToast(errorMessage);
+        // 檢查是否為權限錯誤
+        if (response.status === 403) {
+          const errorMessage = await extractPermissionError(response, 'announcements.create');
+          showPermissionError(errorMessage);
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          const errorMessage = handleApiError(errorData, '新增公告失敗，請稍後再試');
+          showErrorToast(errorMessage);
+        }
       }
     } catch (error) {
       const errorMessage = handleApiError(error, '新增公告失敗，請稍後再試');
@@ -300,13 +318,15 @@ export default function AnnouncementsPage() {
                       </h1>
                       <p className="text-gray-600">查看最新的公告和重要信息</p>
                     </div>
-                    <Button
-                      onClick={() => setIsAddDialogOpen(true)}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      新增公告
-                    </Button>
+                    <AnnouncementCreateGate>
+                      <Button
+                        onClick={() => setIsAddDialogOpen(true)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        新增公告
+                      </Button>
+                    </AnnouncementCreateGate>
                   </div>
 
                   {/* Summary Cards */}
@@ -435,20 +455,22 @@ export default function AnnouncementsPage() {
                               </div>
                             </div>
                             {/* Delete Button */}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="absolute top-2 right-2 text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteAnnouncement(
-                                  announcement.id,
-                                  announcement.title
-                                );
-                              }}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                            <AnnouncementDeleteGate>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="absolute top-2 right-2 text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteAnnouncement(
+                                    announcement.id,
+                                    announcement.title
+                                  );
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </AnnouncementDeleteGate>
                           </div>
                         );
                       })}

@@ -87,6 +87,28 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    // 權限檢查：只有 admin 和 management 可以新增公告
+    const userId = await getCurrentUserId(req);
+    const userResult = await query(
+      'SELECT role FROM app_users WHERE id = $1',
+      [userId]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return NextResponse.json(
+        { error: '用戶不存在' },
+        { status: 404 }
+      );
+    }
+    
+    const userRole = userResult.rows[0].role;
+    if (userRole === 'sales') {
+      return NextResponse.json(
+        { error: '身份組無權限進行此操作' },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     console.log('收到新增公告請求:', body);
 

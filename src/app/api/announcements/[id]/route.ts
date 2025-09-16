@@ -93,6 +93,28 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 權限檢查：只有 admin 和 management 可以刪除公告
+    const userId = await getCurrentUserId(req);
+    const userResult = await query(
+      'SELECT role FROM app_users WHERE id = $1',
+      [userId]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return NextResponse.json(
+        { error: '用戶不存在' },
+        { status: 404 }
+      );
+    }
+    
+    const userRole = userResult.rows[0].role;
+    if (userRole === 'sales') {
+      return NextResponse.json(
+        { error: '身份組無權限進行此操作' },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
 
     // 驗證 ID 格式
