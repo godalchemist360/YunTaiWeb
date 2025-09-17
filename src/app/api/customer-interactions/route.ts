@@ -60,22 +60,22 @@ export async function POST(req: Request) {
     const assetLiabilityData: { [key: string]: number } = {};
 
     // 資產
-    if (assetLiability.assets.realEstate)
+    if (assetLiability.assets?.realEstate)
       assetLiabilityData.不動產價值 =
         Number.parseFloat(assetLiability.assets.realEstate) || 0;
-    if (assetLiability.assets.cash)
+    if (assetLiability.assets?.cash)
       assetLiabilityData.現金 =
         Number.parseFloat(assetLiability.assets.cash) || 0;
-    if (assetLiability.assets.stocks)
+    if (assetLiability.assets?.stocks)
       assetLiabilityData['股票、ETF'] =
         Number.parseFloat(assetLiability.assets.stocks) || 0;
-    if (assetLiability.assets.funds)
+    if (assetLiability.assets?.funds)
       assetLiabilityData.基金 =
         Number.parseFloat(assetLiability.assets.funds) || 0;
-    if (assetLiability.assets.insurance)
+    if (assetLiability.assets?.insurance)
       assetLiabilityData.保險 =
         Number.parseFloat(assetLiability.assets.insurance) || 0;
-    if (assetLiability.assets.others)
+    if (assetLiability.assets?.others)
       assetLiabilityData.其他資產 =
         Number.parseFloat(assetLiability.assets.others) || 0;
 
@@ -90,25 +90,25 @@ export async function POST(req: Request) {
     }
 
     // 負債
-    if (assetLiability.liabilities.mortgage)
+    if (assetLiability.liabilities?.mortgage)
       assetLiabilityData.房貸 =
         Number.parseFloat(assetLiability.liabilities.mortgage) || 0;
-    if (assetLiability.liabilities.carLoan)
+    if (assetLiability.liabilities?.carLoan)
       assetLiabilityData.車貸 =
         Number.parseFloat(assetLiability.liabilities.carLoan) || 0;
-    if (assetLiability.liabilities.creditLoan)
+    if (assetLiability.liabilities?.creditLoan)
       assetLiabilityData.信貸 =
         Number.parseFloat(assetLiability.liabilities.creditLoan) || 0;
-    if (assetLiability.liabilities.creditCard)
+    if (assetLiability.liabilities?.creditCard)
       assetLiabilityData.卡循 =
         Number.parseFloat(assetLiability.liabilities.creditCard) || 0;
-    if (assetLiability.liabilities.studentLoan)
+    if (assetLiability.liabilities?.studentLoan)
       assetLiabilityData.學貸 =
         Number.parseFloat(assetLiability.liabilities.studentLoan) || 0;
-    if (assetLiability.liabilities.installment)
+    if (assetLiability.liabilities?.installment)
       assetLiabilityData.融資分期 =
         Number.parseFloat(assetLiability.liabilities.installment) || 0;
-    if (assetLiability.liabilities.otherLoans)
+    if (assetLiability.liabilities?.otherLoans)
       assetLiabilityData.其他貸款 =
         Number.parseFloat(assetLiability.liabilities.otherLoans) || 0;
 
@@ -125,13 +125,13 @@ export async function POST(req: Request) {
     }
 
     // 家庭資源
-    if (assetLiability.familyResources.familyProperties)
+    if (assetLiability.familyResources?.familyProperties)
       assetLiabilityData.家人有幾間房 =
         Number.parseFloat(assetLiability.familyResources.familyProperties) || 0;
-    if (assetLiability.familyResources.familyAssets)
+    if (assetLiability.familyResources?.familyAssets)
       assetLiabilityData['保單、股票、現金'] =
         Number.parseFloat(assetLiability.familyResources.familyAssets) || 0;
-    if (assetLiability.familyResources.others)
+    if (assetLiability.familyResources?.others)
       assetLiabilityData.其他家庭資源 =
         Number.parseFloat(assetLiability.familyResources.others) || 0;
 
@@ -151,11 +151,11 @@ export async function POST(req: Request) {
     const incomeExpenseData: { [key: string]: string } = {};
 
     // 收入
-    if (incomeExpense.income.mainIncome)
+    if (incomeExpense.income?.mainIncome)
       incomeExpenseData.主業收入 = incomeExpense.income.mainIncome;
-    if (incomeExpense.income.sideIncome)
+    if (incomeExpense.income?.sideIncome)
       incomeExpenseData.副業收入 = incomeExpense.income.sideIncome;
-    if (incomeExpense.income.otherIncome)
+    if (incomeExpense.income?.otherIncome)
       incomeExpenseData.其他收入 = incomeExpense.income.otherIncome;
 
     // 動態新增的收入項目
@@ -168,11 +168,11 @@ export async function POST(req: Request) {
     }
 
     // 支出
-    if (incomeExpense.expenses.livingExpenses)
+    if (incomeExpense.expenses?.livingExpenses)
       incomeExpenseData.生活費 = incomeExpense.expenses.livingExpenses;
-    if (incomeExpense.expenses.housingExpenses)
+    if (incomeExpense.expenses?.housingExpenses)
       incomeExpenseData.房租或房貸 = incomeExpense.expenses.housingExpenses;
-    if (incomeExpense.expenses.otherExpenses)
+    if (incomeExpense.expenses?.otherExpenses)
       incomeExpenseData.保費 = incomeExpense.expenses.otherExpenses;
 
     // 動態新增的支出項目

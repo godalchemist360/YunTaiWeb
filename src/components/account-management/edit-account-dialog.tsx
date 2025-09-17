@@ -98,8 +98,6 @@ export function EditAccountDialog({
     if (formData.newPassword || formData.confirmPassword) {
       if (!formData.newPassword) {
         newErrors.newPassword = '請輸入新密碼';
-      } else if (formData.newPassword.length < 6) {
-        newErrors.newPassword = '密碼長度至少6位';
       }
 
       if (!formData.confirmPassword) {

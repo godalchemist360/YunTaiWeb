@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db, query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -67,12 +67,14 @@ export async function PUT(
 
     queryParams.push(id);
 
-    const result = await db.execute(sql`
+    const updateQuery = `
       UPDATE app_users
-      SET ${sql.raw(updateFields.join(', '))}
-      WHERE id = ${id}
+      SET ${updateFields.join(', ')}
+      WHERE id = $${paramIndex}
       RETURNING id, account, display_name, role, status, to_char(created_at, 'YYYY-MM-DD') as created_date
-    `);
+    `;
+
+    const result = await query(updateQuery, queryParams);
 
     return NextResponse.json(result.rows[0]);
   } catch (error) {

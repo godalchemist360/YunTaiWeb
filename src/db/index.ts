@@ -103,6 +103,16 @@ export async function getDbStats(): Promise<
 }
 
 /**
+ * 執行 SQL 查詢的便捷函數
+ */
+export async function query(sqlString: string, params: any[] = []): Promise<{ rows: any[] }> {
+  const db = await getDb();
+  // 使用 postgres-js 的 unsafe 方法來執行原始 SQL
+  const result = await client!.unsafe(sqlString, params);
+  return { rows: result };
+}
+
+/**
  * Connect to Neon Database
  * https://orm.drizzle.team/docs/tutorials/drizzle-with-neon
  */
