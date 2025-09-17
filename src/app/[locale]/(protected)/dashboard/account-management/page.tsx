@@ -158,7 +158,7 @@ export default function AccountManagementPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-muted-foreground">載入中...</p>
         </div>
       </div>
@@ -532,7 +532,7 @@ export default function AccountManagementPage() {
                           <TableRow>
                             <TableCell colSpan={6} className="text-center py-8">
                               <div className="flex items-center justify-center">
-                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
                                 <span className="ml-2">載入中...</span>
                               </div>
                             </TableCell>

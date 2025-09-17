@@ -221,7 +221,7 @@ export function MeetingRecordDetailCard({
         {/* 流程圖 */}
         <div className="relative px-4">
           {/* 連接線 */}
-          <div className="absolute top-10 left-8 right-8 h-1 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 rounded-full"></div>
+          <div className="absolute top-10 left-8 right-8 h-1 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 rounded-full" />
 
           {/* 進度線 */}
           <div
@@ -229,7 +229,7 @@ export function MeetingRecordDetailCard({
             style={{
               width: `${(currentIndex / (marketingStages.length - 1)) * 100}%`,
             }}
-          ></div>
+          />
 
           {/* 階段節點 */}
           <div
@@ -460,6 +460,7 @@ export function MeetingRecordDetailCard({
               <h3 className="text-xl font-bold text-white">會面紀錄詳情</h3>
             </div>
             <button
+              type="button"
               onClick={onClose}
               className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
             >
@@ -697,7 +698,7 @@ export function MeetingRecordDetailCard({
                   </div>
 
                   {/* 底部：空區域，確保與約訪主軸目標底部對齊 */}
-                  <div className="h-6"></div>
+                  <div className="h-6" />
                 </div>
               </div>
 
@@ -739,19 +740,21 @@ export function MeetingRecordDetailCard({
               /* 編輯模式按鈕 */
               <>
                 <button
+                  type="button"
                   onClick={handleCancel}
                   className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   取消
                 </button>
                 <button
+                  type="button"
                   onClick={handleSave}
                   disabled={isLoading}
                   className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isLoading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       儲存中...
                     </>
                   ) : (
@@ -766,6 +769,7 @@ export function MeetingRecordDetailCard({
               /* 檢視模式按鈕 */
               <>
                 <button
+                  type="button"
                   onClick={handleEdit}
                   className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
@@ -773,6 +777,7 @@ export function MeetingRecordDetailCard({
                   編輯
                 </button>
                 <button
+                  type="button"
                   onClick={onClose}
                   className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                 >

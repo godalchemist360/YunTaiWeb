@@ -107,16 +107,15 @@ export function useAutoLogout() {
           console.log('閒置時間達到 4 分鐘，執行登出');
           await performLogout();
           return;
-        } else {
-          // 閒置計數 +1
-          const success = await updateIdleCount('increment');
-          if (!success) {
-            consecutiveFailures.current += 1;
-            if (consecutiveFailures.current >= maxFailures) {
-              console.log('連續更新失敗達到上限，執行登出');
-              await performLogout();
-              return;
-            }
+        }
+        // 閒置計數 +1
+        const success = await updateIdleCount('increment');
+        if (!success) {
+          consecutiveFailures.current += 1;
+          if (consecutiveFailures.current >= maxFailures) {
+            console.log('連續更新失敗達到上限，執行登出');
+            await performLogout();
+            return;
           }
         }
       }

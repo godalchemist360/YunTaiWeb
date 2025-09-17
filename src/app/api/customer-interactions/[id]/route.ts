@@ -260,7 +260,7 @@ export async function PUT(
     }
 
     // 添加 updated_at
-    updateFields.push(`updated_at = NOW()`);
+    updateFields.push('updated_at = NOW()');
 
     // 添加 WHERE 條件
     updateValues.push(id);

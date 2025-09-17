@@ -178,7 +178,7 @@ export default function CustomerTrackingPage() {
       const date = new Date(dateTime);
 
       // 檢查日期是否有效
-      if (isNaN(date.getTime())) {
+      if (Number.isNaN(date.getTime())) {
         console.warn('Invalid date value:', dateTime);
         return null;
       }
@@ -233,14 +233,15 @@ export default function CustomerTrackingPage() {
   const getLeadSourceStyle = useCallback((leadSource: string) => {
     if (leadSource === '原顧') {
       return 'bg-blue-100 text-blue-800';
-    } else if (leadSource === '客戶轉介') {
-      return 'bg-green-100 text-green-800';
-    } else if (leadSource === '公司名單') {
-      return 'bg-purple-100 text-purple-800';
-    } else {
-      // 其他自定義來源用粉色系
-      return 'bg-pink-100 text-pink-800';
     }
+    if (leadSource === '客戶轉介') {
+      return 'bg-green-100 text-green-800';
+    }
+    if (leadSource === '公司名單') {
+      return 'bg-purple-100 text-purple-800';
+    }
+    // 其他自定義來源用粉色系
+    return 'bg-pink-100 text-pink-800';
   }, []);
 
   // 計算統計數據（使用 useMemo 優化）
@@ -259,7 +260,7 @@ export default function CustomerTrackingPage() {
         const nextActionDate = new Date(item.next_action_date);
 
         // 檢查日期是否有效
-        if (isNaN(nextActionDate.getTime())) {
+        if (Number.isNaN(nextActionDate.getTime())) {
           console.warn('Invalid next_action_date:', item.next_action_date);
           return false;
         }
@@ -428,7 +429,7 @@ export default function CustomerTrackingPage() {
   useEffect(() => {
     if (situationCard.isOpen && situationCard.rowIndex !== undefined) {
       const updatedInteraction = customerInteractions[situationCard.rowIndex];
-      if (updatedInteraction && updatedInteraction.situation_data) {
+      if (updatedInteraction?.situation_data) {
         setSituationCard((prev) => ({
           ...prev,
           data: updatedInteraction.situation_data,
@@ -620,6 +621,7 @@ export default function CustomerTrackingPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button
+                      type="button"
                       onClick={() => setAddRecordDialog(true)}
                       className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
                     >
@@ -727,6 +729,7 @@ export default function CustomerTrackingPage() {
                                   <div className="flex items-center justify-center gap-2">
                                     <span>{interaction.customer_name}</span>
                                     <button
+                                      type="button"
                                       onClick={() =>
                                         setCustomerNameEditor({
                                           isOpen: true,
@@ -804,6 +807,7 @@ export default function CustomerTrackingPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                   <button
+                                    type="button"
                                     onClick={() =>
                                       setEconomicStatusCard({
                                         isOpen: true,
@@ -824,6 +828,7 @@ export default function CustomerTrackingPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                   <button
+                                    type="button"
                                     onClick={() =>
                                       setSituationCard({
                                         isOpen: true,
@@ -891,6 +896,7 @@ export default function CustomerTrackingPage() {
                                           ))}
                                         </select>
                                         <button
+                                          type="button"
                                           onClick={() => {
                                             const selectElement =
                                               document.querySelector(
@@ -928,6 +934,7 @@ export default function CustomerTrackingPage() {
                                       </span>
                                     )}
                                     <button
+                                      type="button"
                                       onClick={() => {
                                         const newMeetingCount =
                                           (interaction.meeting_count || 0) + 1;

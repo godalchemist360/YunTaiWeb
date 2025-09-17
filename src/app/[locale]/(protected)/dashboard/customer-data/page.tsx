@@ -115,11 +115,17 @@ export default async function CustomerDataPage() {
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
                       <Filter className="h-4 w-4" />
                       篩選
                     </button>
-                    <button className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+                    >
                       <Plus className="h-4 w-4" />
                       新增客戶
                     </button>
@@ -201,15 +207,24 @@ export default async function CustomerDataPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex items-center gap-2">
-                              <button className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                              >
                                 <Eye className="h-3 w-3" />
                                 查看
                               </button>
-                              <button className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
                                 <Edit className="h-3 w-3" />
                                 編輯
                               </button>
-                              <button className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
                                 <MoreHorizontal className="h-3 w-3" />
                               </button>
                             </div>
@@ -261,15 +276,24 @@ export default async function CustomerDataPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex items-center gap-2">
-                              <button className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                              >
                                 <Eye className="h-3 w-3" />
                                 查看
                               </button>
-                              <button className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
                                 <Edit className="h-3 w-3" />
                                 編輯
                               </button>
-                              <button className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
                                 <MoreHorizontal className="h-3 w-3" />
                               </button>
                             </div>
@@ -321,15 +345,24 @@ export default async function CustomerDataPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex items-center gap-2">
-                              <button className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                              >
                                 <Eye className="h-3 w-3" />
                                 查看
                               </button>
-                              <button className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
                                 <Edit className="h-3 w-3" />
                                 編輯
                               </button>
-                              <button className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
                                 <MoreHorizontal className="h-3 w-3" />
                               </button>
                             </div>

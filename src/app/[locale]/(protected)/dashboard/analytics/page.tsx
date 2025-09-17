@@ -117,11 +117,17 @@ export default async function AnalyticsPage() {
                         銷售趨勢
                       </h3>
                       <div className="flex items-center gap-2">
-                        <button className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
                           <Filter className="h-3 w-3" />
                           篩選
                         </button>
-                        <button className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                        >
                           <Download className="h-3 w-3" />
                           匯出
                         </button>
@@ -144,11 +150,17 @@ export default async function AnalyticsPage() {
                         客戶分布
                       </h3>
                       <div className="flex items-center gap-2">
-                        <button className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
                           <Filter className="h-3 w-3" />
                           篩選
                         </button>
-                        <button className="inline-flex items-center gap-1 rounded-lg bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 hover:bg-purple-100 transition-colors">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 rounded-lg bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 hover:bg-purple-100 transition-colors"
+                        >
                           <Download className="h-3 w-3" />
                           匯出
                         </button>
@@ -174,11 +186,17 @@ export default async function AnalyticsPage() {
                         熱門產品分析
                       </h3>
                       <div className="flex items-center gap-2">
-                        <button className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
                           <Eye className="h-3 w-3" />
                           詳細分析
                         </button>
-                        <button className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                        >
                           <Download className="h-3 w-3" />
                           下載報表
                         </button>
@@ -190,7 +208,7 @@ export default async function AnalyticsPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                          <div className="w-3 h-3 bg-blue-600 rounded-full" />
                           <div>
                             <span className="font-medium text-gray-900">
                               企業版套裝
@@ -205,7 +223,7 @@ export default async function AnalyticsPage() {
                             <div
                               className="bg-blue-600 h-2 rounded-full"
                               style={{ width: '75%' }}
-                            ></div>
+                            />
                           </div>
                           <div className="text-right">
                             <span className="text-sm font-medium text-gray-900">
@@ -218,7 +236,7 @@ export default async function AnalyticsPage() {
 
                       <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
                         <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 bg-green-600 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-600 rounded-full" />
                           <div>
                             <span className="font-medium text-gray-900">
                               專業版授權
@@ -233,7 +251,7 @@ export default async function AnalyticsPage() {
                             <div
                               className="bg-green-600 h-2 rounded-full"
                               style={{ width: '60%' }}
-                            ></div>
+                            />
                           </div>
                           <div className="text-right">
                             <span className="text-sm font-medium text-gray-900">
@@ -246,7 +264,7 @@ export default async function AnalyticsPage() {
 
                       <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
                         <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
+                          <div className="w-3 h-3 bg-purple-600 rounded-full" />
                           <div>
                             <span className="font-medium text-gray-900">
                               進階版套裝
@@ -261,7 +279,7 @@ export default async function AnalyticsPage() {
                             <div
                               className="bg-purple-600 h-2 rounded-full"
                               style={{ width: '45%' }}
-                            ></div>
+                            />
                           </div>
                           <div className="text-right">
                             <span className="text-sm font-medium text-gray-900">
@@ -274,7 +292,7 @@ export default async function AnalyticsPage() {
 
                       <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
                         <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 bg-orange-600 rounded-full"></div>
+                          <div className="w-3 h-3 bg-orange-600 rounded-full" />
                           <div>
                             <span className="font-medium text-gray-900">
                               基礎版授權
@@ -289,7 +307,7 @@ export default async function AnalyticsPage() {
                             <div
                               className="bg-orange-600 h-2 rounded-full"
                               style={{ width: '30%' }}
-                            ></div>
+                            />
                           </div>
                           <div className="text-right">
                             <span className="text-sm font-medium text-gray-900">

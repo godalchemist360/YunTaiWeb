@@ -16,14 +16,14 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * pageSize;
 
     // 查詢篩選後的資料（用於表格顯示）
-    let dataResult;
+    let dataResult: any;
     let filteredTotal = 0;
 
-    if ((q && q.trim()) || status || role) {
+    if (q?.trim() || status || role) {
       // 有篩選條件時，使用條件查詢
       const conditions: any[] = [];
 
-      if (q && q.trim()) {
+      if (q?.trim()) {
         conditions.push(
           sql`(lower(account) like lower(${'%' + q + '%'}) OR lower(display_name) like lower(${'%' + q + '%'}))`
         );

@@ -26,27 +26,25 @@ export function withPerformanceMonitoring(
 }
 
 // 資料庫查詢性能監控
-export function withQueryMonitoring<T>(
+export async function withQueryMonitoring<T>(
   queryName: string,
   queryFn: () => Promise<T>
 ): Promise<T> {
-  return async (): Promise<T> => {
-    const startTime = Date.now();
+  const startTime = Date.now();
 
-    try {
-      const result = await queryFn();
-      const duration = Date.now() - startTime;
+  try {
+    const result = await queryFn();
+    const duration = Date.now() - startTime;
 
-      // 記錄慢查詢（超過 1 秒）
-      if (duration > 1000) {
-        console.warn(`🐌 慢資料庫查詢 [${queryName}]: ${duration}ms`);
-      }
-
-      return result;
-    } catch (error) {
-      const duration = Date.now() - startTime;
-      console.error(`❌ 資料庫查詢錯誤 [${queryName}] (${duration}ms):`, error);
-      throw error;
+    // 記錄慢查詢（超過 1 秒）
+    if (duration > 1000) {
+      console.warn(`🐌 慢資料庫查詢 [${queryName}]: ${duration}ms`);
     }
-  };
+
+    return result;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error(`❌ 資料庫查詢錯誤 [${queryName}] (${duration}ms):`, error);
+    throw error;
+  }
 }

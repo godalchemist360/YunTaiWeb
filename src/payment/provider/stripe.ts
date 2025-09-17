@@ -127,7 +127,7 @@ export class StripeProvider implements PaymentProvider {
         .set({
           customerId: customerId,
           updatedAt: new Date(),
-        })
+        } as any)
         .where(eq(user.email, email))
         .returning({ id: user.id });
 
@@ -692,7 +692,7 @@ export class StripeProvider implements PaymentProvider {
           stripeSubscription.status
         ),
         updatedAt: new Date(),
-      })
+      } as any)
       .where(eq(payment.subscriptionId, stripeSubscription.id))
       .returning({ id: payment.id });
 
@@ -762,7 +762,7 @@ export class StripeProvider implements PaymentProvider {
           periodStart: now,
           createdAt: now,
           updatedAt: now,
-        })
+        } as any)
         .returning({ id: payment.id });
 
       if (result.length === 0) {
@@ -852,7 +852,7 @@ export class StripeProvider implements PaymentProvider {
         periodStart: now,
         createdAt: now,
         updatedAt: now,
-      });
+      } as any);
 
       // add credits to user account
       const amount = session.amount_total ? session.amount_total / 100 : 0;

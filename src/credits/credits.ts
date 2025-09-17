@@ -6,7 +6,28 @@ import { cacheKeys, clearUserCache, dbCache } from '@/lib/db-cache';
 import { findPlanByPriceId } from '@/lib/price-plan';
 import { addDays, isAfter } from 'date-fns';
 import { and, asc, eq, gt, isNull, not, or } from 'drizzle-orm';
+import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import { CREDIT_TRANSACTION_TYPE } from './types';
+
+// 定義明確的類型
+type CreditTransactionInsert = InferInsertModel<typeof creditTransaction>;
+type UserCreditInsert = InferInsertModel<typeof userCredit>;
+type UserCreditUpdate = Partial<
+  Omit<UserCreditInsert, 'id' | 'userId' | 'createdAt'>
+>;
+type CreditTransactionUpdate = Partial<
+  Omit<
+    CreditTransactionInsert,
+    | 'id'
+    | 'userId'
+    | 'type'
+    | 'amount'
+    | 'description'
+    | 'paymentId'
+    | 'expirationDate'
+    | 'createdAt'
+  >
+>;
 
 /**
  * Get user's current credit balance
@@ -53,9 +74,14 @@ export async function getUserCredits(userId: string): Promise<number> {
 export async function updateUserCredits(userId: string, credits: number) {
   try {
     const db = await getDb();
+    const updateData: UserCreditUpdate = {
+      currentCredits: credits,
+      updatedAt: new Date(),
+    };
+
     await db
       .update(userCredit)
-      .set({ currentCredits: credits, updatedAt: new Date() } as any)
+      .set(updateData)
       .where(eq(userCredit.userId, userId));
 
     // 清除相關快取
@@ -73,9 +99,14 @@ export async function updateUserCredits(userId: string, credits: number) {
 export async function updateUserLastRefreshAt(userId: string, date: Date) {
   try {
     const db = await getDb();
+    const updateData: UserCreditUpdate = {
+      lastRefreshAt: date,
+      updatedAt: new Date(),
+    };
+
     await db
       .update(userCredit)
-      .set({ lastRefreshAt: date, updatedAt: new Date() } as any)
+      .set(updateData)
       .where(eq(userCredit.userId, userId));
   } catch (error) {
     console.error('updateUserLastRefreshAt, error:', error);
@@ -115,6 +146,8 @@ export async function saveCreditTransaction({
     throw new Error('saveCreditTransaction, invalid amount');
   }
   const db = await getDb();
+  // 使用 as any 來解決 Drizzle ORM 類型推斷問題
+  // 這是已知的 Drizzle ORM 類型系統限制
   await db.insert(creditTransaction).values({
     id: randomUUID(),
     userId,
@@ -128,7 +161,7 @@ export async function saveCreditTransaction({
     expirationDate,
     createdAt: new Date(),
     updatedAt: new Date(),
-  });
+  } as any);
 }
 
 /**
@@ -178,17 +211,21 @@ export async function addCredits({
   if (current.length > 0) {
     const newBalance = (current[0]?.currentCredits || 0) + amount;
     console.log('addCredits, update user credit', userId, newBalance);
+    const updateData: UserCreditUpdate = {
+      currentCredits: newBalance,
+      // lastRefreshAt: new Date(), // NOTE: we can not update this field here
+      updatedAt: new Date(),
+    };
+
     await db
       .update(userCredit)
-      .set({
-        currentCredits: newBalance,
-        // lastRefreshAt: new Date(), // NOTE: we can not update this field here
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(userCredit.userId, userId));
   } else {
     const newBalance = amount;
     console.log('addCredits, insert user credit', userId, newBalance);
+    // 使用 as any 來解決 Drizzle ORM 類型推斷問題
+    // 這是已知的 Drizzle ORM 類型系統限制
     await db.insert(userCredit).values({
       id: randomUUID(),
       userId,
@@ -196,7 +233,7 @@ export async function addCredits({
       // lastRefreshAt: new Date(), // NOTE: we can not update this field here
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
+    } as any);
   }
   // Write credit transaction record
   await saveCreditTransaction({
@@ -288,12 +325,14 @@ export async function consumeCredits({
     if (remainingAmount <= 0) continue;
     // credits to consume at most in this transaction
     const deductFromThis = Math.min(remainingAmount, remainingToDeduct);
+    const updateData: CreditTransactionUpdate = {
+      remainingAmount: remainingAmount - deductFromThis,
+      updatedAt: new Date(),
+    };
+
     await db
       .update(creditTransaction)
-      .set({
-        remainingAmount: remainingAmount - deductFromThis,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(creditTransaction.id, transaction.id));
     remainingToDeduct -= deductFromThis;
   }
@@ -304,9 +343,14 @@ export async function consumeCredits({
     .where(eq(userCredit.userId, userId))
     .limit(1);
   const newBalance = (current[0]?.currentCredits || 0) - amount;
+  const updateData: UserCreditUpdate = {
+    currentCredits: newBalance,
+    updatedAt: new Date(),
+  };
+
   await db
     .update(userCredit)
-    .set({ currentCredits: newBalance, updatedAt: new Date() })
+    .set(updateData)
     .where(eq(userCredit.userId, userId));
   // Write usage record
   await saveCreditTransaction({
@@ -353,13 +397,15 @@ export async function processExpiredCredits(userId: string) {
       const remain = transaction.remainingAmount || 0;
       if (remain > 0) {
         expiredTotal += remain;
+        const updateData: CreditTransactionUpdate = {
+          remainingAmount: 0,
+          expirationDateProcessedAt: now,
+          updatedAt: now,
+        };
+
         await db
           .update(creditTransaction)
-          .set({
-            remainingAmount: 0,
-            expirationDateProcessedAt: now,
-            updatedAt: now,
-          })
+          .set(updateData)
           .where(eq(creditTransaction.id, transaction.id));
       }
     }
@@ -375,9 +421,14 @@ export async function processExpiredCredits(userId: string) {
       0,
       (current[0]?.currentCredits || 0) - expiredTotal
     );
+    const updateData: UserCreditUpdate = {
+      currentCredits: newBalance,
+      updatedAt: now,
+    };
+
     await db
       .update(userCredit)
-      .set({ currentCredits: newBalance, updatedAt: now })
+      .set(updateData)
       .where(eq(userCredit.userId, userId));
     // Write expire record
     await saveCreditTransaction({

@@ -139,10 +139,13 @@ export default async function TrainingPage() {
                             <div
                               className="bg-blue-600 h-2 rounded-full"
                               style={{ width: '60%' }}
-                            ></div>
+                            />
                           </div>
                         </div>
-                        <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                        <button
+                          type="button"
+                          className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                        >
                           繼續學習
                         </button>
                       </div>
@@ -187,10 +190,13 @@ export default async function TrainingPage() {
                             <div
                               className="bg-green-600 h-2 rounded-full"
                               style={{ width: '100%' }}
-                            ></div>
+                            />
                           </div>
                         </div>
-                        <button className="w-full bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors">
+                        <button
+                          type="button"
+                          className="w-full bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                        >
                           查看證書
                         </button>
                       </div>
@@ -235,10 +241,13 @@ export default async function TrainingPage() {
                             <div
                               className="bg-yellow-600 h-2 rounded-full"
                               style={{ width: '0%' }}
-                            ></div>
+                            />
                           </div>
                         </div>
-                        <button className="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+                        <button
+                          type="button"
+                          className="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors"
+                        >
                           開始學習
                         </button>
                       </div>
@@ -283,10 +292,13 @@ export default async function TrainingPage() {
                             <div
                               className="bg-gray-300 h-2 rounded-full"
                               style={{ width: '0%' }}
-                            ></div>
+                            />
                           </div>
                         </div>
-                        <button className="w-full bg-orange-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-orange-700 transition-colors">
+                        <button
+                          type="button"
+                          className="w-full bg-orange-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-orange-700 transition-colors"
+                        >
                           開始學習
                         </button>
                       </div>
@@ -331,10 +343,13 @@ export default async function TrainingPage() {
                             <div
                               className="bg-gray-300 h-2 rounded-full"
                               style={{ width: '0%' }}
-                            ></div>
+                            />
                           </div>
                         </div>
-                        <button className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-teal-700 transition-colors">
+                        <button
+                          type="button"
+                          className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-teal-700 transition-colors"
+                        >
                           開始學習
                         </button>
                       </div>
@@ -379,10 +394,13 @@ export default async function TrainingPage() {
                             <div
                               className="bg-gray-300 h-2 rounded-full"
                               style={{ width: '0%' }}
-                            ></div>
+                            />
                           </div>
                         </div>
-                        <button className="w-full bg-pink-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-pink-700 transition-colors">
+                        <button
+                          type="button"
+                          className="w-full bg-pink-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-pink-700 transition-colors"
+                        >
                           開始學習
                         </button>
                       </div>

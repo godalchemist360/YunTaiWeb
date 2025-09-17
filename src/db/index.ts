@@ -20,7 +20,7 @@ const dbConfig = {
   prepare: true, // 啟用預處理語句快取
 
   // SSL 設定
-  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+  ssl: process.env.NODE_ENV === 'production' ? 'require' as const : false,
 
   // 連線設定
   connection: {
@@ -36,7 +36,10 @@ const dbConfig = {
 export async function getDb() {
   if (db) return db;
 
-  const connectionString = process.env.DATABASE_URL!;
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('DATABASE_URL environment variable is not set');
+  }
 
   // 建立簡化的資料庫連線
   client = postgres(connectionString, dbConfig);
@@ -53,7 +56,7 @@ export async function getDb() {
 /**
  * 關閉資料庫連線（用於優雅關閉）
  */
-export async function closeDb() {
+export async function closeDb(): Promise<void> {
   if (client) {
     await client.end();
     client = null;
@@ -64,7 +67,7 @@ export async function closeDb() {
 /**
  * 健康檢查函數
  */
-export async function checkDbHealth() {
+export async function checkDbHealth(): Promise<{ healthy: true } | { healthy: false; error: string }> {
   try {
     const db = await getDb();
     await db.execute(sql`SELECT 1`);
@@ -78,13 +81,17 @@ export async function checkDbHealth() {
 /**
  * 連線池狀態查詢
  */
-export async function getDbStats() {
+export async function getDbStats(): Promise<
+  | { connected: false }
+  | { connected: true; activeConnections: number; maxConnections: number }
+  | { connected: false; error: string }
+> {
   if (!client) {
     return { connected: false };
   }
 
   try {
-    const stats = await client.unsafe('SELECT count(*) as active_connections FROM pg_stat_activity WHERE state = \'active\'');
+    const stats = await client.unsafe('SELECT count(*) as active_connections FROM pg_stat_activity WHERE state = \'active\'') as Array<{ active_connections: string }>;
     return {
       connected: true,
       activeConnections: parseInt(stats[0]?.active_connections || '0'),

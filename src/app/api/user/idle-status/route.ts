@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     // 從 app_users 表查詢閒置計數
     const result = await query(
-      `SELECT idle_count FROM app_users WHERE account = $1`,
+      'SELECT idle_count FROM app_users WHERE account = $1',
       [userAccount]
     );
 

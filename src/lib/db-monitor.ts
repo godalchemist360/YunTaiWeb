@@ -33,7 +33,9 @@ class SimpleDatabaseMonitor {
     return {
       database: {
         healthy: dbHealth.healthy,
-        error: dbHealth.error,
+        error: dbHealth.healthy
+          ? undefined
+          : (dbHealth as { error: string }).error,
         connections: dbStats,
       },
       cache: cacheStats,

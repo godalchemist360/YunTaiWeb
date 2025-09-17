@@ -40,12 +40,11 @@ export async function GET(
     // 所有附件都是雲端儲存，直接重定向到雲端 URL
     if (attachment.file_url) {
       return NextResponse.redirect(attachment.file_url);
-    } else {
-      return NextResponse.json(
-        { error: 'Attachment URL not found' },
-        { status: 404 }
-      );
     }
+    return NextResponse.json(
+      { error: 'Attachment URL not found' },
+      { status: 404 }
+    );
   } catch (error) {
     console.error('獲取附件失敗:', error);
     return NextResponse.json(

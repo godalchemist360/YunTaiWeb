@@ -152,6 +152,7 @@ export function LeadSourceEditor({
               <h3 className="text-xl font-bold text-white">選擇名單來源</h3>
             </div>
             <button
+              type="button"
               onClick={onClose}
               className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
             >
@@ -229,6 +230,7 @@ export function LeadSourceEditor({
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-b-2xl border-t border-gray-200">
           <div className="flex justify-end gap-3">
             <button
+              type="button"
               onClick={onClose}
               disabled={isLoading}
               className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
@@ -236,6 +238,7 @@ export function LeadSourceEditor({
               取消
             </button>
             <button
+              type="button"
               onClick={handleSave}
               disabled={
                 !selectedSource ||

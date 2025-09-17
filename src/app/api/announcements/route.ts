@@ -46,7 +46,7 @@ export async function GET(req: Request) {
     params.push(type);
   }
   if (filter === 'important') where.push(`a.type = 'important'`);
-  if (filter === 'unread') where.push(`rr.announcement_id IS NULL`);
+  if (filter === 'unread') where.push('rr.announcement_id IS NULL');
   if (q) {
     where.push(`(a.title ILIKE $${i} OR a.content ILIKE $${i})`);
     params.push(`%${q}%`);

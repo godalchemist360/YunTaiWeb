@@ -127,7 +127,10 @@ export default async function DataUploadPage() {
                           <p className="text-xs text-gray-500 mb-4">
                             支援 CSV, Excel 格式，最大 10MB
                           </p>
-                          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                          <button
+                            type="button"
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                          >
                             選擇檔案
                           </button>
                         </div>
@@ -156,7 +159,10 @@ export default async function DataUploadPage() {
                           <p className="text-xs text-gray-500 mb-4">
                             支援 PDF, Excel 格式，最大 5MB
                           </p>
-                          <button className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">
+                          <button
+                            type="button"
+                            className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors"
+                          >
                             選擇檔案
                           </button>
                         </div>
@@ -185,7 +191,10 @@ export default async function DataUploadPage() {
                           <p className="text-xs text-gray-500 mb-4">
                             支援 CSV, JSON 格式，最大 2MB
                           </p>
-                          <button className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+                          <button
+                            type="button"
+                            className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors"
+                          >
                             選擇檔案
                           </button>
                         </div>
@@ -214,7 +223,10 @@ export default async function DataUploadPage() {
                           <p className="text-xs text-gray-500 mb-4">
                             支援 JPG, PNG 格式，最大 5MB
                           </p>
-                          <button className="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-orange-700 transition-colors">
+                          <button
+                            type="button"
+                            className="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-orange-700 transition-colors"
+                          >
                             選擇檔案
                           </button>
                         </div>
@@ -246,11 +258,17 @@ export default async function DataUploadPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button className="inline-flex items-center gap-1 rounded-lg bg-green-50 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-100 transition-colors">
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1 rounded-lg bg-green-50 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-100 transition-colors"
+                          >
                             <Download className="h-3 w-3" />
                             下載
                           </button>
-                          <button className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
                             <Trash2 className="h-3 w-3" />
                             刪除
                           </button>
@@ -270,7 +288,10 @@ export default async function DataUploadPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors">
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                          >
                             <Clock className="h-3 w-3" />
                             查看進度
                           </button>
@@ -290,11 +311,17 @@ export default async function DataUploadPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-100 transition-colors">
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-100 transition-colors"
+                          >
                             <AlertCircle className="h-3 w-3" />
                             查看錯誤
                           </button>
-                          <button className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
                             <Trash2 className="h-3 w-3" />
                             刪除
                           </button>

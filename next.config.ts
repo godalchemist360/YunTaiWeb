@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
     // removeConsole: process.env.NODE_ENV === 'production',
   },
 
+  // 添加 TypeScript 配置
+  typescript: {
+    // 建置時忽略 TypeScript 錯誤
+    ignoreBuildErrors: false,
+  },
+
   images: {
     // https://vercel.com/docs/image-optimization/managing-image-optimization-costs#minimizing-image-optimization-costs
     // https://nextjs.org/docs/app/api-reference/components/image#unoptimized

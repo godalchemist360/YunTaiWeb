@@ -23,7 +23,7 @@ async function testAnnouncementDisplay() {
     }
 
     const announcements = await announcementsRes.json();
-    console.log(`✅ 公告列表 API 成功`);
+    console.log('✅ 公告列表 API 成功');
     console.log(`   總數: ${announcements.total}`);
     console.log(`   項目數: ${announcements.items?.length || 0}`);
 
@@ -48,7 +48,7 @@ async function testAnnouncementDisplay() {
     }
 
     const summary = await summaryRes.json();
-    console.log(`✅ 統計 API 成功`);
+    console.log('✅ 統計 API 成功');
     console.log(`   總公告數: ${summary.total}`);
     console.log(`   未讀公告: ${summary.unread}`);
     console.log(`   重要公告: ${summary.important}`);
@@ -70,7 +70,7 @@ async function testAnnouncementDisplay() {
     }
 
     const unreadCount = await unreadCountRes.json();
-    console.log(`✅ 未讀計數 API 成功`);
+    console.log('✅ 未讀計數 API 成功');
     console.log(`   未讀數量: ${unreadCount.unread_count}`);
 
     // 4. 測試未讀清單 API
@@ -87,13 +87,13 @@ async function testAnnouncementDisplay() {
     }
 
     const unreadList = await unreadListRes.json();
-    console.log(`✅ 未讀清單 API 成功`);
+    console.log('✅ 未讀清單 API 成功');
     console.log(`   未讀清單數量: ${unreadList.length}`);
 
     // 5. 如果有公告，測試標記已讀功能
     if (announcements.items && announcements.items.length > 0) {
       const firstAnnouncement = announcements.items[0];
-      console.log(`\n✅ 測試標記已讀功能...`);
+      console.log('\n✅ 測試標記已讀功能...');
       console.log(`   目標公告: ${firstAnnouncement.title}`);
 
       const markReadRes = await fetch(
@@ -110,7 +110,7 @@ async function testAnnouncementDisplay() {
         );
       } else {
         const markReadResult = await markReadRes.json();
-        console.log(`✅ 標記已讀 API 成功`);
+        console.log('✅ 標記已讀 API 成功');
         console.log(`   結果: ${JSON.stringify(markReadResult)}`);
       }
     }

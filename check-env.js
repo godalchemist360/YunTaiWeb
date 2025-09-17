@@ -47,10 +47,7 @@ const storageConfig = {
 };
 
 // 檢查 Cloudflare R2 特定配置
-if (
-  storageConfig.endpoint &&
-  storageConfig.endpoint.includes('r2.cloudflarestorage.com')
-) {
+if (storageConfig.endpoint?.includes('r2.cloudflarestorage.com')) {
   console.log('✅ 檢測到 Cloudflare R2 配置');
 
   // 檢查 R2 配置是否完整

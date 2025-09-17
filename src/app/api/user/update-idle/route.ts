@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '未找到用戶帳號' }, { status: 401 });
     }
 
-    let result;
+    let result: any;
     if (action === 'increment') {
       // 閒置計數 +1
       result = await query(

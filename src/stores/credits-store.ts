@@ -75,7 +75,7 @@ export const useCreditsStore = create<CreditsState>((set, get) => ({
     });
 
     try {
-      const result = await getCreditBalanceAction();
+      const result = await getCreditBalanceAction({});
       if (result?.data?.success && result.data.credits !== undefined) {
         const newBalance = result.data.credits || 0;
         console.log('fetchCredits, set new balance', newBalance);

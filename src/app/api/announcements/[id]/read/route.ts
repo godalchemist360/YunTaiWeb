@@ -13,7 +13,7 @@ export async function POST(
     const announcementId = (await params).id;
 
     // 確認公告存在
-    const chk = await query(`SELECT 1 FROM announcements WHERE id=$1 LIMIT 1`, [
+    const chk = await query('SELECT 1 FROM announcements WHERE id=$1 LIMIT 1', [
       announcementId,
     ]);
     if (chk.rowCount === 0)

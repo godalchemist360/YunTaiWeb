@@ -202,7 +202,7 @@ const cleanValue = (value: any): number => {
   if (typeof value === 'string') {
     const cleaned = value.replace(/[^\d.-]/g, '');
     const num = Number.parseFloat(cleaned);
-    return isNaN(num) ? 0 : num;
+    return Number.isNaN(num) ? 0 : num;
   }
 
   if (typeof value === 'number') {
@@ -298,7 +298,7 @@ const formatValue = (value: any): string => {
   if (typeof value === 'string') {
     const cleaned = value.replace(/[^\d.-]/g, '');
     const num = Number.parseFloat(cleaned);
-    return isNaN(num) ? '0' : num.toString();
+    return Number.isNaN(num) ? '0' : num.toString();
   }
 
   if (typeof value === 'number') {
@@ -1365,7 +1365,7 @@ export function EconomicStatusDetailCard({
                 >
                   {isLoading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                       儲存中...
                     </>
                   ) : (

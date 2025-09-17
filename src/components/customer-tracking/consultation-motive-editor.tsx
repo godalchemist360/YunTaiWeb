@@ -183,6 +183,7 @@ export function ConsultationMotiveEditor({
               <h3 className="text-xl font-bold text-white">編輯諮詢動機</h3>
             </div>
             <button
+              type="button"
               onClick={onClose}
               className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
             >
@@ -232,6 +233,7 @@ export function ConsultationMotiveEditor({
                       >
                         {motive}
                         <button
+                          type="button"
                           onClick={() => removeCustomMotive(index)}
                           className="ml-1 hover:bg-blue-200 rounded-full p-0.5"
                         >
@@ -254,6 +256,7 @@ export function ConsultationMotiveEditor({
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <button
+                  type="button"
                   onClick={addCustomMotive}
                   disabled={!newCustomMotive.trim() || isLoading}
                   className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
@@ -276,6 +279,7 @@ export function ConsultationMotiveEditor({
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-b-2xl border-t border-gray-200">
           <div className="flex justify-end gap-3">
             <button
+              type="button"
               onClick={onClose}
               disabled={isLoading}
               className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
@@ -283,6 +287,7 @@ export function ConsultationMotiveEditor({
               取消
             </button>
             <button
+              type="button"
               onClick={handleSave}
               disabled={isLoading}
               className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"

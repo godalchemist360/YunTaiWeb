@@ -24,13 +24,14 @@ export async function POST(request: NextRequest) {
     const getFileSizeLimit = (mimeType: string) => {
       if (mimeType.startsWith('audio/')) {
         return 100 * 1024 * 1024; // 音檔：100MB
-      } else if (mimeType.startsWith('video/')) {
-        return 500 * 1024 * 1024; // 影片：500MB
-      } else if (mimeType.startsWith('image/')) {
-        return 10 * 1024 * 1024; // 圖片：10MB
-      } else {
-        return 50 * 1024 * 1024; // 其他：50MB
       }
+      if (mimeType.startsWith('video/')) {
+        return 500 * 1024 * 1024; // 影片：500MB
+      }
+      if (mimeType.startsWith('image/')) {
+        return 10 * 1024 * 1024; // 圖片：10MB
+      }
+      return 50 * 1024 * 1024; // 其他：50MB
     };
 
     const fileSizeLimit = getFileSizeLimit(file.type);

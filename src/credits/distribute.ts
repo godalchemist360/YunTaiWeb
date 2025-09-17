@@ -294,7 +294,7 @@ export async function batchAddMonthlyFreeCredits(userIds: string[]) {
             currentCredits: newBalance,
             lastRefreshAt: now,
             updatedAt: now,
-          })
+          } as any)
           .where(eq(userCredit.userId, userId));
       }
     }
@@ -440,7 +440,7 @@ export async function batchAddLifetimeMonthlyCredits(
               currentCredits: newBalance,
               lastRefreshAt: now,
               updatedAt: now,
-            })
+            } as any)
             .where(eq(userCredit.userId, userId));
         }
       }
@@ -586,7 +586,7 @@ export async function batchAddYearlyUsersMonthlyCredits(
               currentCredits: newBalance,
               lastRefreshAt: now,
               updatedAt: now,
-            })
+            } as any)
             .where(eq(userCredit.userId, userId));
         }
       }

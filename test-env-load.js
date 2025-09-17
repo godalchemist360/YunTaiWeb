@@ -37,13 +37,11 @@ if (fs.existsSync(envPath)) {
   console.log(' 從 .env 檔案讀取的環境變數：');
   Object.entries(envVars).forEach(([key, value]) => {
     if (key.includes('SECRET') || key.includes('KEY')) {
-      const maskedValue = value.length > 8 ? 
-                ${value.substring(0, 4)}
-      ... :
-      ('***');
-      console.log(:);
+      const maskedValue =
+        value.length > 8 ? `${value.substring(0, 4)}...` : '***';
+      console.log(`  ${key}: ${maskedValue}`);
     } else {
-      console.log(:);
+      console.log(`  ${key}: ${value}`);
     }
   });
 
@@ -60,9 +58,9 @@ if (fs.existsSync(envPath)) {
 
   storageVars.forEach((varName) => {
     if (envVars[varName]) {
-      console.log(:);
+      console.log(`  ${varName}: 已設定`);
     } else {
-      console.log(: 未設定);
+      console.log(`  ${varName}: 未設定`);
     }
   });
 } else {

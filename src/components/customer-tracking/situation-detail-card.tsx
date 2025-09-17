@@ -78,10 +78,20 @@ export function SituationDetailCard({
 
   // JSONB 字符驗證
   const validateJsonbString = (value: string): string => {
-    // 檢查控制字符
-    const controlChars = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/;
-    if (controlChars.test(value)) {
-      return '不能包含控制字符';
+    // 檢查控制字符 - 使用字符代碼檢查避免正則表達式控制字符問題
+    for (let i = 0; i < value.length; i++) {
+      const charCode = value.charCodeAt(i);
+      if (
+        charCode < 32 &&
+        charCode !== 9 &&
+        charCode !== 10 &&
+        charCode !== 13
+      ) {
+        return '不能包含控制字符';
+      }
+      if (charCode === 127) {
+        return '不能包含控制字符';
+      }
     }
     return '';
   };
@@ -173,6 +183,7 @@ export function SituationDetailCard({
               <h3 className="text-xl font-bold text-white">現況說明</h3>
             </div>
             <button
+              type="button"
               onClick={onClose}
               className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
             >
@@ -341,6 +352,7 @@ export function SituationDetailCard({
             {isEditing ? (
               <>
                 <button
+                  type="button"
                   onClick={handleCancel}
                   disabled={isLoading}
                   className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
@@ -348,13 +360,14 @@ export function SituationDetailCard({
                   取消
                 </button>
                 <button
+                  type="button"
                   onClick={handleSave}
                   disabled={isLoading}
                   className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
                 >
                   {isLoading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                       儲存中...
                     </>
                   ) : (
@@ -367,6 +380,7 @@ export function SituationDetailCard({
               </>
             ) : (
               <button
+                type="button"
                 onClick={handleEdit}
                 className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
               >
@@ -395,12 +409,14 @@ export function SituationDetailCard({
                 </p>
                 <div className="flex justify-end gap-3">
                   <button
+                    type="button"
                     onClick={() => setShowCancelConfirm(false)}
                     className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     繼續編輯
                   </button>
                   <button
+                    type="button"
                     onClick={confirmCancel}
                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                   >

@@ -12,7 +12,7 @@ export async function PUT(
   try {
     const { id: idStr } = await params;
     const id = Number.parseInt(idStr);
-    if (isNaN(id)) {
+    if (Number.isNaN(id)) {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
 
@@ -91,7 +91,7 @@ export async function DELETE(
   try {
     const { id: idStr } = await params;
     const id = Number.parseInt(idStr);
-    if (isNaN(id)) {
+    if (Number.isNaN(id)) {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
 
