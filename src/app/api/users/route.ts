@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db, query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -112,11 +112,13 @@ export async function POST(request: NextRequest) {
 
     const password_hash = await bcrypt.hash(password, 10);
 
-    const result = await db.execute(sql`
+    const insertQuery = `
       INSERT INTO app_users (account, display_name, role, status, password_hash)
-      VALUES (${account}, ${display_name}, ${role}, ${status}, ${password_hash})
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING id, account, display_name, role, status, to_char(created_at, 'YYYY-MM-DD') as created_date
-    `);
+    `;
+
+    const result = await query(insertQuery, [account, display_name, role, status, password_hash]);
 
     return NextResponse.json(result.rows[0]);
   } catch (error) {
