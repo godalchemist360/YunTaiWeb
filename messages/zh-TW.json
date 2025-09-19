@@ -482,6 +482,9 @@
     "customerData": {
       "title": "客戶資料"
     },
+    "organizationChart": {
+      "title": "組織圖"
+    },
     "commissionQuery": {
       "title": "傭金查詢"
     },

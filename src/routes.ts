@@ -36,6 +36,7 @@ export enum Routes {
   DashboardAnnouncements = '/dashboard/announcements',
   DashboardSalesSupport = '/dashboard/sales-support',
   DashboardCustomerData = '/dashboard/customer-data',
+  DashboardOrganizationChart = '/dashboard/organization-chart',
   DashboardCommissionQuery = '/dashboard/commission-query',
   DashboardDataUpload = '/dashboard/data-upload',
   DashboardTraining = '/dashboard/training',

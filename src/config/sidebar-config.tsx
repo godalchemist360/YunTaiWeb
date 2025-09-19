@@ -16,6 +16,7 @@ import {
   LayoutDashboardIcon,
   LockKeyholeIcon,
   MegaphoneIcon,
+  NetworkIcon,
   SearchIcon,
   Settings2Icon,
   SettingsIcon,
@@ -62,6 +63,12 @@ export function getSidebarLinks(): NestedMenuItem[] {
       title: t('customerData.title'),
       icon: <UserCheckIcon className="size-4 shrink-0" />,
       href: Routes.DashboardCustomerData,
+      external: false,
+    },
+    {
+      title: t('organizationChart.title'),
+      icon: <NetworkIcon className="size-4 shrink-0" />,
+      href: Routes.DashboardOrganizationChart,
       external: false,
     },
     {

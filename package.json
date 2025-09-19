@@ -100,6 +100,8 @@
     "dotenv": "^16.4.7",
     "dotted-map": "^2.2.3",
     "drizzle-orm": "^0.39.3",
+    "echarts": "^5.6.0",
+    "echarts-for-react": "^3.0.2",
     "embla-carousel-react": "^8.5.2",
     "form-data": "^4.0.4",
     "framer-motion": "^12.4.7",

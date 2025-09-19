@@ -483,6 +483,9 @@
     "customerData": {
       "title": "客户资料"
     },
+    "organizationChart": {
+      "title": "组织图"
+    },
     "commissionQuery": {
       "title": "佣金查询"
     },
