@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Search, Download, ChevronDown } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 // Dynamic import for ECharts to avoid SSR issues
 const ReactECharts = dynamic(() => import('echarts-for-react'), {
@@ -22,9 +22,42 @@ type TreeNode = {
   name: string;
   rank?: '鑽石' | '白金' | '金' | '銀' | '銅';
   active?: boolean;
+  sales_total?: number;
+  hasChildren?: boolean;
+  _loadedChildren?: boolean;
+  collapsed?: boolean;
   children?: TreeNode[];
 };
 
+/**
+ * API response types
+ */
+type ApiResponse<T> = {
+  success: boolean;
+  data?: T;
+  error?: string;
+};
+
+type MemberData = {
+  id: string;
+  name: string;
+  rank: '鑽石' | '白金' | '金' | '銀' | '銅';
+  active: boolean;
+  sales_total: number;
+  hasChildren: boolean;
+};
+
+
+/**
+ * Rank colors configuration
+ */
+export const RANK_COLORS = {
+  '鑽石': { fill: '#B9F2FF', stroke: '#7ECFE3' },
+  '白金': { fill: '#FAF6EA', stroke: '#D5C79B' },
+  '金':   { fill: '#FFD700', stroke: '#B8860B' },
+  '銀':   { fill: '#8FA0B2', stroke: '#657383' },
+  '銅':   { fill: '#CD7F32', stroke: '#99501D' },
+} as const;
 
 /**
  * Add color property to tree nodes based on rank
@@ -33,26 +66,8 @@ const addColorToNode = (node: TreeNode): TreeNode => {
   const nodeWithColor = {
     ...node,
     itemStyle: {
-      color: (() => {
-        switch (node.rank) {
-          case '鑽石': return '#B9F2FF'; // Diamond fill
-          case '白金': return '#FAF6EA'; // Platinum fill
-          case '金': return '#FFD700';   // Gold fill
-          case '銀': return '#8FA0B2';   // Silver fill
-          case '銅': return '#CD7F32';   // Bronze fill
-          default: return '#6B7280';    // Default node color
-        }
-      })(),
-      borderColor: (() => {
-        switch (node.rank) {
-          case '鑽石': return '#7ECFE3'; // Diamond stroke
-          case '白金': return '#D5C79B'; // Platinum stroke
-          case '金': return '#B8860B';   // Gold stroke
-          case '銀': return '#657383';   // Silver stroke
-          case '銅': return '#99501D';   // Bronze stroke
-          default: return '#4B5563';    // Default stroke color
-        }
-      })(),
+      color: node.rank ? RANK_COLORS[node.rank].fill : '#6B7280',
+      borderColor: node.rank ? RANK_COLORS[node.rank].stroke : '#4B5563',
       borderWidth: 2,
     }
   };
@@ -65,105 +80,21 @@ const addColorToNode = (node: TreeNode): TreeNode => {
 };
 
 /**
- * Mock data for organization chart - represents a forest of trees
+ * Convert API member data to tree node
  */
-const mockForest: TreeNode[] = [
-  {
-    id: 'A1',
-    name: 'Alice',
-    rank: '鑽石',
-    active: true,
-    children: [
-      {
-        id: 'A2',
-        name: 'Amy',
-        rank: '金',
-        active: true,
-        children: [
-          { id: 'A3', name: 'Ann', rank: '銀', active: true },
-          { id: 'A4', name: 'Alex', rank: '銅', active: false },
-          { id: 'A5', name: 'Andy', rank: '銀', active: true },
-        ],
-      },
-      {
-        id: 'A6',
-        name: 'Aron',
-        rank: '銀',
-        active: false,
-        children: [
-          { id: 'A7', name: 'Anna', rank: '銅', active: true },
-        ],
-      },
-      {
-        id: 'A8',
-        name: 'Alan',
-        rank: '金',
-        active: true,
-      },
-    ],
-  },
-  {
-    id: 'B1',
-    name: 'Bob',
-    rank: '白金',
-    active: true,
-    children: [
-      {
-        id: 'B2',
-        name: 'Ben',
-        rank: '金',
-        active: true,
-        children: [
-          { id: 'B3', name: 'Bea', rank: '銅', active: true },
-          { id: 'B4', name: 'Bill', rank: '銀', active: false },
-          { id: 'B5', name: 'Bella', rank: '銅', active: true },
-        ],
-      },
-      {
-        id: 'B6',
-        name: 'Bryan',
-        rank: '金',
-        active: true,
-        children: [
-          { id: 'B7', name: 'Betty', rank: '銀', active: true },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'C1',
-    name: 'Carol',
-    rank: '白金',
-    active: true,
-    children: [
-      {
-        id: 'C2',
-        name: 'Chris',
-        rank: '金',
-        active: false,
-        children: [
-          { id: 'C3', name: 'Cathy', rank: '銀', active: true },
-        ],
-      },
-      {
-        id: 'C4',
-        name: 'Carl',
-        rank: '銀',
-        active: true,
-      },
-    ],
-  },
-].map(addColorToNode);
-
-/**
- * Root node that combines all trees into a single forest
- */
-const root: TreeNode = addColorToNode({
-  id: 'ROOT',
-  name: '全部組織',
-  active: true,
-  children: mockForest,
-});
+const memberToTreeNode = (member: MemberData): TreeNode => {
+  return {
+    id: member.id,
+    name: member.name,
+    rank: member.rank,
+    active: member.active,
+    sales_total: member.sales_total,
+    hasChildren: member.hasChildren,
+    _loadedChildren: false,
+    collapsed: false,
+    children: []
+  };
+};
 
 /**
  * Get color for rank
@@ -194,12 +125,141 @@ const getNodeColor = (node: TreeNode): string => {
 };
 
 /**
- * Static Organization Chart Component
- * Displays a tree chart using ECharts with mock data
+ * Dynamic Organization Chart Component
+ * Displays a tree chart using ECharts with API data
  */
 export default function OrgChartStatic(): JSX.Element {
+  const [root, setRoot] = useState<TreeNode | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
+
+  // Fetch roots on component mount
+  useEffect(() => {
+    const fetchRoots = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/org/roots');
+        const result: ApiResponse<MemberData[]> = await response.json();
+
+        if (result.success && result.data) {
+          const roots = result.data.map(memberToTreeNode);
+
+          // 載入每個根節點的子節點
+          const rootsWithChildren = await Promise.all(
+            roots.map(async (root) => {
+              if (root.hasChildren) {
+                try {
+                  const childrenResponse = await fetch(`/api/org/children?parent=${root.id}`);
+                  const childrenResult: ApiResponse<MemberData[]> = await childrenResponse.json();
+                  if (childrenResult.success && childrenResult.data) {
+                    const children = childrenResult.data.map(memberToTreeNode);
+                    return { ...root, children, _loadedChildren: true };
+                  }
+                } catch (err) {
+                  console.error('Error loading children for root:', root.id, err);
+                }
+              }
+              return root;
+            })
+          );
+
+          const virtualRoot: TreeNode = {
+            id: 'ROOT',
+            name: '全部組織',
+            active: true,
+            hasChildren: rootsWithChildren.length > 0,
+            _loadedChildren: true,
+            collapsed: false,
+            children: rootsWithChildren
+          };
+          setRoot(addColorToNode(virtualRoot));
+        } else {
+          setError(result.error || 'Failed to load organization data');
+        }
+      } catch (err) {
+        setError('Network error while loading organization data');
+        console.error('Error fetching roots:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoots();
+  }, []);
+
+  // Load children for a specific node
+  const loadChildren = async (nodeId: string) => {
+    try {
+      const response = await fetch(`/api/org/children?parent=${nodeId}`);
+      const result: ApiResponse<MemberData[]> = await response.json();
+
+      if (result.success && result.data) {
+        const children = result.data.map(memberToTreeNode);
+
+        // Update the tree structure
+        const updateNode = (node: TreeNode): TreeNode => {
+          if (node.id === nodeId) {
+            return {
+              ...node,
+              children: children,
+              _loadedChildren: true
+            };
+          }
+          if (node.children) {
+            return {
+              ...node,
+              children: node.children.map(updateNode)
+            };
+          }
+          return node;
+        };
+
+        if (root) {
+          setRoot(addColorToNode(updateNode(root)));
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching children:', err);
+    }
+  };
+
+  // Handle node click
+  const handleNodeClick = (params: any) => {
+    const data = params.data;
+
+    // 設定選中的節點
+    setSelectedNode(data);
+
+    if (data.hasChildren && !data._loadedChildren) {
+      loadChildren(data.id);
+    } else if (data._loadedChildren) {
+      // Toggle collapse/expand
+      const updateNode = (node: TreeNode): TreeNode => {
+        if (node.id === data.id) {
+          return {
+            ...node,
+            collapsed: !node.collapsed
+          };
+        }
+        if (node.children) {
+          return {
+            ...node,
+            children: node.children.map(updateNode)
+          };
+        }
+        return node;
+      };
+
+      if (root) {
+        setRoot(addColorToNode(updateNode(root)));
+      }
+    }
+  };
+
   // ECharts configuration
   const chartOption = useMemo(() => {
+    if (!root) return {};
     return {
       grid: {
         top: '5%',
@@ -210,14 +270,16 @@ export default function OrgChartStatic(): JSX.Element {
       series: [
         {
           type: 'tree',
+          layout: 'radial',
           data: [root],
           top: '5%',
           left: '5%',
           bottom: '5%',
-          right: '20%',
+          right: '5%',
           symbolSize: 16,
           symbol: 'circle',
           label: {
+            rotate: 0,
             position: 'left',
             verticalAlign: 'middle',
             align: 'right',
@@ -244,10 +306,12 @@ export default function OrgChartStatic(): JSX.Element {
           },
           leaves: {
             label: {
+              rotate: 0,
               position: 'right',
               align: 'left',
             },
           },
+          labelLayout: () => ({ rotate: 0 }),
           lineStyle: {
             width: 1,
             color: '#D1D5DB',
@@ -260,7 +324,7 @@ export default function OrgChartStatic(): JSX.Element {
             shadowColor: 'rgba(0, 0, 0, 0.1)',
           },
           roam: true,
-          initialTreeDepth: 2,
+          initialTreeDepth: 3,
           animationDuration: 300,
           animationEasing: 'cubicOut',
         },
@@ -279,7 +343,7 @@ export default function OrgChartStatic(): JSX.Element {
         },
       },
     };
-  }, []);
+  }, [root]);
 
   return (
     <div className="rounded-2xl shadow-sm border bg-white p-4 md:p-6">
@@ -305,29 +369,6 @@ export default function OrgChartStatic(): JSX.Element {
             />
           </div>
 
-          {/* Direction Dropdown */}
-          <div className="relative">
-            <select
-              disabled
-              className="appearance-none pl-3 pr-8 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              aria-label="選擇圖表方向"
-            >
-              <option value="left-to-right">Left-to-Right</option>
-              <option value="top-to-bottom">Top-to-Bottom</option>
-              <option value="radial">Radial</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-          </div>
-
-          {/* Export Button */}
-          <button
-            disabled
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg cursor-not-allowed opacity-60 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-            aria-label="匯出圖表為PNG"
-          >
-            <Download className="h-4 w-4" />
-            匯出 PNG
-          </button>
         </div>
       </div>
 
@@ -336,41 +377,84 @@ export default function OrgChartStatic(): JSX.Element {
         {/* Left: Tree Chart */}
         <div className="mb-6 lg:mb-0">
           <div className="h-[70vh] sm:h-[60vh] lg:h-[70vh] w-full">
-            <ReactECharts
-              option={chartOption}
-              style={{ width: '100%', height: '100%' }}
-              opts={{ renderer: 'canvas' }}
-            />
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-3 text-gray-600">載入組織資料中...</span>
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <div className="text-red-500 text-lg mb-2">載入失敗</div>
+                  <div className="text-gray-600">{error}</div>
+                </div>
+              </div>
+            ) : (
+              <ReactECharts
+                option={chartOption}
+                style={{ width: '100%', height: '100%' }}
+                opts={{ renderer: 'canvas' }}
+                onEvents={{
+                  click: handleNodeClick
+                }}
+              />
+            )}
           </div>
         </div>
 
         {/* Right: Info Sidebar */}
         <div className="hidden lg:flex">
           <div className="w-full">
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                  <div className="w-4 h-4 bg-gray-400 rounded-full"></div>
+            {selectedNode ? (
+              <div className={`rounded-xl p-6 border-2 shadow-lg transition-all duration-300 ${
+                selectedNode.rank === '鑽石' ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200' :
+                selectedNode.rank === '白金' ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200' :
+                selectedNode.rank === '金' ? 'bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200' :
+                selectedNode.rank === '銀' ? 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200' :
+                selectedNode.rank === '銅' ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200' :
+                'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
+              }`}>
+                {/* 階級標籤 */}
+                <div className="flex justify-center mb-4">
+                  <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold shadow-md ${
+                    selectedNode.rank === '鑽石' ? 'bg-blue-500 text-white' :
+                    selectedNode.rank === '白金' ? 'bg-purple-500 text-white' :
+                    selectedNode.rank === '金' ? 'bg-yellow-500 text-white' :
+                    selectedNode.rank === '銀' ? 'bg-gray-500 text-white' :
+                    selectedNode.rank === '銅' ? 'bg-orange-500 text-white' :
+                    'bg-gray-500 text-white'
+                  }`}>
+                    {selectedNode.rank || '無階級'}
+                  </span>
                 </div>
-                <h3 className="font-medium text-gray-900">節點資訊（預留）</h3>
-              </div>
 
-              {/* Skeleton Loading */}
-              <div className="space-y-3">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                </div>
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                </div>
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                {/* 名稱 */}
+                <div className="text-center mb-4">
+                  <div className="text-2xl font-bold text-gray-900 mb-4">
+                    {selectedNode.name}
+                  </div>
+
+                  {/* 累計業績 */}
+                  <div>
+                    <div className="text-sm font-medium text-gray-600 mb-1">累計業績</div>
+                    <div className="text-lg font-semibold text-green-600">
+                      ${selectedNode.sales_total?.toLocaleString() || '0'}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+                  </div>
+                  <div className="text-gray-500 text-sm">
+                    點擊名稱查看詳細資訊
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -382,26 +466,15 @@ export default function OrgChartStatic(): JSX.Element {
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium text-gray-700">等級：</span>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1" aria-label="鑽石等級">
-                <div className="w-3 h-3 rounded-full border-2" style={{ backgroundColor: '#B9F2FF', borderColor: '#7ECFE3' }}></div>
-                <span className="text-sm text-gray-700">鑽石</span>
-              </div>
-              <div className="flex items-center gap-1" aria-label="白金等級">
-                <div className="w-3 h-3 rounded-full border-2" style={{ backgroundColor: '#FAF6EA', borderColor: '#D5C79B' }}></div>
-                <span className="text-sm text-gray-700">白金</span>
-              </div>
-              <div className="flex items-center gap-1" aria-label="金等級">
-                <div className="w-3 h-3 rounded-full border-2" style={{ backgroundColor: '#FFD700', borderColor: '#B8860B' }}></div>
-                <span className="text-sm text-gray-700">金</span>
-              </div>
-              <div className="flex items-center gap-1" aria-label="銀等級">
-                <div className="w-3 h-3 rounded-full border-2" style={{ backgroundColor: '#8FA0B2', borderColor: '#657383' }}></div>
-                <span className="text-sm text-gray-700">銀</span>
-              </div>
-              <div className="flex items-center gap-1" aria-label="銅等級">
-                <div className="w-3 h-3 rounded-full border-2" style={{ backgroundColor: '#CD7F32', borderColor: '#99501D' }}></div>
-                <span className="text-sm text-gray-700">銅</span>
-              </div>
+              {Object.entries(RANK_COLORS).map(([rank, colors]) => (
+                <div key={rank} className="flex items-center gap-1" aria-label={`${rank}等級`}>
+                  <div
+                    className="w-3 h-3 rounded-full border-2"
+                    style={{ backgroundColor: colors.fill, borderColor: colors.stroke }}
+                  ></div>
+                  <span className="text-sm text-gray-700">{rank}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
