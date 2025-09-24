@@ -33,19 +33,21 @@ export async function createUser({
   role,
   status,
   password,
+  avatar_url,
 }: {
   account: string;
   display_name: string;
   role: string;
   status?: string;
   password: string;
+  avatar_url?: string;
 }) {
   const response = await fetch('/api/users', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ account, display_name, role, status, password }),
+    body: JSON.stringify({ account, display_name, role, status, password, avatar_url }),
   });
   return response.json();
 }
@@ -57,6 +59,7 @@ export async function updateUser(
     role: string;
     status: string;
     password: string;
+    avatar_url: string;
   }>
 ) {
   const response = await fetch(`/api/users/${id}`, {

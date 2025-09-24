@@ -1,5 +1,6 @@
 'use client';
 
+import { AvatarUpload, type AvatarUploadRef } from '@/components/account-management/avatar-upload';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 interface AddAccountDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ interface AddAccountDialogProps {
     username: string;
     password: string;
     level: string;
+    avatarUrl?: string;
   }) => Promise<void>;
 }
 
@@ -41,7 +43,9 @@ export function AddAccountDialog({
     username: '',
     password: '',
     level: '',
+    avatarUrl: '',
   });
+  const avatarUploadRef = useRef<AvatarUploadRef>(null);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -63,8 +67,20 @@ export function AddAccountDialog({
     }
 
     try {
+      // 先上傳頭像（如果有選擇）
+      let avatarUrl = formData.avatarUrl;
+      if (avatarUploadRef.current) {
+        const uploadedAvatarUrl = await avatarUploadRef.current.uploadAvatar();
+        if (uploadedAvatarUrl) {
+          avatarUrl = uploadedAvatarUrl;
+        }
+      }
+
       if (onSubmit) {
-        await onSubmit(formData);
+        await onSubmit({
+          ...formData,
+          avatarUrl,
+        });
       }
 
       // 重置表單
@@ -73,6 +89,7 @@ export function AddAccountDialog({
         username: '',
         password: '',
         level: '',
+        avatarUrl: '',
       });
 
       // 關閉對話框
@@ -90,6 +107,7 @@ export function AddAccountDialog({
       username: '',
       password: '',
       level: '',
+      avatarUrl: '',
     });
 
     // 關閉對話框
@@ -150,6 +168,18 @@ export function AddAccountDialog({
                 <SelectItem value="management">管理層</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* 頭像上傳 */}
+          <div className="grid gap-2">
+            <Label>頭像（選填）</Label>
+            <AvatarUpload
+              ref={avatarUploadRef}
+              currentAvatarUrl={formData.avatarUrl}
+              onAvatarChange={(avatarUrl) => setFormData(prev => ({ ...prev, avatarUrl }))}
+              userId={0} // 新增用戶時使用 0，實際會在後端處理
+              mode="deferred" // 使用延遲上傳模式
+            />
           </div>
         </div>
 

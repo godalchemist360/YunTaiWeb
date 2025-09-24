@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>頭像存取測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .test-image {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #ccc;
+            margin: 10px;
+            display: inline-block;
+            object-fit: cover;
+        }
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info {
+            color: blue;
+            background: #e6f3ff;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .url-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 頭像存取測試工具</h1>
+
+    <div class="test-section">
+        <h2>1. 手動測試 URL</h2>
+        <input type="text" id="testUrl" class="url-input" placeholder="輸入要測試的頭像 URL">
+        <button class="test-button" onclick="testUrl()">測試 URL</button>
+        <div id="manualResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. 已知問題 URL 測試</h2>
+        <p>測試資料庫中的 URL：</p>
+        <div id="knownUrls"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. 不同尺寸測試</h2>
+        <p>測試同一個頭像的不同尺寸：</p>
+        <div id="sizeTests"></div>
+    </div>
+
+    <script>
+        // 已知的問題 URL
+        const knownUrls = [
+            'https://pub-a6f5696e642e4edd9b747b02c8b3764f.r2.dev/avatars/b5836d71-d59d-4c01-930e-969196514767.jpg',
+            'https://pub-a6f5696e642e4edd9b747b02c8b3764f.r2.dev/avatars/b5836d71-d59d-4c01-930e-969196514767_50.jpg',
+            'https://pub-a6f5696e642e4edd9b747b02c8b3764f.r2.dev/avatars/b5836d71-d59d-4c01-930e-969196514767_200.jpg'
+        ];
+
+        // 初始化頁面
+        function initPage() {
+            testKnownUrls();
+            testSizeVariations();
+        }
+
+        // 測試已知 URL
+        function testKnownUrls() {
+            const container = document.getElementById('knownUrls');
+            knownUrls.forEach((url, index) => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <h3>URL ${index + 1}:</h3>
+                    <p><strong>URL:</strong> ${url}</p>
+                    <img src="${url}" alt="測試圖片 ${index + 1}" class="test-image"
+                         onload="showImageStatus(this, 'success')"
+                         onerror="showImageStatus(this, 'error')">
+                    <div id="status${index}"></div>
+                    <button class="test-button" onclick="testUrlWithAPI('${url}', ${index})">API 測試</button>
+                    <div id="apiResult${index}"></div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // 測試不同尺寸
+        function testSizeVariations() {
+            const baseUrl = 'https://pub-a6f5696e642e4edd9b747b02c8b3764f.r2.dev/avatars/b5836d71-d59d-4c01-930e-969196514767';
+            const sizes = [
+                { size: '原始', url: baseUrl + '.jpg' },
+                { size: '50px', url: baseUrl + '_50.jpg' },
+                { size: '200px', url: baseUrl + '_200.jpg' }
+            ];
+
+            const container = document.getElementById('sizeTests');
+            sizes.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <h3>${item.size}:</h3>
+                    <p><strong>URL:</strong> ${item.url}</p>
+                    <img src="${item.url}" alt="${item.size} 圖片" class="test-image"
+                         onload="showImageStatus(this, 'success')"
+                         onerror="showImageStatus(this, 'error')">
+                    <div id="sizeStatus${index}"></div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // 顯示圖片載入狀態
+        function showImageStatus(img, status) {
+            const index = Array.from(document.querySelectorAll('.test-image')).indexOf(img);
+            const statusDiv = document.getElementById(`status${index}`) ||
+                             document.getElementById(`sizeStatus${index}`);
+
+            if (statusDiv) {
+                if (status === 'success') {
+                    statusDiv.innerHTML = '<div class="success">✅ 圖片載入成功</div>';
+                } else {
+                    statusDiv.innerHTML = '<div class="error">❌ 圖片載入失敗</div>';
+                }
+            }
+        }
+
+        // 手動測試 URL
+        function testUrl() {
+            const url = document.getElementById('testUrl').value;
+            if (!url) {
+                alert('請輸入 URL');
+                return;
+            }
+            testUrlWithAPI(url, 'manual');
+        }
+
+        // 使用 API 測試 URL
+        async function testUrlWithAPI(url, index) {
+            const resultDiv = document.getElementById(`apiResult${index}`) ||
+                             document.getElementById('manualResult');
+
+            if (resultDiv) {
+                resultDiv.innerHTML = '<div class="info">🔄 測試中...</div>';
+            }
+
+            try {
+                const response = await fetch(`/api/debug-avatar?url=${encodeURIComponent(url)}`);
+                const result = await response.json();
+
+                if (resultDiv) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <strong>API 測試結果：</strong>
+                            ${JSON.stringify(result, null, 2)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                if (resultDiv) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>API 測試失敗：</strong>
+                            ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // 頁面載入時初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>

@@ -219,6 +219,7 @@ export default function AccountManagementPage() {
     username: string;
     password: string;
     level: string;
+    avatarUrl?: string;
   }) => {
     // 基本驗證
     if (!formData.displayName || !formData.username || !formData.password) {
@@ -233,6 +234,7 @@ export default function AccountManagementPage() {
         role: formData.level,
         status: 'active',
         password: formData.password,
+        avatar_url: formData.avatarUrl,
       });
 
       // 成功後關閉彈窗並重新載入資料
@@ -261,6 +263,7 @@ export default function AccountManagementPage() {
     display_name: string;
     role: string;
     password?: string;
+    avatar_url?: string;
   }) => {
     try {
       const payload: any = {
@@ -271,6 +274,11 @@ export default function AccountManagementPage() {
       // 如果有密碼，則加入密碼欄位
       if (formData.password) {
         payload.password = formData.password;
+      }
+
+      // 如果有頭像 URL，則加入頭像欄位
+      if (formData.avatar_url !== undefined) {
+        payload.avatar_url = formData.avatar_url;
       }
 
       await updateUser(formData.id, payload);
@@ -357,6 +365,26 @@ export default function AccountManagementPage() {
           </Button>
         );
     }
+  };
+
+  // 生成預設頭像 URL
+  const getDefaultAvatarUrl = (displayName: string) => {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=50&background=random&color=fff&bold=true`;
+  };
+
+  // 獲取頭像 URL
+  const getAvatarUrl = (account: any, size: number = 50) => {
+    if (account.avatar_url) {
+      // 如果有上傳的頭像，嘗試使用對應尺寸的縮圖
+      // 檢查是否已經是縮圖格式
+      if (account.avatar_url.includes('_50.jpg') || account.avatar_url.includes('_200.jpg')) {
+        // 如果已經是縮圖，直接返回
+        return account.avatar_url;
+      }
+      // 替換檔案副檔名為縮圖格式
+      return account.avatar_url.replace(/\.(jpg|png)$/, `_${size}.jpg`);
+    }
+    return getDefaultAvatarUrl(account.display_name);
   };
 
   return (
@@ -519,6 +547,8 @@ export default function AccountManagementPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>頭像</TableHead>
+                          <TableHead>員工編號</TableHead>
                           <TableHead>使用者姓名</TableHead>
                           <TableHead>帳號</TableHead>
                           <TableHead>帳號層級</TableHead>
@@ -530,7 +560,7 @@ export default function AccountManagementPage() {
                       <TableBody>
                         {loading ? (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8">
+                            <TableCell colSpan={8} className="text-center py-8">
                               <div className="flex items-center justify-center">
                                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
                                 <span className="ml-2">載入中...</span>
@@ -540,7 +570,7 @@ export default function AccountManagementPage() {
                         ) : accounts.length === 0 ? (
                           <TableRow>
                             <TableCell
-                              colSpan={6}
+                              colSpan={8}
                               className="text-center py-8 text-muted-foreground"
                             >
                               無符合條件的帳號
@@ -549,6 +579,16 @@ export default function AccountManagementPage() {
                         ) : (
                           accounts.map((account: any) => (
                             <TableRow key={account.id}>
+                              <TableCell>
+                                <img
+                                  src={getAvatarUrl(account)}
+                                  alt={account.display_name}
+                                  className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                                />
+                              </TableCell>
+                              <TableCell className="font-mono text-sm">
+                                {String(account.id).padStart(6, '0')}
+                              </TableCell>
                               <TableCell className="font-medium">
                                 {account.display_name}
                               </TableCell>

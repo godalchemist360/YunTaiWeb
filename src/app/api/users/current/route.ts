@@ -1,19 +1,19 @@
-import { query } from '@/lib/db';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { sql } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
 
-export const runtime = 'nodejs';
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    console.log('GET /api/users/current: 開始處理請求');
-
-    // 從 cookie 直接獲取用戶帳號
-    const cookieHeader = request.headers.get('cookie');
-    console.log('GET /api/users/current: cookie header:', cookieHeader);
+    // 從 cookie 獲取當前用戶帳號
+    const { headers } = await import('next/headers');
+    const headersList = await headers();
+    const cookieHeader = headersList.get('cookie');
 
     if (!cookieHeader) {
-      console.log('GET /api/users/current: 未找到 cookie header');
-      return NextResponse.json({ error: '未找到認證資訊' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'No authentication found' },
+        { status: 401 }
+      );
     }
 
     // 解析 cookie
@@ -28,59 +28,64 @@ export async function GET(request: NextRequest) {
       {} as Record<string, string>
     );
 
-    console.log('GET /api/users/current: 解析的 cookies:', cookies);
-
-    // 獲取 session ID 和用戶帳號
+    // 獲取 session ID
     const sessionId = cookies['session-id'];
-    console.log('GET /api/users/current: session-id:', sessionId);
-
     if (!sessionId) {
-      console.log('GET /api/users/current: 未找到 session-id');
-      return NextResponse.json({ error: '未找到 session ID' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'No session found' },
+        { status: 401 }
+      );
     }
 
+    // 獲取用戶帳號
     const userAccountKey = `user-account-${sessionId}`;
     const userAccount = cookies[userAccountKey];
-    console.log('GET /api/users/current: userAccountKey:', userAccountKey);
-    console.log('GET /api/users/current: userAccount:', userAccount);
-
     if (!userAccount) {
-      console.log('GET /api/users/current: 未找到用戶帳號');
-      return NextResponse.json({ error: '未找到用戶帳號' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'No user account found' },
+        { status: 401 }
+      );
     }
 
-    console.log(
-      'GET /api/users/current: 查詢 app_users 表，帳號:',
-      userAccount
-    );
-
-    // 從 app_users 表查詢用戶資料
-    const result = await query(
-      `SELECT id, account, display_name, role, status
-       FROM app_users
-       WHERE account = $1`,
-      [userAccount]
-    );
-
-    console.log('GET /api/users/current: 查詢結果:', result.rows);
+    // 查詢用戶完整資訊
+    const result = await db.execute(sql`
+      SELECT
+        id,
+        account,
+        display_name,
+        role,
+        status,
+        avatar_url,
+        to_char(created_at, 'YYYY-MM-DD') as created_date
+      FROM app_users
+      WHERE account = ${userAccount}
+      LIMIT 1
+    `);
 
     if (result.rows.length === 0) {
-      console.log('GET /api/users/current: 用戶不存在於 app_users 表中');
-      return NextResponse.json({ error: '用戶不存在' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
 
     const user = result.rows[0];
-    console.log('GET /api/users/current: 找到用戶:', user);
 
     return NextResponse.json({
-      id: user.id,
-      account: user.account,
-      display_name: user.display_name,
-      role: user.role,
-      status: user.status,
+      success: true,
+      user: {
+        id: user.id,
+        account: user.account,
+        displayName: user.display_name,
+        role: user.role,
+        status: user.status,
+        avatarUrl: user.avatar_url,
+        createdAt: user.created_date
+      }
     });
+
   } catch (error) {
-    console.error('GET /api/users/current: 獲取當前用戶資料失敗:', error);
+    console.error('Error getting current user:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

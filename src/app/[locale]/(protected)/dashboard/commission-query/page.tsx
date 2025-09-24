@@ -126,38 +126,37 @@ export default async function CommissionQueryPage() {
                     <table className="w-full">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            日期
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            業務員
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                             客戶
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            產品
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            產品類型
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            銷售額
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            成交日期
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            傭金率
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            業績
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            傭金金額
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            狀態
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            操作
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            實拿金額
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         <tr className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            2024-01-15
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <div className="text-sm font-medium text-gray-900">
+                              張小明
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              業務員
+                            </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
                             <div className="text-sm font-medium text-gray-900">
                               ABC 公司
                             </div>
@@ -165,7 +164,7 @@ export default async function CommissionQueryPage() {
                               企業客戶
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
                             <div className="text-sm font-medium text-gray-900">
                               企業版套裝
                             </div>
@@ -173,51 +172,33 @@ export default async function CommissionQueryPage() {
                               年度授權
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                            2024-01-15
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                             $25,000
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            8%
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600 text-center">
                             $2,000
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                              已結算
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
-                              >
-                                <Eye className="h-3 w-3" />
-                                詳情
-                              </button>
-                              <button
-                                type="button"
-                                className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                              >
-                                <FileText className="h-3 w-3" />
-                                憑證
-                              </button>
-                            </div>
                           </td>
                         </tr>
 
                         <tr className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            2024-01-10
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <div className="text-sm font-medium text-gray-900">
+                              李小華
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              業務員
+                            </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
                             <div className="text-sm font-medium text-gray-900">
                               XYZ 企業
                             </div>
                             <div className="text-sm text-gray-500">新客戶</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
                             <div className="text-sm font-medium text-gray-900">
                               專業版授權
                             </div>
@@ -225,45 +206,27 @@ export default async function CommissionQueryPage() {
                               季度授權
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                            2024-01-10
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                             $15,000
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            6%
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600 text-center">
                             $900
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
-                              待結算
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
-                              >
-                                <Eye className="h-3 w-3" />
-                                詳情
-                              </button>
-                              <button
-                                type="button"
-                                className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                              >
-                                <FileText className="h-3 w-3" />
-                                憑證
-                              </button>
-                            </div>
                           </td>
                         </tr>
 
                         <tr className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            2024-01-08
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <div className="text-sm font-medium text-gray-900">
+                              王大偉
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              業務員
+                            </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
                             <div className="text-sm font-medium text-gray-900">
                               DEF 科技
                             </div>
@@ -271,7 +234,7 @@ export default async function CommissionQueryPage() {
                               長期客戶
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
                             <div className="text-sm font-medium text-gray-900">
                               進階版套裝
                             </div>
@@ -279,37 +242,14 @@ export default async function CommissionQueryPage() {
                               年度授權
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                            2024-01-08
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                             $18,500
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            7%
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600 text-center">
                             $1,295
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                              已結算
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
-                              >
-                                <Eye className="h-3 w-3" />
-                                詳情
-                              </button>
-                              <button
-                                type="button"
-                                className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                              >
-                                <FileText className="h-3 w-3" />
-                                憑證
-                              </button>
-                            </div>
                           </td>
                         </tr>
                       </tbody>

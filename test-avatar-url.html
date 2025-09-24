@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試頭像 URL</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-image {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #ccc;
+            margin: 10px;
+            display: inline-block;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>測試頭像 URL 載入</h1>
+
+    <h2>測試 URL 1:</h2>
+    <p>URL: https://pub-a6f5696e642e4edd9b747b02c8b3764f.r2.dev/avatars/b5836d71-d59d-4c01-930e-969196514767.jpg</p>
+    <img
+        src="https://pub-a6f5696e642e4edd9b747b02c8b3764f.r2.dev/avatars/b5836d71-d59d-4c01-930e-969196514767.jpg"
+        alt="測試圖片 1"
+        class="test-image"
+        onload="showStatus(this, 'success')"
+        onerror="showStatus(this, 'error')"
+    >
+    <div id="status1"></div>
+
+    <h2>測試 URL 2 (50px 縮圖):</h2>
+    <p>URL: https://pub-a6f5696e642e4edd9b747b02c8b3764f.r2.dev/avatars/b5836d71-d59d-4c01-930e-969196514767_50.jpg</p>
+    <img
+        src="https://pub-a6f5696e642e4edd9b747b02c8b3764f.r2.dev/avatars/b5836d71-d59d-4c01-930e-969196514767_50.jpg"
+        alt="測試圖片 2"
+        class="test-image"
+        onload="showStatus(this, 'success')"
+        onerror="showStatus(this, 'error')"
+    >
+    <div id="status2"></div>
+
+    <h2>測試 URL 3 (200px 縮圖):</h2>
+    <p>URL: https://pub-a6f5696e642e4edd9b747b02c8b3764f.r2.dev/avatars/b5836d71-d59d-4c01-930e-969196514767_200.jpg</p>
+    <img
+        src="https://pub-a6f5696e642e4edd9b747b02c8b3764f.r2.dev/avatars/b5836d71-d59d-4c01-930e-969196514767_200.jpg"
+        alt="測試圖片 3"
+        class="test-image"
+        onload="showStatus(this, 'success')"
+        onerror="showStatus(this, 'error')"
+    >
+    <div id="status3"></div>
+
+    <script>
+        function showStatus(img, status) {
+            const index = Array.from(document.querySelectorAll('.test-image')).indexOf(img) + 1;
+            const statusDiv = document.getElementById(`status${index}`);
+
+            if (status === 'success') {
+                statusDiv.innerHTML = '<span class="success">✅ 載入成功</span>';
+            } else {
+                statusDiv.innerHTML = '<span class="error">❌ 載入失敗</span>';
+
+                // 嘗試用 fetch 檢查 URL
+                fetch(img.src)
+                    .then(response => {
+                        if (response.ok) {
+                            statusDiv.innerHTML += '<br><span class="error">但 fetch 請求成功，可能是 CORS 問題</span>';
+                        } else {
+                            statusDiv.innerHTML += `<br><span class="error">HTTP 狀態: ${response.status}</span>`;
+                        }
+                    })
+                    .catch(error => {
+                        statusDiv.innerHTML += `<br><span class="error">錯誤: ${error.message}</span>`;
+                    });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -64,7 +64,14 @@ export function useAppUser() {
 
         const userData = await response.json();
         console.log('useAppUser: 獲取到用戶資料:', userData);
-        return userData;
+
+        // 檢查 API 回應格式並返回正確的用戶資料
+        if (userData.success && userData.user) {
+          return userData.user;
+        } else {
+          console.log('useAppUser: API 回應格式不正確:', userData);
+          return null;
+        }
       } catch (err) {
         console.error('useAppUser: 獲取用戶資料失敗:', err);
         return null;

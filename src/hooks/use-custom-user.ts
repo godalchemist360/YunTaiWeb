@@ -5,6 +5,11 @@ import { useEffect, useState } from 'react';
 interface CustomUser {
   account: string;
   id: number;
+  displayName?: string;
+  role?: string;
+  status?: string;
+  avatarUrl?: string;
+  createdAt?: string;
 }
 
 export const useCustomUser = () => {
@@ -14,48 +19,32 @@ export const useCustomUser = () => {
   useEffect(() => {
     console.log('useCustomUser: 開始執行');
 
-    // 從 cookie 讀取使用者帳號
-    const getUserFromCookie = () => {
-      console.log('useCustomUser: 開始讀取 cookies');
-      const cookies = document.cookie.split(';');
-      console.log('useCustomUser: 所有 cookies:', cookies);
-
-      // 先讀取 session-id
-      const sessionIdCookie = cookies.find((cookie) =>
-        cookie.trim().startsWith('session-id=')
-      );
-      console.log('useCustomUser: session-id cookie:', sessionIdCookie);
-
-      if (sessionIdCookie) {
-        const sessionId = sessionIdCookie.split('=')[1];
-        console.log('useCustomUser: 提取的 session-id:', sessionId);
-
-        // 使用 session-id 來構建正確的 user-account cookie 名稱
-        const userAccountCookie = cookies.find((cookie) =>
-          cookie.trim().startsWith(`user-account-${sessionId}=`)
-        );
-        console.log(
-          'useCustomUser: 對應的 user-account cookie:',
-          userAccountCookie
-        );
-
-        if (userAccountCookie) {
-          const account = userAccountCookie.split('=')[1];
-          console.log('useCustomUser: 提取的使用者帳號:', account);
-          // 這裡可以根據需要從資料庫取得更多使用者資訊
-          setUser({ account, id: 0 }); // 暫時使用 id: 0
+    // 從 API 獲取完整的用戶資訊
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch('/api/users/current');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.user) {
+            console.log('useCustomUser: 獲取到用戶資訊:', data.user);
+            setUser(data.user);
+          } else {
+            console.log('useCustomUser: API 返回失敗:', data);
+            setUser(null);
+          }
         } else {
-          console.log('useCustomUser: 找不到對應的使用者帳號 cookie');
+          console.log('useCustomUser: API 請求失敗:', response.status);
+          setUser(null);
         }
-      } else {
-        console.log('useCustomUser: 找不到 session-id cookie');
+      } catch (error) {
+        console.error('useCustomUser: 獲取用戶資訊時發生錯誤:', error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
-      console.log('useCustomUser: 完成執行，user:', user, 'isLoading:', false);
     };
 
-    getUserFromCookie();
+    fetchUserInfo();
   }, []);
 
   console.log('useCustomUser: 返回狀態 - user:', user, 'isLoading:', isLoading);

@@ -1,4 +1,5 @@
 import { db, query } from '@/lib/db';
+import { cleanupUserAvatar, getUserAvatarUrl } from '@/lib/avatar-cleanup';
 import bcrypt from 'bcryptjs';
 import { sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -17,16 +18,18 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { display_name, role, status, password } = body;
+    const { display_name, role, status, password, avatar_url } = body;
 
-    // 檢查用戶是否存在
+    // 檢查用戶是否存在，並獲取現有的頭像 URL
     const checkResult = await db.execute(
-      sql`SELECT id FROM app_users WHERE id = ${id}`
+      sql`SELECT id, avatar_url FROM app_users WHERE id = ${id}`
     );
 
     if (checkResult.rows.length === 0) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+
+    const currentAvatarUrl = checkResult.rows[0].avatar_url as string | null;
 
     // 建立更新欄位
     const updateFields: string[] = [];
@@ -58,6 +61,12 @@ export async function PUT(
       paramIndex++;
     }
 
+    if (avatar_url !== undefined) {
+      updateFields.push(`avatar_url = $${paramIndex}`);
+      queryParams.push(avatar_url);
+      paramIndex++;
+    }
+
     if (updateFields.length === 0) {
       return NextResponse.json(
         { error: 'No fields to update' },
@@ -71,10 +80,19 @@ export async function PUT(
       UPDATE app_users
       SET ${updateFields.join(', ')}
       WHERE id = $${paramIndex}
-      RETURNING id, account, display_name, role, status, to_char(created_at, 'YYYY-MM-DD') as created_date
+      RETURNING id, account, display_name, role, status, avatar_url, to_char(created_at, 'YYYY-MM-DD') as created_date
     `;
 
     const result = await query(updateQuery, queryParams);
+
+    // 如果更新了頭像，清理舊的頭像檔案
+    if (avatar_url !== undefined && currentAvatarUrl && currentAvatarUrl !== avatar_url) {
+      console.log('檢測到頭像更新，清理舊檔案:', currentAvatarUrl);
+      // 異步清理，不等待完成
+      cleanupUserAvatar(currentAvatarUrl).catch(error => {
+        console.error('清理舊頭像檔案失敗:', error);
+      });
+    }
 
     return NextResponse.json(result.rows[0]);
   } catch (error) {
@@ -97,12 +115,29 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
 
+    // 先獲取用戶的頭像 URL，然後刪除用戶
+    const userResult = await db.execute(
+      sql`SELECT avatar_url FROM app_users WHERE id = ${id}`
+    );
+
+    if (userResult.rows.length === 0) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const avatarUrl = userResult.rows[0].avatar_url as string | null;
+
+    // 刪除用戶
     const result = await db.execute(
       sql`DELETE FROM app_users WHERE id = ${id} RETURNING id`
     );
 
-    if (result.rows.length === 0) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    // 清理用戶的頭像檔案
+    if (avatarUrl) {
+      console.log('刪除用戶，清理頭像檔案:', avatarUrl);
+      // 異步清理，不等待完成
+      cleanupUserAvatar(avatarUrl).catch(error => {
+        console.error('清理用戶頭像檔案失敗:', error);
+      });
     }
 
     return NextResponse.json({ ok: true });

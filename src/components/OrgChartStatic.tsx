@@ -19,15 +19,23 @@ const ReactECharts = dynamic(() => import('echarts-for-react'), {
  */
 type TreeNode = {
   id: string;
+  employee_no?: string;
   name: string;
   rank?: '鑽石' | '白金' | '金' | '銀' | '銅';
   active?: boolean;
   sales_total?: number;
+  sales_month?: number;
+  team_sales_month?: number;
   hasChildren?: boolean;
   _loadedChildren?: boolean;
   collapsed?: boolean;
   children?: TreeNode[];
 };
+
+/**
+ * Chart orientation types
+ */
+type Orientation = 'LR' | 'TB' | 'RADIAL';
 
 /**
  * API response types
@@ -40,10 +48,13 @@ type ApiResponse<T> = {
 
 type MemberData = {
   id: string;
+  employee_no?: string;
   name: string;
   rank: '鑽石' | '白金' | '金' | '銀' | '銅';
   active: boolean;
   sales_total: number;
+  sales_month?: number;
+  team_sales_month?: number;
   hasChildren: boolean;
 };
 
@@ -85,10 +96,13 @@ const addColorToNode = (node: TreeNode): TreeNode => {
 const memberToTreeNode = (member: MemberData): TreeNode => {
   return {
     id: member.id,
+    employee_no: member.employee_no,
     name: member.name,
     rank: member.rank,
     active: member.active,
     sales_total: member.sales_total,
+    sales_month: member.sales_month,
+    team_sales_month: member.team_sales_month,
     hasChildren: member.hasChildren,
     _loadedChildren: false,
     collapsed: false,
@@ -125,6 +139,155 @@ const getNodeColor = (node: TreeNode): string => {
 };
 
 /**
+ * Build ECharts tree option based on orientation
+ */
+const buildTreeOption = (root: TreeNode, orientation: Orientation): any => {
+  const commonSeries = {
+    type: 'tree',
+    data: [root],
+    symbolSize: 16,
+    symbol: 'circle',
+    roam: true,
+    initialTreeDepth: 3,
+    animationDuration: 300,
+    animationEasing: 'cubicOut',
+    // 水平標籤（保持原本的 formatter）
+    label: {
+      rotate: 0,
+      position: 'left',
+      verticalAlign: 'middle',
+      align: 'right',
+      fontSize: 12,
+      fontWeight: 'normal',
+      color: '#374151',
+      formatter: (params: any) => {
+        const data = params.data;
+        const rank = data.rank ? `\n${data.rank}` : '';
+        return `{name|${data.name}}{rank|${rank}}`;
+      },
+      rich: {
+        name: {
+          fontWeight: 'bold',
+          fontSize: 12,
+          color: '#374151',
+        },
+        rank: {
+          fontSize: 10,
+          color: '#6B7280',
+          fontWeight: 'normal',
+        },
+      },
+    },
+    leaves: {
+      label: {
+        rotate: 0,
+        position: 'right',
+        align: 'left'
+      }
+    },
+    labelLayout: () => ({ rotate: 0 }),
+    lineStyle: {
+      width: 1,
+      color: '#D1D5DB',
+      curveness: 0.1,
+    },
+    itemStyle: {
+      borderColor: '#fff',
+      borderWidth: 2,
+      shadowBlur: 4,
+      shadowColor: 'rgba(0, 0, 0, 0.1)',
+    },
+  } as const;
+
+  if (orientation === 'RADIAL') {
+    return {
+      grid: {
+        top: '5%',
+        right: '20%',
+        bottom: '5%',
+        left: '5%',
+      },
+      series: [{
+        ...commonSeries,
+        layout: 'radial',                 // 徑向
+        // orient 不要設
+        top: '5%', left: '5%', right: '5%', bottom: '5%',
+      }],
+      tooltip: {
+        trigger: 'item',
+        formatter: (params: any) => {
+          const data = params.data;
+          const rank = data.rank || '無等級';
+          return `
+            <div class="p-2">
+              <div class="font-semibold">${data.name}</div>
+              <div class="text-sm text-gray-600">等級: ${rank}</div>
+            </div>
+          `;
+        },
+      },
+    };
+  }
+
+  if (orientation === 'LR') {
+    return {
+      grid: {
+        top: '5%',
+        right: '20%',
+        bottom: '5%',
+        left: '5%',
+      },
+      series: [{
+        ...commonSeries,
+        orient: 'LR',                     // 左→右
+        top: '5%', left: '5%', right: '20%', bottom: '5%',
+      }],
+      tooltip: {
+        trigger: 'item',
+        formatter: (params: any) => {
+          const data = params.data;
+          const rank = data.rank || '無等級';
+          return `
+            <div class="p-2">
+              <div class="font-semibold">${data.name}</div>
+              <div class="text-sm text-gray-600">等級: ${rank}</div>
+            </div>
+          `;
+        },
+      },
+    };
+  }
+
+  // orientation === 'TB'
+  return {
+    grid: {
+      top: '5%',
+      right: '20%',
+      bottom: '5%',
+      left: '5%',
+    },
+    series: [{
+      ...commonSeries,
+      orient: 'TB',                       // 上→下
+      top: '10%', left: '8%', right: '8%', bottom: '10%',
+    }],
+    tooltip: {
+      trigger: 'item',
+      formatter: (params: any) => {
+        const data = params.data;
+        const rank = data.rank || '無等級';
+        return `
+          <div class="p-2">
+            <div class="font-semibold">${data.name}</div>
+            <div class="text-sm text-gray-600">等級: ${rank}</div>
+          </div>
+        `;
+      },
+    },
+  };
+};
+
+/**
  * Dynamic Organization Chart Component
  * Displays a tree chart using ECharts with API data
  */
@@ -133,6 +296,8 @@ export default function OrgChartStatic(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
+  const [orientation, setOrientation] = useState<Orientation>('RADIAL');
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Fetch roots on component mount
   useEffect(() => {
@@ -260,90 +425,8 @@ export default function OrgChartStatic(): JSX.Element {
   // ECharts configuration
   const chartOption = useMemo(() => {
     if (!root) return {};
-    return {
-      grid: {
-        top: '5%',
-        right: '20%',
-        bottom: '5%',
-        left: '5%',
-      },
-      series: [
-        {
-          type: 'tree',
-          layout: 'radial',
-          data: [root],
-          top: '5%',
-          left: '5%',
-          bottom: '5%',
-          right: '5%',
-          symbolSize: 16,
-          symbol: 'circle',
-          label: {
-            rotate: 0,
-            position: 'left',
-            verticalAlign: 'middle',
-            align: 'right',
-            fontSize: 12,
-            fontWeight: 'normal',
-            color: '#374151',
-            formatter: (params: any) => {
-              const data = params.data;
-              const rank = data.rank ? `\n${data.rank}` : '';
-              return `{name|${data.name}}{rank|${rank}}`;
-            },
-            rich: {
-              name: {
-                fontWeight: 'bold',
-                fontSize: 12,
-                color: '#374151',
-              },
-              rank: {
-                fontSize: 10,
-                color: '#6B7280',
-                fontWeight: 'normal',
-              },
-            },
-          },
-          leaves: {
-            label: {
-              rotate: 0,
-              position: 'right',
-              align: 'left',
-            },
-          },
-          labelLayout: () => ({ rotate: 0 }),
-          lineStyle: {
-            width: 1,
-            color: '#D1D5DB',
-            curveness: 0.1,
-          },
-          itemStyle: {
-            borderColor: '#fff',
-            borderWidth: 2,
-            shadowBlur: 4,
-            shadowColor: 'rgba(0, 0, 0, 0.1)',
-          },
-          roam: true,
-          initialTreeDepth: 3,
-          animationDuration: 300,
-          animationEasing: 'cubicOut',
-        },
-      ],
-      tooltip: {
-        trigger: 'item',
-        formatter: (params: any) => {
-          const data = params.data;
-          const rank = data.rank || '無等級';
-          return `
-            <div class="p-2">
-              <div class="font-semibold">${data.name}</div>
-              <div class="text-sm text-gray-600">等級: ${rank}</div>
-            </div>
-          `;
-        },
-      },
-    };
-  }, [root]);
+    return buildTreeOption(root, orientation);
+  }, [root, orientation]);
 
   return (
     <div className="rounded-2xl shadow-sm border bg-white p-4 md:p-6">
@@ -369,6 +452,22 @@ export default function OrgChartStatic(): JSX.Element {
             />
           </div>
 
+          {/* Direction Toggle Buttons */}
+          <div className="flex gap-2">
+            {(['LR','TB','RADIAL'] as Orientation[]).map(o => (
+              <button
+                key={o}
+                type="button"
+                onClick={() => setOrientation(o)}
+                className={orientation === o
+                  ? 'px-3 py-1.5 rounded-full bg-gray-900 text-white text-sm font-medium transition-colors'
+                  : 'px-3 py-1.5 rounded-full border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors'}
+                aria-pressed={orientation === o}
+              >
+                {o === 'LR' ? 'Left-to-Right' : o === 'TB' ? 'Top-to-Bottom' : 'Radial'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -392,6 +491,7 @@ export default function OrgChartStatic(): JSX.Element {
             ) : (
               <ReactECharts
                 option={chartOption}
+                notMerge={true}
                 style={{ width: '100%', height: '100%' }}
                 opts={{ renderer: 'canvas' }}
                 onEvents={{
@@ -406,7 +506,7 @@ export default function OrgChartStatic(): JSX.Element {
         <div className="hidden lg:flex">
           <div className="w-full">
             {selectedNode ? (
-              <div className={`rounded-xl p-6 border-2 shadow-lg transition-all duration-300 ${
+              <div className={`rounded-xl p-4 border-2 shadow-lg transition-all duration-300 ${
                 selectedNode.rank === '鑽石' ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200' :
                 selectedNode.rank === '白金' ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200' :
                 selectedNode.rank === '金' ? 'bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200' :
@@ -414,31 +514,46 @@ export default function OrgChartStatic(): JSX.Element {
                 selectedNode.rank === '銅' ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200' :
                 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
               }`}>
-                {/* 階級標籤 */}
-                <div className="flex justify-center mb-4">
-                  <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold shadow-md ${
-                    selectedNode.rank === '鑽石' ? 'bg-blue-500 text-white' :
-                    selectedNode.rank === '白金' ? 'bg-purple-500 text-white' :
-                    selectedNode.rank === '金' ? 'bg-yellow-500 text-white' :
-                    selectedNode.rank === '銀' ? 'bg-gray-500 text-white' :
-                    selectedNode.rank === '銅' ? 'bg-orange-500 text-white' :
-                    'bg-gray-500 text-white'
-                  }`}>
-                    {selectedNode.rank || '無階級'}
-                  </span>
-                </div>
-
-                {/* 名稱 */}
-                <div className="text-center mb-4">
-                  <div className="text-2xl font-bold text-gray-900 mb-4">
-                    {selectedNode.name}
+                {/* 頭貼 + 右側資訊 */}
+                <div className="flex items-start gap-3">
+                  {/* 大頭貼 */}
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0">
+                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
                   </div>
 
-                  {/* 累計業績 */}
-                  <div>
-                    <div className="text-sm font-medium text-gray-600 mb-1">累計業績</div>
-                    <div className="text-lg font-semibold text-green-600">
-                      ${selectedNode.sales_total?.toLocaleString() || '0'}
+                  {/* 右側資訊 */}
+                  <div className="flex-1 min-w-0">
+                    {/* 第一行：姓名#員工編號 */}
+                    <div className="text-lg font-bold text-gray-900 mb-2 text-center">
+                      {selectedNode.name}#{selectedNode.employee_no || '未設定'}
+                    </div>
+
+                    {/* 第二行：職階 */}
+                    <div className="flex justify-center mb-2">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${
+                        selectedNode.rank === '鑽石' ? 'bg-blue-500 text-white' :
+                        selectedNode.rank === '白金' ? 'bg-purple-500 text-white' :
+                        selectedNode.rank === '金' ? 'bg-yellow-500 text-white' :
+                        selectedNode.rank === '銀' ? 'bg-gray-500 text-white' :
+                        selectedNode.rank === '銅' ? 'bg-orange-500 text-white' :
+                        'bg-gray-500 text-white'
+                      }`}>
+                        {selectedNode.rank || '無階級'}
+                      </span>
+                    </div>
+
+                    {/* 第三行：點擊查看詳情 */}
+                    <div className="text-right">
+                      <button
+                        onClick={() => setShowDetailModal(true)}
+                        className="text-xs text-blue-500 hover:text-blue-700 cursor-pointer"
+                      >
+                        點擊查看詳情
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -479,6 +594,88 @@ export default function OrgChartStatic(): JSX.Element {
           </div>
         </div>
       </div>
+
+      {/* 詳細資訊對話框 */}
+      {showDetailModal && selectedNode && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            {/* 對話框標題 */}
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">詳細資訊</h3>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 詳細資訊內容 */}
+            <div className="space-y-4">
+              {/* 姓名 */}
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm font-medium text-gray-600">姓名</span>
+                <span className="text-sm text-gray-900">{selectedNode.name}</span>
+              </div>
+
+              {/* 員工編號 */}
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm font-medium text-gray-600">員工編號</span>
+                <span className="text-sm text-gray-900">#{selectedNode.employee_no || '未設定'}</span>
+              </div>
+
+              {/* 職階 */}
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm font-medium text-gray-600">職階</span>
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${
+                  selectedNode.rank === '鑽石' ? 'bg-blue-500 text-white' :
+                  selectedNode.rank === '白金' ? 'bg-purple-500 text-white' :
+                  selectedNode.rank === '金' ? 'bg-yellow-500 text-white' :
+                  selectedNode.rank === '銀' ? 'bg-gray-500 text-white' :
+                  selectedNode.rank === '銅' ? 'bg-orange-500 text-white' :
+                  'bg-gray-500 text-white'
+                }`}>
+                  {selectedNode.rank || '無階級'}
+                </span>
+              </div>
+
+              {/* 當月業績 */}
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm font-medium text-gray-600">當月業績</span>
+                <span className="text-sm text-green-600 font-semibold">
+                  ${selectedNode.sales_month?.toLocaleString() || '0'}
+                </span>
+              </div>
+
+              {/* 團隊累計業績 */}
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm font-medium text-gray-600">團隊累計業績</span>
+                <span className="text-sm text-green-600 font-semibold">
+                  ${selectedNode.team_sales_month?.toLocaleString() || '0'}
+                </span>
+              </div>
+
+              {/* 介紹人 */}
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm font-medium text-gray-600">介紹人</span>
+                <span className="text-sm text-gray-900">待實作</span>
+              </div>
+            </div>
+
+            {/* 關閉按鈕 */}
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                關閉
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -25,13 +25,13 @@ export async function GET(request: NextRequest) {
     const client = await pool.connect();
 
     try {
-      const query = `
-        SELECT m.id, m.name, m.rank, m.active, m.sales_total,
-               EXISTS(SELECT 1 FROM members c WHERE c.upline_id = m.id) AS "hasChildren"
-        FROM members m
-        WHERE m.upline_id = $1
-        ORDER BY m.name;
-      `;
+          const query = `
+            SELECT m.id, m.employee_no, m.name, m.rank, m.active, m.sales_total, m.sales_month, m.team_sales_month,
+                   EXISTS(SELECT 1 FROM members c WHERE c.upline_id = m.id) AS "hasChildren"
+            FROM members m
+            WHERE m.upline_id = $1
+            ORDER BY m.name;
+          `;
 
       const result = await client.query(query, [parentId]);
 

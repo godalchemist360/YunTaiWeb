@@ -56,6 +56,7 @@ export async function GET(request: NextRequest) {
           display_name,
           role,
           status,
+          avatar_url,
           to_char(created_at, 'YYYY-MM-DD') as created_date
         FROM app_users
         WHERE ${whereCondition}
@@ -76,6 +77,7 @@ export async function GET(request: NextRequest) {
           display_name,
           role,
           status,
+          avatar_url,
           to_char(created_at, 'YYYY-MM-DD') as created_date
         FROM app_users
         ORDER BY created_at DESC
@@ -101,7 +103,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { account, display_name, role, status = 'active', password } = body;
+    const { account, display_name, role, status = 'active', password, avatar_url } = body;
 
     if (!account || !display_name || !role || !password) {
       return NextResponse.json(
@@ -113,12 +115,12 @@ export async function POST(request: NextRequest) {
     const password_hash = await bcrypt.hash(password, 10);
 
     const insertQuery = `
-      INSERT INTO app_users (account, display_name, role, status, password_hash)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id, account, display_name, role, status, to_char(created_at, 'YYYY-MM-DD') as created_date
+      INSERT INTO app_users (account, display_name, role, status, password_hash, avatar_url)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING id, account, display_name, role, status, avatar_url, to_char(created_at, 'YYYY-MM-DD') as created_date
     `;
 
-    const result = await query(insertQuery, [account, display_name, role, status, password_hash]);
+    const result = await query(insertQuery, [account, display_name, role, status, password_hash, avatar_url || null]);
 
     return NextResponse.json(result.rows[0]);
   } catch (error) {

@@ -1,5 +1,6 @@
 'use client';
 
+import { AvatarUpload, type AvatarUploadRef } from '@/components/account-management/avatar-upload';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -19,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Eye, EyeOff } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface EditAccountDialogProps {
   open: boolean;
@@ -28,12 +29,14 @@ interface EditAccountDialogProps {
     id: number;
     display_name: string;
     role: string;
+    avatar_url?: string;
   };
   onSubmit?: (formData: {
     id: number;
     display_name: string;
     role: string;
     password?: string;
+    avatar_url?: string;
   }) => Promise<void>;
 }
 
@@ -48,10 +51,12 @@ export function EditAccountDialog({
     role: '',
     newPassword: '',
     confirmPassword: '',
+    avatar_url: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const avatarUploadRef = useRef<AvatarUploadRef>(null);
 
   // 當 account 改變時，重置表單
   useEffect(() => {
@@ -61,6 +66,7 @@ export function EditAccountDialog({
         role: account.role,
         newPassword: '',
         confirmPassword: '',
+        avatar_url: account.avatar_url || '',
       });
       setErrors({});
     }
@@ -117,9 +123,19 @@ export function EditAccountDialog({
     }
 
     try {
+      // 先上傳頭像（如果有選擇）
+      let avatarUrl = formData.avatar_url;
+      if (avatarUploadRef.current) {
+        const uploadedAvatarUrl = await avatarUploadRef.current.uploadAvatar();
+        if (uploadedAvatarUrl) {
+          avatarUrl = uploadedAvatarUrl;
+        }
+      }
+
       const payload: any = {
         display_name: formData.display_name.trim(),
         role: formData.role,
+        avatar_url: avatarUrl,
       };
 
       // 如果有輸入新密碼且驗證通過，則加入密碼欄位
@@ -143,6 +159,7 @@ export function EditAccountDialog({
         role: '',
         newPassword: '',
         confirmPassword: '',
+        avatar_url: '',
       });
       setErrors({});
       setShowPassword(false);
@@ -179,6 +196,7 @@ export function EditAccountDialog({
       role: '',
       newPassword: '',
       confirmPassword: '',
+      avatar_url: '',
     });
     setErrors({});
     setShowPassword(false);
@@ -313,6 +331,18 @@ export function EditAccountDialog({
             {errors.confirmPassword && (
               <p className="text-sm text-red-500">{errors.confirmPassword}</p>
             )}
+          </div>
+
+          {/* 頭像編輯 */}
+          <div className="grid gap-2">
+            <Label>頭像</Label>
+            <AvatarUpload
+              ref={avatarUploadRef}
+              currentAvatarUrl={formData.avatar_url}
+              onAvatarChange={(avatarUrl) => setFormData(prev => ({ ...prev, avatar_url: avatarUrl }))}
+              userId={account?.id || 0}
+              mode="deferred" // 使用延遲上傳模式
+            />
           </div>
         </div>
 

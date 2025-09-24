@@ -147,6 +147,68 @@ export class S3Provider implements StorageProvider {
   }
 
   /**
+   * Upload a file to S3 with custom filename (no auto-renaming)
+   */
+  public async uploadFileWithCustomName(
+    file: Buffer | Blob,
+    filename: string,
+    contentType: string,
+    folder?: string
+  ): Promise<UploadFileResult> {
+    try {
+      const s3 = this.getS3Client();
+      const { bucketName } = this.config;
+
+      const key = folder ? `${folder}/${filename}` : filename;
+
+      // Convert Blob to Buffer if needed
+      let fileContent: Buffer | string;
+      if (file instanceof Blob) {
+        fileContent = Buffer.from(await file.arrayBuffer());
+      } else {
+        fileContent = file;
+      }
+
+      // Upload the file using s3mini
+      const response = await s3.putObject(key, fileContent, contentType);
+
+      if (!response.ok) {
+        throw new UploadError(`Failed to upload file: ${response.statusText}`);
+      }
+
+      // Generate the URL
+      const { publicUrl } = this.config;
+      let url: string;
+
+      if (publicUrl) {
+        // Use custom domain if provided
+        url = `${publicUrl.replace(/\/$/, '')}/${key}`;
+        console.log('uploadFileWithCustomName, public url', url);
+      } else {
+        // For s3mini, we construct the URL manually
+        // Since bucket is included in endpoint, we just append the key
+        const baseUrl = this.config.endpoint?.replace(/\/$/, '') || '';
+        url = `${baseUrl}/${key}`;
+        console.log('uploadFileWithCustomName, constructed url', url);
+      }
+
+      return { url, key };
+    } catch (error) {
+      if (error instanceof ConfigurationError) {
+        console.error('uploadFileWithCustomName, configuration error', error);
+        throw error;
+      }
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Unknown error occurred during file upload';
+      console.error('uploadFileWithCustomName, error', message);
+      throw new UploadError(message);
+    }
+  }
+
+  /**
    * Delete a file from S3
    */
   public async deleteFile(key: string): Promise<void> {

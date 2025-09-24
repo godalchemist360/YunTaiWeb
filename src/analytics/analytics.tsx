@@ -1,12 +1,8 @@
 import { websiteConfig } from '@/config/website';
 import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { AhrefsAnalytics } from './ahrefs-analytics';
-import DataFastAnalytics from './data-fast-analytics';
 import GoogleAnalytics from './google-analytics';
-import OpenPanelAnalytics from './open-panel-analytics';
 import { PlausibleAnalytics } from './plausible-analytics';
-import { SelineAnalytics } from './seline-analytics';
 import { UmamiAnalytics } from './umami-analytics';
 
 /**
@@ -33,18 +29,6 @@ export function Analytics() {
 
       {/* plausible analytics */}
       <PlausibleAnalytics />
-
-      {/* ahrefs analytics */}
-      <AhrefsAnalytics />
-
-      {/* datafast analytics */}
-      <DataFastAnalytics />
-
-      {/* openpanel analytics */}
-      <OpenPanelAnalytics />
-
-      {/* seline analytics */}
-      <SelineAnalytics />
 
       {/* vercel analytics */}
       {/* https://vercel.com/docs/analytics/quickstart */}
