@@ -18,6 +18,9 @@ interface NextActionEditorProps {
   initialDate?: string;
   initialTime?: string;
   isLoading?: boolean;
+  interactionId?: string;
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
 }
 
 export function NextActionEditor({
@@ -28,6 +31,9 @@ export function NextActionEditor({
   initialDate = '',
   initialTime = '09:00',
   isLoading = false,
+  interactionId,
+  onSuccess,
+  onError,
 }: NextActionEditorProps) {
   const [action, setAction] = useState(initialAction);
   const [selectedDate, setSelectedDate] = useState(initialDate);
@@ -89,9 +95,48 @@ export function NextActionEditor({
     }
   };
 
-  const handleSave = () => {
-    if (validateInputs()) {
-      onSave(action, selectedDate, selectedTime);
+  const handleSave = async () => {
+    if (!validateInputs()) return;
+
+    setIsLoading(true);
+
+    try {
+      if (interactionId) {
+        // 組合日期和時間為 ISO 字串
+        const dateTimeString = `${selectedDate}T${selectedTime}:00.000Z`;
+
+        const response = await fetch(
+          `/api/customer-interactions/${interactionId}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              next_action_date: dateTimeString,
+              next_action_description: action,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || '更新失敗');
+        }
+
+        // 成功後關閉對話框並觸發成功回調
+        onClose();
+        onSuccess?.();
+      } else {
+        // 如果沒有 interactionId，使用原有的 onSave 回調
+        onSave(action, selectedDate, selectedTime);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error saving next action:', error);
+      onError?.(error instanceof Error ? error.message : '儲存失敗');
+    } finally {
+      setIsLoading(false);
     }
   };
 

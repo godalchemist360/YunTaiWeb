@@ -291,7 +291,7 @@ const buildTreeOption = (root: TreeNode, orientation: Orientation): any => {
  * Dynamic Organization Chart Component
  * Displays a tree chart using ECharts with API data
  */
-export default function OrgChartStatic(): JSX.Element {
+export default function OrgChartStatic(): React.JSX.Element {
   const [root, setRoot] = useState<TreeNode | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

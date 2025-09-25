@@ -52,7 +52,7 @@ export const LoginWrapper = ({
     return (
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogTrigger asChild={asChild}>{children}</DialogTrigger>
-        <DialogContent className="sm:max-w-[400px] p-0">
+        <DialogContent className="sm:max-w-[400px] p-0 bg-transparent border-none shadow-none">
           <DialogHeader className="hidden">
             <DialogTitle />
           </DialogHeader>

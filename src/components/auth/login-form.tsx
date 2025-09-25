@@ -227,9 +227,15 @@ export const LoginForm = ({
                 name="account"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>帳號</FormLabel>
+                    <FormLabel className="text-gray-700 font-medium">帳號</FormLabel>
                     <FormControl>
-                      <Input {...field} disabled={isPending} type="text" />
+                      <Input
+                        {...field}
+                        disabled={isPending}
+                        type="text"
+                        className="bg-white border-gray-300 focus:border-purple-400 focus:ring-purple-400/20 rounded-lg"
+                        placeholder="請輸入您的帳號"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -240,27 +246,28 @@ export const LoginForm = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>密碼</FormLabel>
+                    <FormLabel className="text-gray-700 font-medium">密碼</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           {...field}
                           disabled={isPending}
                           type={showPassword ? 'text' : 'password'}
-                          className="pr-10"
+                          className="bg-white border-gray-300 focus:border-purple-400 focus:ring-purple-400/20 rounded-lg pr-10"
+                          placeholder="請輸入您的密碼"
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-gray-50 rounded-r-lg"
                           onClick={togglePasswordVisibility}
                           disabled={isPending}
                         >
                           {showPassword ? (
-                            <EyeOffIcon className="size-4 text-muted-foreground" />
+                            <EyeOffIcon className="size-4 text-gray-500" />
                           ) : (
-                            <EyeIcon className="size-4 text-muted-foreground" />
+                            <EyeIcon className="size-4 text-gray-500" />
                           )}
                           <span className="sr-only">
                             {showPassword ? '隱藏密碼' : '顯示密碼'}
@@ -283,9 +290,8 @@ export const LoginForm = ({
             )}
             <Button
               disabled={isPending || (captchaConfigured && !captchaToken)}
-              size="lg"
               type="submit"
-              className="w-full flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full h-10 text-sm bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2"
             >
               {isPending && (
                 <Loader2Icon className="mr-2 size-4 animate-spin" />

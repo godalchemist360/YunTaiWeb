@@ -26,14 +26,18 @@ export default function DashboardPage() {
     <>
       <DashboardHeader breadcrumbs={breadcrumbs} />
 
-      <div className="flex flex-1 flex-col">
-        <div className="@container/main flex flex-1 flex-col gap-2">
-          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <div className="flex flex-1 flex-col bg-muted/30">
+        <div className="@container/main flex flex-1 flex-col">
+          <div className="flex flex-col gap-6 p-6">
             <SectionCards />
-            <div className="px-4 lg:px-6">
-              <ChartAreaInteractive />
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="space-y-6">
+                <ChartAreaInteractive />
+              </div>
+              <div className="space-y-6">
+                <DataTable data={data} />
+              </div>
             </div>
-            <DataTable data={data} />
           </div>
         </div>
       </div>

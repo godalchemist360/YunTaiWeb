@@ -57,6 +57,7 @@ export function MeetingRecordDetailCard({
   const [isLoading, setIsLoading] = useState(false);
   const [editContent, setEditContent] = useState('');
   const [validationError, setValidationError] = useState('');
+  const [newMeetingIndex, setNewMeetingIndex] = useState<string>('');
 
   // 新的表單狀態
   const [formData, setFormData] = useState<MeetingRecordData>({
@@ -89,6 +90,7 @@ export function MeetingRecordDetailCard({
     if (!isOpen) {
       setIsEditing(false);
       setValidationError('');
+      setNewMeetingIndex('');
     }
   }, [isOpen]);
 
@@ -97,26 +99,45 @@ export function MeetingRecordDetailCard({
     if (data) {
       setEditContent(data.content || '');
 
-      // 從資料庫讀取真實資料
-      const meetingIndex = data.meetingIndex || '1';
-      const meetingRecord = data.meeting_record || {};
-      const currentMeetingData = meetingRecord[meetingIndex] || {};
-
-      // 設定表單資料，空值使用預設值
-      setFormData({
-        appointment_date: currentMeetingData.appointment_date || '',
-        marketing_stage: currentMeetingData.marketing_stage || '',
-        main_goal: currentMeetingData.main_goal || '',
-        main_goal_other: currentMeetingData.main_goal_other || '',
-        success_rate: currentMeetingData.success_rate || 0,
-        pain_points: currentMeetingData.pain_points || '',
-        observations: currentMeetingData.observations || '',
-      });
-
-      // 如果是新增模式，直接啟用編輯模式
       if (data.isNew) {
+        // 新增模式：計算新的會面次數
+        const meetingRecord = data.meeting_record || {};
+        const currentMeetingCount = Object.keys(meetingRecord).length;
+        const calculatedNewMeetingIndex = (currentMeetingCount + 1).toString();
+
+        // 存儲新會面次數到狀態中
+        setNewMeetingIndex(calculatedNewMeetingIndex);
+
+        // 新增模式下使用空的表單資料
+        setFormData({
+          appointment_date: '',
+          marketing_stage: '',
+          main_goal: '',
+          main_goal_other: '',
+          success_rate: 0,
+          pain_points: '',
+          observations: '',
+        });
         setIsEditing(true);
       } else {
+        // 編輯模式：清除新增會面次數狀態
+        setNewMeetingIndex('');
+
+        // 編輯模式：從資料庫讀取真實資料
+        const meetingIndex = data.meetingIndex || '1';
+        const meetingRecord = data.meeting_record || {};
+        const currentMeetingData = meetingRecord[meetingIndex] || {};
+
+        // 設定表單資料，空值使用預設值
+        setFormData({
+          appointment_date: currentMeetingData.appointment_date || '',
+          marketing_stage: currentMeetingData.marketing_stage || '',
+          main_goal: currentMeetingData.main_goal || '',
+          main_goal_other: currentMeetingData.main_goal_other || '',
+          success_rate: currentMeetingData.success_rate || 0,
+          pain_points: currentMeetingData.pain_points || '',
+          observations: currentMeetingData.observations || '',
+        });
         setIsEditing(false);
       }
     }
@@ -342,8 +363,17 @@ export function MeetingRecordDetailCard({
         return;
       }
 
-      const meetingIndex = data?.meetingIndex || '1';
       const currentMeetingRecord = data?.meeting_record || {};
+      let meetingIndex: string;
+
+      if (data?.isNew) {
+        // 新增模式：計算新的會面次數
+        const currentMeetingCount = Object.keys(currentMeetingRecord).length;
+        meetingIndex = (currentMeetingCount + 1).toString();
+      } else {
+        // 編輯模式：使用現有的會面次數
+        meetingIndex = data?.meetingIndex || '1';
+      }
 
       // 更新特定會面次數的資料
       const updatedMeetingRecord = {
@@ -365,7 +395,7 @@ export function MeetingRecordDetailCard({
 
       // 如果是新增模式，需要更新 meeting_count
       if (data?.isNew) {
-        requestBody.meeting_count = Number.parseInt(data?.meetingIndex || '1');
+        requestBody.meeting_count = Number.parseInt(meetingIndex);
       }
 
       const response = await fetch(
@@ -476,7 +506,7 @@ export function MeetingRecordDetailCard({
               <MessageSquare className="h-5 w-5 text-blue-600" />
             </div>
             <h4 className="text-lg font-semibold text-gray-900">
-              {data?.meetingNumber || '會面紀錄'}
+              {data?.isNew ? `第${newMeetingIndex}次會面` : `第${data?.meetingIndex || '1'}次會面`}
             </h4>
           </div>
 

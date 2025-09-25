@@ -414,50 +414,50 @@ export default function AccountManagementPage() {
                 {/* Stats Cards */}
                 <div className="grid gap-4 md:grid-cols-4">
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-6 pt-6">
                       <CardTitle className="text-sm font-medium">
                         總帳號數
                       </CardTitle>
                       <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-6 pb-6">
                       <div className="text-2xl font-bold">{stats.total}</div>
                     </CardContent>
                   </Card>
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-6 pt-6">
                       <CardTitle className="text-sm font-medium">
                         啟用帳號
                       </CardTitle>
                       <UserCheck className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-6 pb-6">
                       <div className="text-2xl font-bold text-green-600">
                         {stats.active}
                       </div>
                     </CardContent>
                   </Card>
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-6 pt-6">
                       <CardTitle className="text-sm font-medium">
                         停用帳號
                       </CardTitle>
                       <UserX className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-6 pb-6">
                       <div className="text-2xl font-bold text-red-600">
                         {stats.disabled}
                       </div>
                     </CardContent>
                   </Card>
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-6 pt-6">
                       <CardTitle className="text-sm font-medium">
                         管理層
                       </CardTitle>
                       <Shield className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-6 pb-6">
                       <div className="text-2xl font-bold text-purple-600">
                         {stats.management_count}
                       </div>
@@ -537,13 +537,13 @@ export default function AccountManagementPage() {
 
                 {/* Accounts Table */}
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="px-6 pt-6 pb-2">
                     <CardTitle>帳號列表</CardTitle>
                     <CardDescription>
                       顯示所有系統帳號，您可以在此管理帳號資訊
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="px-6 pb-6">
                     <Table>
                       <TableHeader>
                         <TableRow>

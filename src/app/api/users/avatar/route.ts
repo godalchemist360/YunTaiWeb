@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 獲取用戶現有的頭像 URL，用於後續清理
-    const currentAvatarUrl = await getUserAvatarUrl(userId);
+    const currentAvatarUrl = await getUserAvatarUrl(parseInt(userId));
 
     // 驗證檔案類型（只允許 jpg 和 png）
     const allowedTypes = ['image/jpeg', 'image/png'];

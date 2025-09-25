@@ -60,16 +60,16 @@ export function DashboardHeader({
   });
 
   return (
-    <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
-      <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
-        <SidebarTrigger className="-ml-1 cursor-pointer" />
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-transparent transition-all duration-200">
+      <div className="flex w-full items-center gap-2 px-4 lg:gap-3 lg:px-6">
+        <SidebarTrigger className="-ml-1 cursor-pointer hover:bg-accent rounded-md p-1 transition-colors duration-200" />
         <Separator
           orientation="vertical"
-          className="mx-2 data-[orientation=vertical]:h-4"
+          className="mx-2 h-6"
         />
 
         <Breadcrumb>
-          <BreadcrumbList className="text-base font-medium">
+          <BreadcrumbList className="text-sm font-medium">
             {breadcrumbs.map((item, index) => (
               <React.Fragment key={`breadcrumb-${index}`}>
                 {index > 0 && (
@@ -85,13 +85,13 @@ export function DashboardHeader({
                   }
                 >
                   {item.isCurrentPage ? (
-                    <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                    <BreadcrumbPage className="text-foreground font-semibold">{item.label}</BreadcrumbPage>
                   ) : item.href ? (
-                    <BreadcrumbLink href={item.href}>
+                    <BreadcrumbLink href={item.href} className="text-muted-foreground hover:text-foreground transition-colors duration-200">
                       {item.label}
                     </BreadcrumbLink>
                   ) : (
-                    item.label
+                    <span className="text-muted-foreground">{item.label}</span>
                   )}
                 </BreadcrumbItem>
               </React.Fragment>
@@ -100,7 +100,7 @@ export function DashboardHeader({
         </Breadcrumb>
 
         {/* dashboard header actions on the right side */}
-        <div className="ml-auto flex items-center gap-3 pl-4">
+        <div className="ml-auto flex items-center gap-2 pl-4">
           {actions}
 
           {/* 使用者資訊顯示 */}

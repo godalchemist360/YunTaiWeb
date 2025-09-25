@@ -12,6 +12,25 @@ const nextConfig: NextConfig = {
   /* config options here */
   devIndicators: false,
 
+  // 排除系統檔案監控
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        ignored: [
+          '**/node_modules/**',
+          '**/.git/**',
+          '**/C:/DumpStack.log.tmp',
+          '**/C:/hiberfil.sys',
+          '**/C:/swapfile.sys',
+          '**/C:/pagefile.sys',
+          '**/C:/System Volume Information/**',
+          '**/C:/$Recycle.Bin/**',
+        ],
+      };
+    }
+    return config;
+  },
+
   // https://nextjs.org/docs/architecture/nextjs-compiler#remove-console
   // Remove all console.* calls in production only
   compiler: {

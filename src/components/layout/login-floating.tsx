@@ -20,8 +20,7 @@ export function LoginFloating() {
         <LoginWrapper mode="modal" asChild>
           <Button
             variant="outline"
-            size="sm"
-            className="cursor-pointer bg-white border-white text-black hover:bg-gray-100"
+            className="cursor-pointer bg-white border-white text-black hover:bg-gray-100 h-8 w-[54px] px-3 text-sm font-medium rounded-sm"
           >
             {t('Common.login')}
           </Button>

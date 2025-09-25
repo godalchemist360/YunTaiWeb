@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       {
         error: 'Failed to test URL',
         message: error instanceof Error ? error.message : 'Unknown error',
-        url: avatarUrl
+        url: 'Unknown URL'
       },
       { status: 500 }
     );

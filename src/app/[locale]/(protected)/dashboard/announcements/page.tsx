@@ -333,7 +333,7 @@ export default function AnnouncementsPage() {
                     <AnnouncementCreateGate>
                       <Button
                         onClick={() => setIsAddDialogOpen(true)}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-blue-600 hover:bg-blue-700 h-9 px-3 text-sm font-medium text-white"
                       >
                         <Plus className="mr-2 h-4 w-4" />
                         新增公告

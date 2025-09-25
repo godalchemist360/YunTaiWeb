@@ -1,0 +1,12 @@
+{
+  "ignore_dirs": [
+    "node_modules",
+    ".git",
+    "C:/DumpStack.log.tmp",
+    "C:/hiberfil.sys",
+    "C:/swapfile.sys",
+    "C:/pagefile.sys",
+    "C:/System Volume Information",
+    "C:/$Recycle.Bin"
+  ]
+}
