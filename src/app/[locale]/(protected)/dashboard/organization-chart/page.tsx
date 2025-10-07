@@ -4,10 +4,7 @@ import { useState } from 'react';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import OrgChartStatic from '@/components/OrgChartStatic';
 import {
-  Filter,
   Network,
-  Plus,
-  Search,
   Users,
   TrendingUp,
   Phone,
@@ -190,8 +187,6 @@ const mockPeople = [
 
 export default function OrganizationChartPage() {
   const [selectedPerson, setSelectedPerson] = useState<any>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'tree'>('tree');
 
   const breadcrumbs = [
     {
@@ -200,10 +195,6 @@ export default function OrganizationChartPage() {
     },
   ];
 
-  const filteredPeople = mockPeople.filter(person =>
-    person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    person.position.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const getLevelColor = (level: number) => {
     switch (level) {
@@ -310,45 +301,16 @@ export default function OrganizationChartPage() {
                   </div>
                 </div>
 
-                {/* Search and Actions */}
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="搜尋人員..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full rounded-lg border border-gray-300 bg-white pl-10 pr-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                    >
-                      <Filter className="h-4 w-4" />
-                      篩選
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-                    >
-                      <Plus className="h-4 w-4" />
-                      新增成員
-                    </button>
-                  </div>
-                </div>
 
 
                 {/* Organization Chart */}
                 <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
                   <div className="p-6 border-b border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-900">
-                      組織結構圖 - 樹狀圖
+                      組織結構圖
                     </h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      點擊人員卡片查看詳細資料
+                      點擊人員節點查看詳細資料
                     </p>
                   </div>
 
