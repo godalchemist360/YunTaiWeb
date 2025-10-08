@@ -1,6 +1,9 @@
 'use client';
 
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { Notification } from '@/components/ui/notification';
+import { Button } from '@/components/ui/button';
+import { createSalesSupportRecord, getClassificationOptions } from '@/actions/sales-support';
 import {
   ArrowLeft,
   Users,
@@ -9,9 +12,14 @@ import {
   Plus,
   Paperclip,
   X,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { SalesSupportDocument, SalesSupportResponse } from '@/types/sales-support';
 
 export default function CustomerOverviewPage() {
   const breadcrumbs = [
@@ -34,11 +42,34 @@ export default function CustomerOverviewPage() {
   // 新增文件對話框狀態
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
-    fileType: '',
+    classification: '',
     fileName: '',
     description: '',
-    attachments: [] as File[],
+    file: null as File | null,
   });
+
+  // 通知狀態
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+    isVisible: boolean;
+  }>({
+    type: 'success',
+    message: '',
+    isVisible: false,
+  });
+
+  // 載入狀態
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 附件區狀態
+  const [documents, setDocuments] = useState<SalesSupportDocument[]>([]);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
+  const [documentError, setDocumentError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalDocuments, setTotalDocuments] = useState(0);
 
   // 卡片配置
   const cards = [
@@ -48,205 +79,185 @@ export default function CustomerOverviewPage() {
     { id: 'bank', title: '銀行窗口' },
   ];
 
-  // 附件區內容配置
-  const getAttachmentContent = () => {
-    switch (selectedCard) {
-      case 'contract':
-        return {
-          title: '契約文件附件區',
-          items: [
-            {
-              updateDate: '2024-01-15',
-              fileType: '契約範本',
-              fileName: '客戶服務契約範本.pdf',
-              fileSize: '2.3 MB',
-              description: '標準客戶服務契約範本，包含基本條款和服務內容'
-            },
-            {
-              updateDate: '2024-01-10',
-              fileType: '流程指南',
-              fileName: '簽約流程操作指南.docx',
-              fileSize: '1.8 MB',
-              description: '詳細的簽約流程步驟說明和注意事項'
-            },
-            {
-              updateDate: '2024-01-08',
-              fileType: '條款說明',
-              fileName: '契約條款詳細說明.pdf',
-              fileSize: '3.1 MB',
-              description: '各項契約條款的詳細解釋和適用範圍'
-            },
-            {
-              updateDate: '2024-01-05',
-              fileType: '法律文件',
-              fileName: '法律文件範本集.zip',
-              fileSize: '15.6 MB',
-              description: '相關法律文件的標準範本和格式'
-            },
-            {
-              updateDate: '2024-01-03',
-              fileType: '申請表',
-              fileName: '契約修改申請表.xlsx',
-              fileSize: '856 KB',
-              description: '契約內容修改的申請表格和流程'
-            },
-            {
-              updateDate: '2024-01-01',
-              fileType: '終止協議',
-              fileName: '契約終止協議範本.pdf',
-              fileSize: '1.2 MB',
-              description: '契約終止的標準協議範本和相關條款'
-            }
-          ]
-        };
-      case 'strategy':
-        return {
-          title: '配置策略附件區',
-          items: [
-            {
-              updateDate: '2024-01-20',
-              fileType: '投資建議',
-              fileName: '投資配置建議書.pdf',
-              fileSize: '4.2 MB',
-              description: '根據客戶風險承受度制定的個人化投資配置建議'
-            },
-            {
-              updateDate: '2024-01-18',
-              fileType: '風險評估',
-              fileName: '風險評估報告.pdf',
-              fileSize: '2.7 MB',
-              description: '詳細的投資風險分析和風險控制建議'
-            },
-            {
-              updateDate: '2024-01-15',
-              fileType: '配置圖表',
-              fileName: '資產配置圖表.pptx',
-              fileSize: '8.9 MB',
-              description: '視覺化的資產配置比例和投資組合結構圖'
-            },
-            {
-              updateDate: '2024-01-12',
-              fileType: '組合分析',
-              fileName: '投資組合分析.pdf',
-              fileSize: '5.1 MB',
-              description: '現有投資組合的詳細分析和優化建議'
-            },
-            {
-              updateDate: '2024-01-10',
-              fileType: '市場報告',
-              fileName: '市場趨勢報告.pdf',
-              fileSize: '3.8 MB',
-              description: '最新市場動態和投資機會分析'
-            },
-            {
-              updateDate: '2024-01-08',
-              fileType: '調整建議',
-              fileName: '配置調整建議.docx',
-              fileSize: '1.5 MB',
-              description: '基於市場變化的投資配置調整建議'
-            }
-          ]
-        };
-      case 'analysis':
-        return {
-          title: '資產分析附件區',
-          items: [
-            {
-              updateDate: '2024-01-22',
-              fileType: '財務報表',
-              fileName: '資產負債表.xlsx',
-              fileSize: '1.2 MB',
-              description: '客戶資產負債狀況的詳細財務報表'
-            },
-            {
-              updateDate: '2024-01-20',
-              fileType: '現金流分析',
-              fileName: '現金流量分析.pdf',
-              fileSize: '3.5 MB',
-              description: '客戶現金流入流出分析和資金運用建議'
-            },
-            {
-              updateDate: '2024-01-18',
-              fileType: '投資報告',
-              fileName: '投資組合報告.pdf',
-              fileSize: '6.8 MB',
-              description: '現有投資組合的詳細分析和績效評估'
-            },
-            {
-              updateDate: '2024-01-15',
-              fileType: '風險分析',
-              fileName: '風險評估分析.pdf',
-              fileSize: '2.9 MB',
-              description: '投資風險的量化分析和風險控制建議'
-            },
-            {
-              updateDate: '2024-01-12',
-              fileType: '配置建議',
-              fileName: '資產配置建議.docx',
-              fileSize: '1.7 MB',
-              description: '基於風險偏好的資產配置優化建議'
-            },
-            {
-              updateDate: '2024-01-10',
-              fileType: '績效分析',
-              fileName: '投資績效分析.pdf',
-              fileSize: '4.6 MB',
-              description: '投資績效的歷史分析和未來預測'
-            }
-          ]
-        };
-      case 'bank':
-        return {
-          title: '銀行窗口附件區',
-          items: [
-            {
-              updateDate: '2024-01-25',
-              fileType: '開戶指南',
-              fileName: '銀行開戶指南.pdf',
-              fileSize: '2.1 MB',
-              description: '各銀行開戶流程和所需文件的詳細說明'
-            },
-            {
-              updateDate: '2024-01-23',
-              fileType: '貸款流程',
-              fileName: '貸款申請流程.pdf',
-              fileSize: '1.9 MB',
-              description: '個人和企業貸款的申請流程和審核標準'
-            },
-            {
-              updateDate: '2024-01-21',
-              fileType: '理財產品',
-              fileName: '理財產品介紹.pdf',
-              fileSize: '5.3 MB',
-              description: '各類銀行理財產品的詳細介紹和比較'
-            },
-            {
-              updateDate: '2024-01-19',
-              fileType: '服務說明',
-              fileName: '銀行服務說明.docx',
-              fileSize: '1.4 MB',
-              description: '銀行各項服務的詳細說明和收費標準'
-            },
-            {
-              updateDate: '2024-01-17',
-              fileType: '操作指南',
-              fileName: '網銀操作指南.pdf',
-              fileSize: '3.2 MB',
-              description: '網路銀行和手機銀行的操作步驟說明'
-            },
-            {
-              updateDate: '2024-01-15',
-              fileType: '申請表單',
-              fileName: '信用卡申請表.pdf',
-              fileSize: '892 KB',
-              description: '信用卡申請表格和申請條件說明'
-            }
-          ]
-        };
-      default:
-        return { title: '', items: [] };
+  // 檔案類別選項狀態
+  const [classificationOptions, setClassificationOptions] = useState<string[]>([]);
+
+  // 取得當前選中卡片的檔案類別選項
+  const updateClassificationOptions = async () => {
+    const itemMap = {
+      'contract': '契約文件',
+      'strategy': '配置策略',
+      'analysis': '資產分析',
+      'bank': '銀行窗口',
+    };
+    const options = await getClassificationOptions(itemMap[selectedCard]);
+    setClassificationOptions(options);
+    // 重置檔案類別選擇
+    setFormData(prev => ({ ...prev, classification: '' }));
+  };
+
+  // 載入文件資料
+  const loadDocuments = async () => {
+    setIsLoadingDocuments(true);
+    setDocumentError(null);
+
+    try {
+      const itemMap = {
+        'contract': '契約文件',
+        'strategy': '配置策略',
+        'analysis': '資產分析',
+        'bank': '銀行窗口',
+      };
+
+      const params = new URLSearchParams({
+        category: 'customer-overview',
+        item: itemMap[selectedCard],
+        page: currentPage.toString(),
+        pageSize: pageSize.toString(),
+      });
+
+      const response = await fetch(`/api/sales-support?${params}`);
+
+      if (!response.ok) {
+        throw new Error('載入失敗');
+      }
+
+      const data: SalesSupportResponse = await response.json();
+      setDocuments(data.items);
+      setTotalPages(Math.ceil(data.total / pageSize));
+      setTotalDocuments(data.total);
+    } catch (error) {
+      console.error('Error loading documents:', error);
+      setDocumentError('載入失敗');
+      setDocuments([]);
+    } finally {
+      setIsLoadingDocuments(false);
     }
   };
+
+  // 當選中的卡片改變時，更新檔案類別選項和載入文件
+  useEffect(() => {
+    updateClassificationOptions();
+    loadDocuments();
+  }, [selectedCard, currentPage, pageSize]);
+
+  // 顯示通知
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({
+      type,
+      message,
+      isVisible: true,
+    });
+  };
+
+  // 關閉通知
+  const closeNotification = () => {
+    setNotification(prev => ({ ...prev, isVisible: false }));
+  };
+
+  // 重置表單
+  const resetForm = () => {
+    setFormData({
+      classification: '',
+      fileName: '',
+      description: '',
+      file: null,
+    });
+  };
+
+  // 處理表單提交
+  const handleSubmit = async () => {
+    if (!formData.classification || !formData.fileName || !formData.description || !formData.file) {
+      showNotification('error', '請填寫所有必填欄位並選擇檔案');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // 1. 上傳檔案
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', formData.file);
+      uploadFormData.append('category', 'customer-overview'); // 使用英文 slug
+      uploadFormData.append('item', cards.find(c => c.id === selectedCard)?.title || '');
+      uploadFormData.append('classification', formData.classification);
+
+      const uploadResponse = await fetch('/api/sales-support/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        throw new Error(errorData.error || '檔案上傳失敗');
+      }
+
+      const uploadResult = await uploadResponse.json();
+
+      // 2. 儲存資料庫記錄
+      const result = await createSalesSupportRecord({
+        category: 'customer-overview', // 使用英文 slug
+        item: cards.find(c => c.id === selectedCard)?.title || '',
+        classification: formData.classification,
+        fileName: formData.fileName,
+        description: formData.description,
+        fileUrl: uploadResult.url,
+        fileSize: `${(formData.file.size / 1024 / 1024).toFixed(1)} MB`,
+      });
+
+      if (result.success) {
+        showNotification('success', '檔案新增成功');
+        resetForm();
+        setIsAddDialogOpen(false);
+        // 重新載入文件列表
+        loadDocuments();
+      } else {
+        showNotification('error', result.error || '新增失敗');
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+      const message = error instanceof Error ? error.message : '新增失敗';
+      showNotification('error', message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 檔案下載
+  const handleDownload = (fileUrl: string | null, fileName: string) => {
+    if (!fileUrl) {
+      showNotification('error', '下載失敗');
+      return;
+    }
+
+    try {
+      window.open(fileUrl, '_blank');
+    } catch (error) {
+      console.error('Download error:', error);
+      showNotification('error', '下載失敗');
+    }
+  };
+
+  // 分頁處理
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // 重置到第一頁
+  };
+
+  // 格式化日期
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('zh-TW', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  };
+
 
   return (
     <>
@@ -343,48 +354,191 @@ export default function CustomerOverviewPage() {
                     附件區
                   </h2>
 
+                  {/* 載入狀態 */}
+                  {isLoadingDocuments && (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-gray-500">載入中...</div>
+                    </div>
+                  )}
+
+                  {/* 錯誤狀態 */}
+                  {documentError && (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-red-500">{documentError}</div>
+                    </div>
+                  )}
+
                   {/* 表格顯示 */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="border-b border-gray-200 bg-gray-50">
-                          <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">上傳日期</th>
-                          <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">檔案類別</th>
-                          <th className="text-left py-3 px-4 font-semibold text-gray-900 w-48">檔案名稱</th>
-                          <th className="text-left py-3 px-4 font-semibold text-gray-900 w-24">檔案大小</th>
-                          <th className="text-left py-3 px-4 font-semibold text-gray-900">內容簡述</th>
-                          <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">資源下載</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {getAttachmentContent().items.map((item, index) => (
-                          <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-3 px-4 text-gray-700 text-sm">{item.updateDate}</td>
-                            <td className="py-3 px-4 text-gray-700 text-sm">
-                              <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                                {item.fileType}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-gray-900 font-medium text-sm">{item.fileName}</td>
-                            <td className="py-3 px-4 text-gray-700 text-sm">
-                              <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                                {item.fileSize}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-gray-600 text-sm">{item.description}</td>
-                            <td className="py-3 px-4 text-gray-700 text-sm">
-                              <button className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-md hover:bg-green-200 transition-colors text-xs">
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                下載
-                              </button>
-                            </td>
+                  {!isLoadingDocuments && !documentError && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="border-b border-gray-200 bg-gray-50">
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">上傳日期</th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">檔案類別</th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-48">檔案名稱</th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-24">檔案大小</th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900">內容簡述</th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">資源下載</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {documents.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="py-8 text-center text-gray-500">
+                                暫無資料
+                              </td>
+                            </tr>
+                          ) : (
+                            documents.map((document) => (
+                              <tr key={document.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                <td className="py-3 px-4 text-gray-700 text-sm">
+                                  {formatDate(document.created_at)}
+                                </td>
+                                <td className="py-3 px-4 text-gray-700 text-sm">
+                                  <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                                    {document.classification}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-gray-900 font-medium text-sm">
+                                  {document.file_name}
+                                </td>
+                                <td className="py-3 px-4 text-gray-700 text-sm">
+                                  <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                                    {document.file_size}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-gray-600 text-sm">
+                                  {document.description}
+                                </td>
+                                <td className="py-3 px-4 text-gray-700 text-sm">
+                                  <button
+                                    onClick={() => handleDownload(document.file_url, document.file_name)}
+                                    className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-md hover:bg-green-200 transition-colors text-xs"
+                                  >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    下載
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+
+                      {/* 分頁控制元件 */}
+                      {totalDocuments > 0 && (
+                        <div className="flex items-center justify-between px-6 py-4 border-t">
+                          <div className="flex items-center space-x-2">
+                            <p className="text-sm text-muted-foreground">
+                              每頁顯示
+                            </p>
+                            <select
+                              value={pageSize}
+                              onChange={(e) =>
+                                handlePageSizeChange(Number(e.target.value))
+                              }
+                              className="h-8 w-16 rounded border border-input bg-background px-2 text-sm"
+                            >
+                              <option value={5}>5</option>
+                              <option value={10}>10</option>
+                              <option value={20}>20</option>
+                              <option value={50}>50</option>
+                            </select>
+                            <p className="text-sm text-muted-foreground">
+                              筆，共 {totalDocuments} 筆資料
+                            </p>
+                          </div>
+
+                          <div className="flex items-center space-x-2">
+                            <p className="text-sm text-muted-foreground">
+                              第 {currentPage} 頁，共{' '}
+                              {Math.ceil(totalDocuments / pageSize)} 頁
+                            </p>
+
+                            <div className="flex items-center space-x-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(1)}
+                                disabled={currentPage === 1 || isLoadingDocuments}
+                              >
+                                <ChevronsLeft className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1 || isLoadingDocuments}
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+
+                              {/* 頁碼按鈕 */}
+                              {Array.from(
+                                {
+                                  length: Math.min(
+                                    5,
+                                    Math.ceil(totalDocuments / pageSize)
+                                  ),
+                                },
+                                (_, i) => {
+                                  const startPage = Math.max(1, currentPage - 2);
+                                  const pageNum = startPage + i;
+                                  if (pageNum > Math.ceil(totalDocuments / pageSize))
+                                    return null;
+
+                                  return (
+                                    <Button
+                                      key={pageNum}
+                                      variant={
+                                        pageNum === currentPage
+                                          ? 'default'
+                                          : 'outline'
+                                      }
+                                      size="sm"
+                                      onClick={() => handlePageChange(pageNum)}
+                                      disabled={isLoadingDocuments}
+                                      className="w-8 h-8 p-0"
+                                    >
+                                      {pageNum}
+                                    </Button>
+                                  );
+                                }
+                              )}
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={
+                                  currentPage >= Math.ceil(totalDocuments / pageSize) ||
+                                  isLoadingDocuments
+                                }
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handlePageChange(Math.ceil(totalDocuments / pageSize))
+                                }
+                                disabled={
+                                  currentPage >= Math.ceil(totalDocuments / pageSize) ||
+                                  isLoadingDocuments
+                                }
+                              >
+                                <ChevronsRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -417,16 +571,16 @@ export default function CustomerOverviewPage() {
                     檔案類別 <span className="text-red-500">*</span>
                   </label>
                   <select
-                    value={formData.fileType}
-                    onChange={(e) => setFormData({ ...formData, fileType: e.target.value })}
+                    value={formData.classification}
+                    onChange={(e) => setFormData({ ...formData, classification: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   >
                     <option value="">請選擇檔案類別</option>
-                    <option value="類型1">類型1</option>
-                    <option value="類型2">類型2</option>
-                    <option value="類型3">類型3</option>
-                    <option value="類型4">類型4</option>
-                    <option value="類型5">類型5</option>
+                    {classificationOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -448,7 +602,7 @@ export default function CustomerOverviewPage() {
               {/* 內容簡述 */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  內容簡述
+                  內容簡述 <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={formData.description}
@@ -462,7 +616,7 @@ export default function CustomerOverviewPage() {
               {/* 新增附件 */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  新增附件
+                  新增附件 <span className="text-red-500">*</span>
                 </label>
                 <div className="space-y-3">
                   {/* 檔案上傳按鈕 */}
@@ -478,11 +632,12 @@ export default function CustomerOverviewPage() {
                     <input
                       id="file-upload"
                       type="file"
-                      multiple
                       className="hidden"
                       onChange={(e) => {
-                        const files = Array.from(e.target.files || []);
-                        setFormData({ ...formData, attachments: [...formData.attachments, ...files] });
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setFormData({ ...formData, file });
+                        }
                       }}
                     />
                     <span className="text-sm text-gray-500">
@@ -490,39 +645,29 @@ export default function CustomerOverviewPage() {
                     </span>
                   </div>
 
-                  {/* 已選擇的檔案列表 */}
-                  {formData.attachments.length > 0 && (
+                  {/* 已選擇的檔案 */}
+                  {formData.file && (
                     <div className="space-y-2">
                       <div className="text-sm font-medium text-gray-700">已選擇的檔案：</div>
-                      <div className="space-y-2">
-                        {formData.attachments.map((file, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                          >
-                            <div className="flex items-center gap-3">
-                              <Paperclip className="h-4 w-4 text-gray-500" />
-                              <div>
-                                <p className="text-sm font-medium text-gray-700">
-                                  {file.name}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {(file.size / 1024 / 1024).toFixed(1)} MB
-                                </p>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newAttachments = formData.attachments.filter((_, i) => i !== index);
-                                setFormData({ ...formData, attachments: newAttachments });
-                              }}
-                              className="text-red-500 hover:text-red-700 transition-colors"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <Paperclip className="h-4 w-4 text-gray-500" />
+                          <div>
+                            <p className="text-sm font-medium text-gray-700">
+                              {formData.file.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {(formData.file.size / 1024 / 1024).toFixed(1)} MB
+                            </p>
                           </div>
-                        ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, file: null })}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   )}
@@ -533,25 +678,42 @@ export default function CustomerOverviewPage() {
             {/* 對話框底部按鈕 */}
             <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
               <button
-                onClick={() => setIsAddDialogOpen(false)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                onClick={() => {
+                  setIsAddDialogOpen(false);
+                  resetForm();
+                }}
+                disabled={isSubmitting}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 取消
               </button>
               <button
-                onClick={() => {
-                  // 這裡可以添加提交邏輯
-                  console.log('提交表單:', formData);
-                  setIsAddDialogOpen(false);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                新增
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    處理中...
+                  </>
+                ) : (
+                  '新增'
+                )}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* 通知組件 */}
+      <Notification
+        type={notification.type}
+        message={notification.message}
+        isVisible={notification.isVisible}
+        onClose={closeNotification}
+        duration={2000}
+      />
     </>
   );
 }

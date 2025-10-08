@@ -19,8 +19,8 @@ const dbConfig = {
   // 查詢優化
   prepare: true, // 啟用預處理語句快取
 
-  // SSL 設定
-  ssl: process.env.NODE_ENV === 'production' ? 'require' as const : false,
+  // SSL 設定 - Neon 需要 SSL 連接
+  ssl: 'require' as const,
 
   // 連線設定
   connection: {

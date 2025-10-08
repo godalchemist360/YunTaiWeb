@@ -159,3 +159,21 @@ export const announcementReadReceipts = pgTable("announcement_read_receipts", {
 	announcementReadReceiptsAnnouncementIdIdx: index("announcement_read_receipts_announcement_id_idx").on(table.announcementId),
 	announcementReadReceiptsUniqueIdx: index("announcement_read_receipts_unique_idx").on(table.userId, table.announcementId),
 }));
+
+// 銷售支援相關表結構
+export const salesSupport = pgTable("sales_support", {
+	id: text("id").primaryKey().default("gen_random_uuid()"),
+	category: text("category").notNull(), // 主分類：銷售支援、客戶資料等
+	item: text("item").notNull(), // 子分類：契約文件、配置策略等
+	classification: text("classification").notNull(), // 檔案類別：契約範本、流程指南等
+	fileName: text("file_name").notNull(), // 檔案名稱
+	fileSize: text("file_size").notNull(), // 檔案大小
+	description: text("description"), // 內容簡述
+	fileUrl: text("file_url"), // 檔案URL
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+	salesSupportCategoryIdx: index("sales_support_category_idx").on(table.category),
+	salesSupportItemIdx: index("sales_support_item_idx").on(table.item),
+	salesSupportClassificationIdx: index("sales_support_classification_idx").on(table.classification),
+	salesSupportCreatedAtIdx: index("sales_support_created_at_idx").on(table.createdAt),
+}));
