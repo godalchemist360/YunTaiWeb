@@ -231,7 +231,17 @@ export default function CustomerOverviewPage() {
     }
 
     try {
-      window.open(fileUrl, '_blank');
+      // 直接使用連結方式下載
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = fileName;
+      link.target = '_blank';
+
+      // 添加到 DOM，點擊，然後移除
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
     } catch (error) {
       console.error('Download error:', error);
       showNotification('error', '下載失敗');
@@ -341,7 +351,7 @@ export default function CustomerOverviewPage() {
                   {/* 新增按鈕 */}
                   <button
                     onClick={() => setIsAddDialogOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                     <span>新增</span>
