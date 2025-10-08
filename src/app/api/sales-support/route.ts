@@ -12,6 +12,8 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const category = url.searchParams.get('category');
     const item = url.searchParams.get('item');
+    const classification = url.searchParams.get('classification');
+    const search = url.searchParams.get('search');
     const page = Number(url.searchParams.get('page') ?? '1');
     const pageSize = Number(url.searchParams.get('pageSize') ?? '10');
 
@@ -32,6 +34,20 @@ export async function GET(req: Request) {
       paramIndex++;
     }
 
+    // 篩選：依據檔案類別
+    if (classification) {
+      whereConditions.push(`classification = $${paramIndex}`);
+      params.push(classification);
+      paramIndex++;
+    }
+
+    // 搜尋：模糊搜尋檔案名稱
+    if (search) {
+      whereConditions.push(`file_name ILIKE $${paramIndex}`);
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+
     const whereSQL = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
     const offset = (page - 1) * pageSize;
 
@@ -42,7 +58,7 @@ export async function GET(req: Request) {
     );
     const total = Number(totalRes.rows[0].total);
 
-    // 查詢資料
+    // 查詢資料 - 修復參數索引問題
     const itemsRes = await query(
       `SELECT
         id,
@@ -53,6 +69,7 @@ export async function GET(req: Request) {
         file_size,
         description,
         file_url,
+        cloud_key,
         created_at
       FROM sales_support
       ${whereSQL}
@@ -70,6 +87,7 @@ export async function GET(req: Request) {
       file_size: row.file_size,
       description: row.description,
       file_url: row.file_url,
+      cloud_key: row.cloud_key,
       created_at: row.created_at,
     }));
 

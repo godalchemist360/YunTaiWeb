@@ -9,6 +9,7 @@ export interface SalesSupportDocument {
   file_size: string;
   description: string | null;
   file_url: string | null;
+  cloud_key: string | null;
   created_at: string;
 }
 

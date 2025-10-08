@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (!category || !item || !classification) {
-      return NextResponse.json({ 
-        error: 'Missing required parameters: category, item, classification' 
+      return NextResponse.json({
+        error: 'Missing required parameters: category, item, classification'
       }, { status: 400 });
     }
 
@@ -126,10 +126,11 @@ export async function POST(request: NextRequest) {
       fileName: file.name,
       fileSize: file.size,
       mimeType: file.type,
+      cloudKey: result.key, // 回傳 cloud_key 供前端使用
     });
   } catch (error) {
     console.error('Error uploading sales support file:', error);
-    
+
     const message = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
       { error: 'Upload failed', details: message },

@@ -3,6 +3,16 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { Notification } from '@/components/ui/notification';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { createSalesSupportRecord, getClassificationOptions } from '@/actions/sales-support';
 import {
   ArrowLeft,
@@ -16,9 +26,10 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { SalesSupportDocument, SalesSupportResponse } from '@/types/sales-support';
 
 export default function FundRecommendationPage() {
@@ -38,6 +49,8 @@ export default function FundRecommendationPage() {
 
   // 搜尋和篩選狀態
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchInputValue, setSearchInputValue] = useState(''); // 用於顯示的搜尋輸入值
+  const [selectedClassification, setSelectedClassification] = useState('全部');
 
   // 新增文件對話框狀態
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -82,6 +95,16 @@ export default function FundRecommendationPage() {
   // 檔案類別選項狀態
   const [classificationOptions, setClassificationOptions] = useState<string[]>([]);
 
+  // 防抖動計時器
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 刪除確認對話框狀態
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    fileName: string;
+  } | null>(null);
+
   // 取得當前選中卡片的檔案類別選項
   const updateClassificationOptions = async () => {
     const itemMap = {
@@ -97,7 +120,7 @@ export default function FundRecommendationPage() {
   };
 
   // 載入文件資料
-  const loadDocuments = async () => {
+  const loadDocuments = useCallback(async () => {
     setIsLoadingDocuments(true);
     setDocumentError(null);
 
@@ -116,6 +139,16 @@ export default function FundRecommendationPage() {
         pageSize: pageSize.toString(),
       });
 
+      // 添加搜尋參數（如果有搜尋關鍵字）
+      if (searchQuery.trim()) {
+        params.append('search', searchQuery.trim());
+      }
+
+      // 添加篩選參數（如果不是「全部」）
+      if (selectedClassification !== '全部') {
+        params.append('classification', selectedClassification);
+      }
+
       const response = await fetch(`/api/sales-support?${params}`);
 
       if (!response.ok) {
@@ -133,13 +166,54 @@ export default function FundRecommendationPage() {
     } finally {
       setIsLoadingDocuments(false);
     }
+  }, [selectedCard, searchQuery, selectedClassification, currentPage, pageSize]);
+
+  // 處理搜尋輸入變化（帶防抖動）
+  const handleSearchChange = (value: string) => {
+    // 立即更新輸入框顯示值
+    setSearchInputValue(value);
+
+    // 清除之前的計時器
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // 如果有輸入搜尋關鍵字，則重置篩選為「全部」
+    if (value.trim()) {
+      setSelectedClassification('全部');
+    }
+
+    // 設置新的計時器（防抖動 300ms）
+    searchTimeoutRef.current = setTimeout(() => {
+      setSearchQuery(value);
+      setCurrentPage(1); // 重置到第一頁
+    }, 300);
   };
 
-  // 當選中的卡片改變時，更新檔案類別選項和載入文件
+  // 處理篩選選擇變化
+  const handleClassificationChange = (value: string) => {
+    // 如果選擇了篩選選項（不是「全部」），則清空搜尋欄
+    if (value !== '全部') {
+      setSearchQuery('');
+      setSearchInputValue(''); // 清空搜尋輸入框顯示
+    }
+    setSelectedClassification(value);
+    setCurrentPage(1); // 重置到第一頁
+  };
+
+  // 當選中的卡片改變時，重置搜尋和篩選，並更新檔案類別選項
   useEffect(() => {
+    setSearchQuery('');
+    setSearchInputValue(''); // 清空搜尋輸入框顯示
+    setSelectedClassification('全部');
+    setCurrentPage(1);
     updateClassificationOptions();
+  }, [selectedCard]);
+
+  // 當搜尋、篩選、分頁改變時，重新載入文件
+  useEffect(() => {
     loadDocuments();
-  }, [selectedCard, currentPage, pageSize]);
+  }, [selectedCard, searchQuery, selectedClassification, currentPage, pageSize]);
 
   // 顯示通知
   const showNotification = (type: 'success' | 'error', message: string) => {
@@ -203,6 +277,7 @@ export default function FundRecommendationPage() {
         description: formData.description,
         fileUrl: uploadResult.url,
         fileSize: `${(formData.file.size / 1024 / 1024).toFixed(1)} MB`,
+        cloudKey: uploadResult.cloudKey, // 新增 cloud_key
       });
 
       if (result.success) {
@@ -266,6 +341,37 @@ export default function FundRecommendationPage() {
       month: '2-digit',
       day: '2-digit',
     });
+  };
+
+  // 處理刪除文件
+  const handleDeleteDocument = (id: string, fileName: string) => {
+    setDeleteTarget({ id, fileName });
+    setDeleteDialogOpen(true);
+  };
+
+  // 確認刪除
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      const response = await fetch(`/api/sales-support/${deleteTarget.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('刪除失敗');
+      }
+
+      showNotification('success', '檔案已成功刪除');
+      // 重新載入文件列表
+      await loadDocuments();
+    } catch (error) {
+      console.error('Delete error:', error);
+      showNotification('error', error instanceof Error ? error.message : '刪除失敗');
+    } finally {
+      setDeleteDialogOpen(false);
+      setDeleteTarget(null);
+    }
   };
 
   return (
@@ -332,19 +438,30 @@ export default function FundRecommendationPage() {
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                         <input
                           type="text"
-                          placeholder=""
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="搜尋檔案名稱..."
+                          value={searchInputValue}
+                          onChange={(e) => handleSearchChange(e.target.value)}
                           className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                         />
                       </div>
                     </div>
 
-                    {/* 篩選按鈕 */}
-                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    {/* 篩選下拉選單 */}
+                    <div className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white">
                       <Filter className="h-4 w-4 text-gray-600" />
-                      <span className="text-gray-700">篩選</span>
-                    </button>
+                      <select
+                        value={selectedClassification}
+                        onChange={(e) => handleClassificationChange(e.target.value)}
+                        className="text-gray-700 bg-transparent outline-none cursor-pointer"
+                      >
+                        <option value="全部">全部類別</option>
+                        {classificationOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   {/* 新增按鈕 */}
@@ -389,12 +506,13 @@ export default function FundRecommendationPage() {
                             <th className="text-left py-3 px-4 font-semibold text-gray-900 w-24">檔案大小</th>
                             <th className="text-left py-3 px-4 font-semibold text-gray-900">內容簡述</th>
                             <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">資源下載</th>
+                            <th className="text-center py-3 px-4 font-semibold text-gray-900 w-24">操作</th>
                           </tr>
                         </thead>
                         <tbody>
                           {documents.length === 0 ? (
                             <tr>
-                              <td colSpan={6} className="py-8 text-center text-gray-500">
+                              <td colSpan={7} className="py-8 text-center text-gray-500">
                                 暫無資料
                               </td>
                             </tr>
@@ -429,6 +547,15 @@ export default function FundRecommendationPage() {
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                     下載
+                                  </button>
+                                </td>
+                                <td className="py-3 px-4 text-center">
+                                  <button
+                                    onClick={() => handleDeleteDocument(document.id, document.file_name)}
+                                    className="inline-flex items-center justify-center p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                    title="刪除"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
                                   </button>
                                 </td>
                               </tr>
@@ -713,6 +840,24 @@ export default function FundRecommendationPage() {
         onClose={closeNotification}
         duration={2000}
       />
+
+      {/* 刪除確認對話框 */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>系統提醒</AlertDialogTitle>
+            <AlertDialogDescription>
+              確定要刪除檔案「{deleteTarget?.fileName}」嗎？此操作無法復原。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>刪除</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
