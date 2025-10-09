@@ -483,6 +483,9 @@
     "customerData": {
       "title": "Customer Data"
     },
+    "organizationChart": {
+      "title": "Organization Chart"
+    },
     "commissionQuery": {
       "title": "Commission Query"
     },

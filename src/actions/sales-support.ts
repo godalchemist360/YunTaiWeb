@@ -60,7 +60,7 @@ export async function createSalesSupportRecord(
       return {
         success: false,
         error: '資料驗證失敗',
-        details: error.errors.map(err => err.message).join(', '),
+        details: error.issues.map(err => err.message).join(', '),
       };
     }
 
@@ -310,7 +310,7 @@ export const getClassificationOptions = async (item: string) => {
       '供應商資訊',
       '材料驗收'
     ],
-    '諮詢服務': [
+    '設計諮詢': [
       '設計諮詢',
       '預算評估',
       '風格建議',

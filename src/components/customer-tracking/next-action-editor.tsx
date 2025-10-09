@@ -38,6 +38,7 @@ export function NextActionEditor({
   const [action, setAction] = useState(initialAction);
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [selectedTime, setSelectedTime] = useState(initialTime);
+  const [localLoading, setLocalLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{
     date?: string;
     time?: string;
@@ -98,7 +99,7 @@ export function NextActionEditor({
   const handleSave = async () => {
     if (!validateInputs()) return;
 
-    setIsLoading(true);
+    setLocalLoading(true);
 
     try {
       if (interactionId) {
@@ -136,7 +137,7 @@ export function NextActionEditor({
       console.error('Error saving next action:', error);
       onError?.(error instanceof Error ? error.message : '儲存失敗');
     } finally {
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -258,7 +259,7 @@ export function NextActionEditor({
             <button
               type="button"
               onClick={handleCancel}
-              disabled={isLoading}
+              disabled={isLoading || localLoading}
               className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
             >
               取消
@@ -266,10 +267,10 @@ export function NextActionEditor({
             <button
               type="button"
               onClick={handleSave}
-              disabled={isLoading}
+              disabled={isLoading || localLoading}
               className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
             >
-              {isLoading ? (
+              {(isLoading || localLoading) ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                   儲存中...
