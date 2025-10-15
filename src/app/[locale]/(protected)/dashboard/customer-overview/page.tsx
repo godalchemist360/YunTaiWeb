@@ -87,9 +87,9 @@ export default function CustomerOverviewPage() {
   // 卡片配置
   const cards = [
     { id: 'contract', title: '契約文件' },
-    { id: 'strategy', title: '配置策略' },
+    { id: 'strategy', title: '策略輔助工具' },
     { id: 'analysis', title: '資產分析' },
-    { id: 'bank', title: '銀行窗口' },
+    { id: 'bank', title: '貸款須知' },
   ];
 
   // 檔案類別選項狀態
@@ -109,9 +109,9 @@ export default function CustomerOverviewPage() {
   const updateClassificationOptions = async () => {
     const itemMap = {
       'contract': '契約文件',
-      'strategy': '配置策略',
+      'strategy': '策略輔助工具',
       'analysis': '資產分析',
-      'bank': '銀行窗口',
+      'bank': '貸款須知',
     };
     const options = await getClassificationOptions(itemMap[selectedCard]);
     setClassificationOptions(options);
@@ -127,9 +127,9 @@ export default function CustomerOverviewPage() {
     try {
       const itemMap = {
         'contract': '契約文件',
-        'strategy': '配置策略',
+        'strategy': '策略輔助工具',
         'analysis': '資產分析',
-        'bank': '銀行窗口',
+        'bank': '貸款須知',
       };
 
       const params = new URLSearchParams({
@@ -253,7 +253,14 @@ export default function CustomerOverviewPage() {
       const uploadFormData = new FormData();
       uploadFormData.append('file', formData.file);
       uploadFormData.append('category', 'customer-overview'); // 使用英文 slug
-      uploadFormData.append('item', cards.find(c => c.id === selectedCard)?.title || '');
+      // 使用與查詢時一致的 item 映射
+      const itemMap = {
+        'contract': '契約文件',
+        'strategy': '策略輔助工具',
+        'analysis': '資產分析',
+        'bank': '貸款須知',
+      };
+      uploadFormData.append('item', itemMap[selectedCard] || '');
       uploadFormData.append('classification', formData.classification);
 
       const uploadResponse = await fetch('/api/sales-support/upload', {
@@ -271,7 +278,7 @@ export default function CustomerOverviewPage() {
       // 2. 儲存資料庫記錄
       const result = await createSalesSupportRecord({
         category: 'customer-overview', // 使用英文 slug
-        item: cards.find(c => c.id === selectedCard)?.title || '',
+        item: itemMap[selectedCard] || '',
         classification: formData.classification,
         fileName: formData.fileName,
         description: formData.description,
@@ -507,7 +514,7 @@ export default function CustomerOverviewPage() {
                             <th className="text-left py-3 px-4 font-semibold text-gray-900 w-24">檔案大小</th>
                             <th className="text-left py-3 px-4 font-semibold text-gray-900">內容簡述</th>
                             <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">資源下載</th>
-                            <th className="text-center py-3 px-4 font-semibold text-gray-900 w-24">操作</th>
+                            <th className="text-center py-3 px-4 font-semibold text-gray-900 w-12"></th>
                           </tr>
                         </thead>
                         <tbody>

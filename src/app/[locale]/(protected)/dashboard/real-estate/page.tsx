@@ -506,7 +506,7 @@ export default function RealEstatePage() {
                             <th className="text-left py-3 px-4 font-semibold text-gray-900 w-24">檔案大小</th>
                             <th className="text-left py-3 px-4 font-semibold text-gray-900">內容簡述</th>
                             <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">資源下載</th>
-                            <th className="text-center py-3 px-4 font-semibold text-gray-900 w-24">操作</th>
+                            <th className="text-center py-3 px-4 font-semibold text-gray-900 w-12"></th>
                           </tr>
                         </thead>
                         <tbody>

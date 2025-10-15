@@ -23,13 +23,13 @@ export async function POST(request: NextRequest) {
     // 根據檔案類型設定不同的大小限制
     const getFileSizeLimit = (mimeType: string) => {
       if (mimeType.startsWith('audio/')) {
-        return 100 * 1024 * 1024; // 音檔：100MB
+        return 200 * 1024 * 1024; // 音檔：200MB
       }
       if (mimeType.startsWith('video/')) {
         return 500 * 1024 * 1024; // 影片：500MB
       }
       if (mimeType.startsWith('image/')) {
-        return 10 * 1024 * 1024; // 圖片：10MB
+        return 30 * 1024 * 1024; // 圖片：30MB
       }
       return 50 * 1024 * 1024; // 其他：50MB
     };
