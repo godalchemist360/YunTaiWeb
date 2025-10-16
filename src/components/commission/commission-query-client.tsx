@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SalesUserSelect } from '@/components/ui/sales-user-select';
@@ -45,6 +45,9 @@ export default function CommissionQueryClient() {
   const [totalPages, setTotalPages] = useState(0);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [toasts, setToasts] = useState<Array<{
     id: string;
     type: 'success' | 'error';
@@ -174,6 +177,45 @@ export default function CommissionQueryClient() {
   // 移除 Toast 通知
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
+  // 處理刪除記錄
+  const handleDeleteClick = (id: string) => {
+    setDeleteItemId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteItemId) return;
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/commissions/${deleteItemId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        showToast('success', '刪除成功', '傭金記錄已成功刪除');
+        setIsDeleteDialogOpen(false);
+        setDeleteItemId(null);
+        loadData(); // 重新載入資料
+      } else {
+        showToast('error', '刪除失敗', result.error || '請稍後再試');
+      }
+    } catch (error) {
+      console.error('Error deleting commission:', error);
+      showToast('error', '刪除失敗', '網路連線錯誤，請稍後再試');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
+    setDeleteItemId(null);
   };
 
   // 處理新增記錄
@@ -430,13 +472,14 @@ export default function CommissionQueryClient() {
                     {formatCurrency(item.commissionAmount)}
                   </TableCell>
                   <TableCell className="text-center py-3 w-16">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => handleDeleteClick(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -535,6 +578,43 @@ export default function CommissionQueryClient() {
         )}
             </CardContent>
           </Card>
+
+          {/* 刪除確認對話框 */}
+          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>確認刪除</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <p className="text-sm text-muted-foreground">
+                  確定要刪除這筆傭金記錄嗎？此操作無法復原。
+                </p>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={handleDeleteCancel}
+                  disabled={isDeleting}
+                >
+                  取消
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteConfirm}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      刪除中...
+                    </>
+                  ) : (
+                    '確認刪除'
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* Toast 通知 */}
           <ToastManager toasts={toasts} onRemove={removeToast} />
