@@ -1,6 +1,7 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import {
   BookOpen,
+  Brain,
   Building2,
   Calculator,
   Coins,
@@ -27,6 +28,9 @@ export default async function SalesSupportPage() {
       isCurrentPage: true,
     },
   ];
+
+  // 讀取 AI 教練網址
+  const aiCoachUrl = process.env.AI_coach_address || '';
 
   return (
     <>
@@ -186,6 +190,23 @@ export default async function SalesSupportPage() {
                       </h3>
                     </div>
                   </Link>
+
+                  {/* AI教練 */}
+                  <a
+                    href={aiCoachUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group rounded-xl border border-gray-200 bg-gradient-to-br from-violet-50 to-purple-100 p-6 shadow-sm transition-all hover:shadow-lg hover:border-violet-200 cursor-pointer h-32"
+                  >
+                    <div className="flex items-center justify-center gap-4 h-full">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 text-white shadow-lg">
+                        <Brain className="h-6 w-6" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        AI教練
+                      </h3>
+                    </div>
+                  </a>
                 </div>
               </div>
             </div>

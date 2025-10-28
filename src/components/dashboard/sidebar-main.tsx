@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/sidebar';
 import { LocaleLink, useLocalePathname } from '@/i18n/navigation';
 import type { NestedMenuItem } from '@/types';
+import { cn } from '@/lib/utils';
 
 /**
  * Main navigation for the dashboard sidebar
@@ -37,6 +38,7 @@ export function SidebarMain({ items }: { items: NestedMenuItem[] }) {
                     <SidebarMenuButton
                       asChild
                       isActive={isActive(subItem.href)}
+                      className={cn(subItem.isGrayed && 'text-gray-400 hover:text-gray-400 [&>svg]:text-gray-400')}
                     >
                       <LocaleLink href={subItem.href || ''}>
                         {subItem.icon ? subItem.icon : null}
@@ -56,7 +58,11 @@ export function SidebarMain({ items }: { items: NestedMenuItem[] }) {
             <SidebarGroupContent className="flex flex-col gap-2">
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={isActive(item.href)}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.href)}
+                    className={cn(item.isGrayed && 'text-gray-400 hover:text-gray-400 [&>svg]:text-gray-400')}
+                  >
                     <LocaleLink href={item.href || ''}>
                       {item.icon ? item.icon : null}
                       <span className="truncate font-medium text-sm">

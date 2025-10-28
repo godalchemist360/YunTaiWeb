@@ -64,6 +64,7 @@ export function getSidebarLinks(): NestedMenuItem[] {
       icon: <UserCheckIcon className="size-4 shrink-0" />,
       href: Routes.DashboardCustomerData,
       external: false,
+      isGrayed: true,
     },
     {
       title: t('organizationChart.title'),
@@ -82,12 +83,14 @@ export function getSidebarLinks(): NestedMenuItem[] {
       icon: <UploadIcon className="size-4 shrink-0" />,
       href: Routes.DashboardDataUpload,
       external: false,
+      isGrayed: true,
     },
     {
       title: t('training.title'),
       icon: <GraduationCapIcon className="size-4 shrink-0" />,
       href: Routes.DashboardTraining,
       external: false,
+      isGrayed: true,
     },
     {
       title: t('customerTracking.title'),
@@ -100,6 +103,7 @@ export function getSidebarLinks(): NestedMenuItem[] {
       icon: <BarChart3Icon className="size-4 shrink-0" />,
       href: Routes.DashboardAnalytics,
       external: false,
+      isGrayed: true,
     },
   ];
 
