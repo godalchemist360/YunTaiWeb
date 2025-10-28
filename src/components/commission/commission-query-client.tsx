@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, Trash2, X } from 'lucide-react';
+import { Search, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, Trash2, X, Edit } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,15 @@ export default function CommissionQueryClient() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<CommissionData | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [kpiData, setKpiData] = useState({
+    monthRevenue: 0,
+    monthCommission: 0,
+    ytdRevenue: 0,
+  });
+  const [kpiLoading, setKpiLoading] = useState(true);
   const [toasts, setToasts] = useState<Array<{
     id: string;
     type: 'success' | 'error';
@@ -84,6 +93,35 @@ export default function CommissionQueryClient() {
     });
   };
 
+  // 載入 KPI 資料
+  const loadKpiData = useCallback(async () => {
+    setKpiLoading(true);
+    try {
+      const response = await fetch('/api/commissions/kpis-simple');
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        setKpiData(result.data);
+      } else {
+        console.error('載入 KPI 資料失敗');
+        setKpiData({
+          monthRevenue: 0,
+          monthCommission: 0,
+          ytdRevenue: 0,
+        });
+      }
+    } catch (error) {
+      console.error('載入 KPI 資料失敗:', error);
+      setKpiData({
+        monthRevenue: 0,
+        monthCommission: 0,
+        ytdRevenue: 0,
+      });
+    } finally {
+      setKpiLoading(false);
+    }
+  }, []);
+
   // 載入資料
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -119,8 +157,9 @@ export default function CommissionQueryClient() {
 
   // 初始載入
   useEffect(() => {
+    loadKpiData();
     loadData();
-  }, [loadData]);
+  }, [loadKpiData, loadData]);
 
   // 搜尋處理
   const handleSearch = (value: string) => {
@@ -179,6 +218,20 @@ export default function CommissionQueryClient() {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
+  // 處理編輯記錄
+  const handleEditClick = (item: CommissionData) => {
+    setEditingItem(item);
+    setFormData({
+      salesperson: item.salesUserId.toString(),
+      customerName: item.customerName,
+      productType: item.productType,
+      contractDate: item.contractDate,
+      contractAmount: item.contractAmount.toString(),
+      commissionAmount: item.commissionAmount.toString()
+    });
+    setIsEditDialogOpen(true);
+  };
+
   // 處理刪除記錄
   const handleDeleteClick = (id: string) => {
     setDeleteItemId(id);
@@ -216,6 +269,68 @@ export default function CommissionQueryClient() {
   const handleDeleteCancel = () => {
     setIsDeleteDialogOpen(false);
     setDeleteItemId(null);
+  };
+
+  // 處理修改記錄
+  const handleUpdateRecord = async () => {
+    if (!editingItem) return;
+
+    // 前端驗證
+    if (!formData.salesperson || !formData.customerName || !formData.productType ||
+        !formData.contractDate || !formData.contractAmount || !formData.commissionAmount) {
+      showToast('error', '修改失敗', '請填寫所有必填欄位');
+      return;
+    }
+
+    // 驗證金額格式
+    const contractAmount = Number(formData.contractAmount);
+    const commissionAmount = Number(formData.commissionAmount);
+
+    if (isNaN(contractAmount) || isNaN(commissionAmount)) {
+      showToast('error', '修改失敗', '金額格式不正確');
+      return;
+    }
+
+    if (contractAmount < 0 || commissionAmount < 0) {
+      showToast('error', '修改失敗', '金額不能為負數');
+      return;
+    }
+
+    setIsUpdating(true);
+
+    try {
+      const response = await fetch(`/api/commissions/${editingItem.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sales_user_id: Number(formData.salesperson),
+          customer_name: formData.customerName,
+          product_type: formData.productType,
+          contract_date: formData.contractDate,
+          contract_amount: contractAmount,
+          commission_amount: commissionAmount,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        showToast('success', '修改成功', '傭金記錄已成功修改');
+        setIsEditDialogOpen(false);
+        setEditingItem(null);
+        resetForm();
+        loadData(); // 重新載入資料
+      } else {
+        showToast('error', '修改失敗', result.error || '請稍後再試');
+      }
+    } catch (error) {
+      console.error('Error updating commission:', error);
+      showToast('error', '修改失敗', '網路連線錯誤，請稍後再試');
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   // 處理新增記錄
@@ -280,6 +395,81 @@ export default function CommissionQueryClient() {
 
   return (
     <div className="space-y-6">
+      {/* 統計卡片區域 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* 本月業績 */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">本月業績</p>
+                {kpiLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600" />
+                    <span className="text-sm text-muted-foreground">載入中...</span>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-bold text-green-600">
+                    {formatCurrency(kpiData.monthRevenue)}
+                  </p>
+                )}
+              </div>
+              <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-green-600 font-bold text-lg">¥</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 本月傭金 */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">本月傭金</p>
+                {kpiLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
+                    <span className="text-sm text-muted-foreground">載入中...</span>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-bold text-blue-600">
+                    {formatCurrency(kpiData.monthCommission)}
+                  </p>
+                )}
+              </div>
+              <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-blue-600 font-bold text-lg">$</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 年度累積業績 */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">年度累積業績</p>
+                {kpiLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600" />
+                    <span className="text-sm text-muted-foreground">載入中...</span>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-bold text-purple-600">
+                    {formatCurrency(kpiData.ytdRevenue)}
+                  </p>
+                )}
+              </div>
+              <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <span className="text-purple-600 font-bold text-lg">📊</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Actions Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center space-x-2">
@@ -418,6 +608,127 @@ export default function CommissionQueryClient() {
                 </div>
           </DialogContent>
         </Dialog>
+
+        {/* 編輯對話框 */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>修改傭金記錄</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {/* 業務員 */}
+              <div className="flex items-center gap-4">
+                <Label htmlFor="edit-salesperson" className="w-24 text-center justify-center">
+                  業務員
+                </Label>
+                <SalesUserSelect
+                  value={formData.salesperson}
+                  onChange={(value) => handleInputChange('salesperson', value)}
+                  placeholder="選擇業務員"
+                  className="flex-1"
+                />
+              </div>
+
+              {/* 客戶名稱 */}
+              <div className="flex items-center gap-4">
+                <Label htmlFor="edit-customerName" className="w-24 text-center justify-center">
+                  客戶名稱
+                </Label>
+                <Input
+                  id="edit-customerName"
+                  value={formData.customerName}
+                  onChange={(e) => handleInputChange('customerName', e.target.value)}
+                  className="flex-1"
+                  placeholder="輸入客戶名稱"
+                />
+              </div>
+
+              {/* 產品類型 */}
+              <div className="flex items-center gap-4">
+                <Label htmlFor="edit-productType" className="w-24 text-center justify-center">
+                  產品類型
+                </Label>
+                <Select value={formData.productType} onValueChange={(value) => handleInputChange('productType', value)}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="選擇產品類型" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="房地產">房地產</SelectItem>
+                    <SelectItem value="保險">保險</SelectItem>
+                    <SelectItem value="諮詢">諮詢</SelectItem>
+                    <SelectItem value="基金">基金</SelectItem>
+                    <SelectItem value="行銷">行銷</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 成交日期 */}
+              <div className="flex items-center gap-4">
+                <Label htmlFor="edit-contractDate" className="w-24 text-center justify-center">
+                  成交日期
+                </Label>
+                <input
+                  id="edit-contractDate"
+                  type="date"
+                  value={formData.contractDate}
+                  onChange={(e) => handleInputChange('contractDate', e.target.value)}
+                  className="flex-1 h-10 px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  style={{ textAlign: 'center' }}
+                />
+              </div>
+
+              {/* 業績 */}
+              <div className="flex items-center gap-4">
+                <Label htmlFor="edit-contractAmount" className="w-24 text-center justify-center">
+                  業績
+                </Label>
+                <Input
+                  id="edit-contractAmount"
+                  value={formData.contractAmount}
+                  onChange={(e) => handleNumberInput('contractAmount', e.target.value)}
+                  className="flex-1"
+                  placeholder="輸入業績金額"
+                />
+              </div>
+
+              {/* 實拿金額 */}
+              <div className="flex items-center gap-4">
+                <Label htmlFor="edit-commissionAmount" className="w-24 text-center justify-center">
+                  實拿金額
+                </Label>
+                <Input
+                  id="edit-commissionAmount"
+                  value={formData.commissionAmount}
+                  onChange={(e) => handleNumberInput('commissionAmount', e.target.value)}
+                  className="flex-1"
+                  placeholder="輸入實拿金額"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+                disabled={isUpdating}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={handleUpdateRecord}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    修改中...
+                  </>
+                ) : (
+                  '修改'
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
@@ -437,12 +748,13 @@ export default function CommissionQueryClient() {
               <TableHead className="text-center">業績</TableHead>
               <TableHead className="text-center">實拿金額</TableHead>
               <TableHead className="text-center w-16"></TableHead>
+              <TableHead className="text-center w-16"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={8} className="text-center py-8">
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
                     <span className="ml-2">載入中...</span>
@@ -451,10 +763,10 @@ export default function CommissionQueryClient() {
               </TableRow>
             ) : data.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-center py-8 text-muted-foreground"
-                >
+                  <TableCell
+                    colSpan={8}
+                    className="text-center py-8 text-muted-foreground"
+                  >
                   暫無傭金記錄
                 </TableCell>
               </TableRow>
@@ -470,6 +782,16 @@ export default function CommissionQueryClient() {
                   <TableCell className="text-center py-3">{formatCurrency(item.contractAmount)}</TableCell>
                   <TableCell className="text-center font-bold text-green-600 py-3">
                     {formatCurrency(item.commissionAmount)}
+                  </TableCell>
+                  <TableCell className="text-center py-3 w-16">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-blue-600 hover:text-blue-700"
+                          onClick={() => handleEditClick(item)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                   </TableCell>
                   <TableCell className="text-center py-3 w-16">
                         <Button
