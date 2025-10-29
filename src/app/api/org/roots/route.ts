@@ -14,8 +14,10 @@ export async function GET(request: NextRequest) {
     try {
             const query = `
               SELECT m.id, m.employee_no, m.name, m.rank, m.active, m.sales_total, m.sales_month, m.team_sales_month,
-                     EXISTS(SELECT 1 FROM members c WHERE c.upline_id = m.id) AS "hasChildren"
+                     EXISTS(SELECT 1 FROM members c WHERE c.upline_id = m.id) AS "hasChildren",
+                     u.avatar_url, u.display_name, m.introducer
               FROM members m
+              LEFT JOIN app_users u ON u.id = CAST(m.employee_no AS INTEGER)
               WHERE m.upline_id IS NULL
               ORDER BY m.name;
             `;
