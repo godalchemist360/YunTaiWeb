@@ -270,6 +270,8 @@ export default function OrgChartStatic(): React.JSX.Element {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showAddDownlineModal, setShowAddDownlineModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [showRemoveConfirmModal, setShowRemoveConfirmModal] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   // 新增下線表單狀態
   const [selectedPerson, setSelectedPerson] = useState('');
@@ -433,6 +435,60 @@ export default function OrgChartStatic(): React.JSX.Element {
       });
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  // 移除人員
+  const handleRemoveMember = async () => {
+    if (!selectedNode) {
+      setToastMessage({
+        type: 'error',
+        message: '找不到選中的成員'
+      });
+      return;
+    }
+
+    setIsRemoving(true);
+
+    try {
+      const response = await fetch('/api/org/remove-member', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          member_id: selectedNode.id
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setToastMessage({
+          type: 'success',
+          message: '移除成功'
+        });
+
+        // 關閉所有對話框
+        setShowRemoveConfirmModal(false);
+        setSelectedNode(null);
+
+        // 重新載入組織圖
+        await reloadOrgChart();
+      } else {
+        setToastMessage({
+          type: 'error',
+          message: result.error || '移除失敗'
+        });
+      }
+    } catch (error) {
+      console.error('Error removing member:', error);
+      setToastMessage({
+        type: 'error',
+        message: '移除失敗，請稍後再試'
+      });
+    } finally {
+      setIsRemoving(false);
     }
   };
 
@@ -735,10 +791,7 @@ export default function OrgChartStatic(): React.JSX.Element {
                     新增下線
                   </button>
                   <button
-                    onClick={() => {
-                      // TODO: 實作移除人員功能
-                      console.log('移除人員:', selectedNode.name);
-                    }}
+                    onClick={() => setShowRemoveConfirmModal(true)}
                     className="flex-1 bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
                   >
                     移除人員
@@ -1053,6 +1106,64 @@ export default function OrgChartStatic(): React.JSX.Element {
                   </>
                 ) : (
                   '確認'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 移除確認對話框 */}
+      {showRemoveConfirmModal && selectedNode && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            {/* 對話框標題 */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">確認移除</h3>
+                <p className="text-sm text-gray-600">此操作無法復原</p>
+              </div>
+            </div>
+
+            {/* 確認訊息 */}
+            <div className="mb-6">
+              <p className="text-gray-700">
+                確定要移除 <span className="font-bold text-gray-900">{selectedNode.name}</span> 嗎？
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                此人員的下線將會重新指派給其上線。
+              </p>
+            </div>
+
+            {/* 按鈕區域 */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowRemoveConfirmModal(false)}
+                disabled={isRemoving}
+                className="px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-lg hover:bg-gray-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleRemoveMember}
+                disabled={isRemoving}
+                className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors disabled:bg-red-400 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isRemoving ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    移除中...
+                  </>
+                ) : (
+                  '確認移除'
                 )}
               </button>
             </div>
