@@ -11,7 +11,8 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const {
-      salesperson,
+      sales_user_id,
+      sales_user_name,
       customerName,
       leadSource,
       leadSourceOther,
@@ -24,12 +25,29 @@ export async function POST(req: Request) {
     } = body;
 
     // 驗證必填欄位
-    if (!salesperson || !customerName || !leadSource) {
+    if (!sales_user_id || !customerName || !leadSource) {
       return NextResponse.json(
         { error: '業務員、客戶名稱和名單來源為必填欄位' },
         { status: 400 }
       );
     }
+
+    // 處理業務員 ID 和名稱
+    const salesUserId = Number.parseInt(sales_user_id, 10);
+    if (Number.isNaN(salesUserId)) {
+      return NextResponse.json(
+        { error: '業務員 ID 格式錯誤' },
+        { status: 400 }
+      );
+    }
+
+    // 從資料庫查詢業務員的 display_name（與傭金查詢邏輯一致）
+    const salesUserResult = await query(
+      'SELECT display_name FROM app_users WHERE id = $1',
+      [salesUserId]
+    );
+
+    const salesUserName = salesUserResult.rows[0]?.display_name || '';
 
     // 處理名單來源
     const finalLeadSource =
@@ -201,17 +219,18 @@ export async function POST(req: Request) {
     // 插入資料庫
     const insertSQL = `
       INSERT INTO customer_interactions (
-        id, salesperson, customer_name, lead_source, consultation_motives,
+        id, sales_user_id, sales_user_name, customer_name, lead_source, consultation_motives,
         asset_liability_data, income_expense_data, situation_data,
         meeting_count, created_at, updated_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()
       )
     `;
 
     await query(insertSQL, [
       id,
-      salesperson,
+      salesUserId,
+      salesUserName,
       customerName,
       finalLeadSource,
       allMotives,
@@ -240,7 +259,15 @@ export async function POST(req: Request) {
 
 async function _getCustomerInteractions(req: Request) {
   try {
+    // 獲取當前用戶資訊以進行權限檢查
     const userId = await getCurrentUserId(req);
+    const numericId = parseInt(userId.slice(-12), 10);
+
+    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
+      numericId,
+    ]);
+
+    const userRole = userResult.rows.length > 0 ? userResult.rows[0].role : null;
 
     const url = new URL(req.url);
     const page = Number(url.searchParams.get('page') ?? '1');
@@ -255,9 +282,16 @@ async function _getCustomerInteractions(req: Request) {
     const params: any[] = [];
     let paramIndex = 1;
 
+    // 如果是 sales 角色，只能查看自己的資料
+    if (userRole === 'sales') {
+      whereConditions.push(`sales_user_id = $${paramIndex}`);
+      params.push(numericId);
+      paramIndex++;
+    }
+
     if (q?.trim()) {
       whereConditions.push(
-        `(customer_name ILIKE $${paramIndex} OR salesperson ILIKE $${paramIndex})`
+        `(customer_name ILIKE $${paramIndex} OR COALESCE(sales_user_name, '') ILIKE $${paramIndex} OR sales_user_id::text ILIKE $${paramIndex})`
       );
       params.push(`%${q}%`);
       paramIndex++;
@@ -274,7 +308,8 @@ async function _getCustomerInteractions(req: Request) {
       WITH data_query AS (
         SELECT
           id,
-          salesperson,
+          sales_user_id,
+          sales_user_name,
           customer_name,
           lead_source,
           consultation_motives,

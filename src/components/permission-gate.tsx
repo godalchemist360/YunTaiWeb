@@ -118,3 +118,136 @@ export function AnnouncementViewGate({
     </PermissionGate>
   );
 }
+
+/**
+ * 銷售支援創建權限組件
+ */
+export function SalesSupportCreateGate({
+  children,
+  fallback,
+  showFallback,
+}: Omit<PermissionGateProps, 'permission'>) {
+  return (
+    <PermissionGate
+      permission="sales-support.create"
+      fallback={fallback}
+      showFallback={showFallback}
+    >
+      {children}
+    </PermissionGate>
+  );
+}
+
+/**
+ * 銷售支援刪除權限組件
+ */
+export function SalesSupportDeleteGate({
+  children,
+  fallback,
+  showFallback,
+}: Omit<PermissionGateProps, 'permission'>) {
+  return (
+    <PermissionGate
+      permission="sales-support.delete"
+      fallback={fallback}
+      showFallback={showFallback}
+    >
+      {children}
+    </PermissionGate>
+  );
+}
+
+/**
+ * 銷售支援查看權限組件
+ */
+export function SalesSupportViewGate({
+  children,
+  fallback,
+  showFallback,
+}: Omit<PermissionGateProps, 'permission'>) {
+  return (
+    <PermissionGate
+      permission="sales-support.view"
+      fallback={fallback}
+      showFallback={showFallback}
+    >
+      {children}
+    </PermissionGate>
+  );
+}
+
+/**
+ * 佣金創建權限組件
+ */
+export function CommissionCreateGate({
+  children,
+  fallback,
+  showFallback,
+}: Omit<PermissionGateProps, 'permission'>) {
+  return (
+    <PermissionGate
+      permission="commission.create"
+      fallback={fallback}
+      showFallback={showFallback}
+    >
+      {children}
+    </PermissionGate>
+  );
+}
+
+/**
+ * 佣金編輯權限組件
+ */
+export function CommissionEditGate({
+  children,
+  fallback,
+  showFallback,
+}: Omit<PermissionGateProps, 'permission'>) {
+  return (
+    <PermissionGate
+      permission="commission.edit"
+      fallback={fallback}
+      showFallback={showFallback}
+    >
+      {children}
+    </PermissionGate>
+  );
+}
+
+/**
+ * 佣金刪除權限組件
+ */
+export function CommissionDeleteGate({
+  children,
+  fallback,
+  showFallback,
+}: Omit<PermissionGateProps, 'permission'>) {
+  return (
+    <PermissionGate
+      permission="commission.delete"
+      fallback={fallback}
+      showFallback={showFallback}
+    >
+      {children}
+    </PermissionGate>
+  );
+}
+
+/**
+ * 佣金查看權限組件
+ */
+export function CommissionViewGate({
+  children,
+  fallback,
+  showFallback,
+}: Omit<PermissionGateProps, 'permission'>) {
+  return (
+    <PermissionGate
+      permission="commission.view"
+      fallback={fallback}
+      showFallback={showFallback}
+    >
+      {children}
+    </PermissionGate>
+  );
+}

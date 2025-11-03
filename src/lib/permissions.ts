@@ -19,7 +19,14 @@ export type PermissionAction =
   | 'customer-tracking.create'
   | 'customer-tracking.edit'
   | 'customer-tracking.view'
-  | 'customer-tracking.delete';
+  | 'customer-tracking.delete'
+  | 'sales-support.create'
+  | 'sales-support.delete'
+  | 'sales-support.view'
+  | 'commission.create'
+  | 'commission.edit'
+  | 'commission.delete'
+  | 'commission.view';
 
 // 權限配置：角色 -> 權限動作映射
 export const PERMISSIONS: Record<UserRole, PermissionAction[]> = {
@@ -36,6 +43,13 @@ export const PERMISSIONS: Record<UserRole, PermissionAction[]> = {
     'customer-tracking.edit',
     'customer-tracking.view',
     'customer-tracking.delete',
+    'sales-support.create',
+    'sales-support.delete',
+    'sales-support.view',
+    'commission.create',
+    'commission.edit',
+    'commission.delete',
+    'commission.view',
   ],
   management: [
     'announcements.create',
@@ -47,6 +61,13 @@ export const PERMISSIONS: Record<UserRole, PermissionAction[]> = {
     'customer-tracking.edit',
     'customer-tracking.view',
     'customer-tracking.delete',
+    'sales-support.create',
+    'sales-support.delete',
+    'sales-support.view',
+    'commission.create',
+    'commission.edit',
+    'commission.delete',
+    'commission.view',
   ],
   sales: [
     'announcements.view',
@@ -55,6 +76,10 @@ export const PERMISSIONS: Record<UserRole, PermissionAction[]> = {
     'customer-tracking.edit',
     'customer-tracking.view',
     // sales 不能刪除客戶追蹤記錄
+    'sales-support.view',
+    // sales 角色不能創建或刪除銷售支援文件
+    'commission.view',
+    // sales 角色不能創建、編輯或刪除佣金記錄
   ],
 };
 
@@ -157,6 +182,83 @@ export function canViewCustomerTracking(
 }
 
 /**
+ * 檢查用戶是否可以創建銷售支援文件
+ * @param userRole 用戶角色
+ * @returns 是否可以創建銷售支援文件
+ */
+export function canCreateSalesSupport(
+  userRole: UserRole | undefined
+): boolean {
+  return hasPermission(userRole, 'sales-support.create');
+}
+
+/**
+ * 檢查用戶是否可以刪除銷售支援文件
+ * @param userRole 用戶角色
+ * @returns 是否可以刪除銷售支援文件
+ */
+export function canDeleteSalesSupport(
+  userRole: UserRole | undefined
+): boolean {
+  return hasPermission(userRole, 'sales-support.delete');
+}
+
+/**
+ * 檢查用戶是否可以查看銷售支援文件
+ * @param userRole 用戶角色
+ * @returns 是否可以查看銷售支援文件
+ */
+export function canViewSalesSupport(
+  userRole: UserRole | undefined
+): boolean {
+  return hasPermission(userRole, 'sales-support.view');
+}
+
+/**
+ * 檢查用戶是否可以創建佣金記錄
+ * @param userRole 用戶角色
+ * @returns 是否可以創建佣金記錄
+ */
+export function canCreateCommission(
+  userRole: UserRole | undefined
+): boolean {
+  return hasPermission(userRole, 'commission.create');
+}
+
+/**
+ * 檢查用戶是否可以編輯佣金記錄
+ * @param userRole 用戶角色
+ * @returns 是否可以編輯佣金記錄
+ */
+export function canEditCommission(
+  userRole: UserRole | undefined
+): boolean {
+  return hasPermission(userRole, 'commission.edit');
+}
+
+/**
+ * 檢查用戶是否可以刪除佣金記錄
+ * @param userRole 用戶角色
+ * @returns 是否可以刪除佣金記錄
+ */
+export function canDeleteCommission(
+  userRole: UserRole | undefined
+): boolean {
+  return hasPermission(userRole, 'commission.delete');
+}
+
+/**
+ * 檢查用戶是否可以查看佣金記錄
+ * @param userRole 用戶角色
+ * @returns 是否可以查看佣金記錄
+ */
+export function canViewCommission(
+  userRole: UserRole | undefined
+): boolean {
+  return hasPermission(userRole, 'commission.view');
+}
+
+/**
  * 獲取權限錯誤訊息
  * @param action 權限動作
  * @returns 錯誤訊息
@@ -175,6 +277,13 @@ export function getPermissionErrorMessage(action: PermissionAction): string {
     'customer-tracking.delete': '身份組無權限進行此操作',
     'customer-tracking.edit': '身份組無權限進行此操作',
     'customer-tracking.view': '身份組無權限進行此操作',
+    'sales-support.create': '身份組無權限進行此操作',
+    'sales-support.delete': '身份組無權限進行此操作',
+    'sales-support.view': '身份組無權限進行此操作',
+    'commission.create': '身份組無權限進行此操作',
+    'commission.edit': '身份組無權限進行此操作',
+    'commission.delete': '身份組無權限進行此操作',
+    'commission.view': '身份組無權限進行此操作',
   };
 
   return actionMessages[action] || '身份組無權限進行此操作';

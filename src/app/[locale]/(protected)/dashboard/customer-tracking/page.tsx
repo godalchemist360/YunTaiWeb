@@ -282,6 +282,13 @@ export default function CustomerTrackingPage() {
     }
   };
 
+  // 輔助函數：格式化業務員顯示（ID + 姓名）
+  const formatSalesName = useCallback((userId: number | null, name: string | null): string => {
+    if (!userId || !name) return '-';
+    const paddedId = userId.toString().padStart(6, '0');
+    return `${paddedId} ${name}`;
+  }, []);
+
   // 輔助函數：獲取名單來源的顯示樣式
   const getLeadSourceStyle = useCallback((leadSource: string) => {
     if (leadSource === '原顧') {
@@ -485,18 +492,18 @@ export default function CustomerTrackingPage() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto bg-card">
+              <div className="overflow-x-auto bg-card pl-4 pr-4">
                 <table className="w-full table-fixed">
                   <thead className="bg-muted/50 border-b">
                     <tr>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground w-12">
-                        業務員
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground w-16">
-                        客戶名稱
+                      <th className="pl-8 pr-6 py-3 text-center text-xs font-medium text-muted-foreground w-12 align-middle">
+                        <div className="flex items-center justify-center">業務員</div>
                       </th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground w-16">
                         名單來源
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground w-16">
+                        客戶名稱
                       </th>
                       <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground w-48">
                         諮詢動機
@@ -510,8 +517,8 @@ export default function CustomerTrackingPage() {
                       <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground w-32">
                         下一步行動及日期
                       </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground w-32">
-                        會面紀錄
+                      <th className="pl-6 pr-8 py-3 text-center text-xs font-medium text-muted-foreground w-32 align-middle">
+                        <div className="flex items-center justify-center">會面紀錄</div>
                       </th>
                     </tr>
                   </thead>
@@ -554,27 +561,9 @@ export default function CustomerTrackingPage() {
                             key={interaction.id}
                             className="hover:bg-muted/50 transition-colors"
                           >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-center w-12">
-                              {interaction.salesperson}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-center w-16">
-                              <div className="flex items-center justify-center gap-2">
-                                <span>{interaction.customer_name}</span>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setCustomerNameEditor({
-                                      isOpen: true,
-                                      rowIndex: index,
-                                      initialCustomerName:
-                                        interaction.customer_name,
-                                    })
-                                  }
-                                  className="p-1 hover:bg-muted rounded transition-colors"
-                                  title="編輯客戶名稱"
-                                >
-                                  <Pencil className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                                </button>
+                            <td className="pl-8 pr-6 py-4 whitespace-nowrap text-sm text-foreground text-center w-12 align-middle">
+                              <div className="flex items-center justify-center">
+                                {formatSalesName(interaction.sales_user_id, interaction.sales_user_name)}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-center w-16">
@@ -595,6 +584,26 @@ export default function CustomerTrackingPage() {
                                 >
                                   {interaction.lead_source}
                                 </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-center w-16">
+                              <div className="flex items-center justify-center gap-2">
+                                <span>{interaction.customer_name}</span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setCustomerNameEditor({
+                                      isOpen: true,
+                                      rowIndex: index,
+                                      initialCustomerName:
+                                        interaction.customer_name,
+                                    })
+                                  }
+                                  className="p-1 hover:bg-muted rounded transition-colors"
+                                  title="編輯客戶名稱"
+                                >
+                                  <Pencil className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                                </button>
                               </div>
                             </td>
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-foreground text-center w-48">
@@ -734,12 +743,14 @@ export default function CustomerTrackingPage() {
                                 )}
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-center w-32">
-                              <MeetingRecordDropdown
-                                interaction={interaction}
-                                index={index}
-                                onOpenCard={setMeetingRecordCard}
-                              />
+                            <td className="pl-6 pr-8 py-4 whitespace-nowrap text-sm text-foreground text-center w-32 align-middle">
+                              <div className="flex items-center justify-center">
+                                <MeetingRecordDropdown
+                                  interaction={interaction}
+                                  index={index}
+                                  onOpenCard={setMeetingRecordCard}
+                                />
+                              </div>
                             </td>
                           </tr>
                         );

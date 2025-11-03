@@ -1,8 +1,32 @@
+import { getCurrentUserId } from '@/lib/auth';
+import { query } from '@/lib/db';
 import { uploadFile } from '@/storage';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    // 權限檢查：只有 admin 和 management 可以上傳文件
+    const userId = await getCurrentUserId(request);
+
+    // 將 UUID 格式的 userId 轉換回整數 ID
+    const numericId = parseInt(userId.slice(-12), 10);
+
+    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
+      numericId,
+    ]);
+
+    if (userResult.rows.length === 0) {
+      return NextResponse.json({ error: '用戶不存在' }, { status: 404 });
+    }
+
+    const userRole = userResult.rows[0].role;
+    if (userRole === 'sales') {
+      return NextResponse.json(
+        { error: '身份組無權限進行此操作' },
+        { status: 403 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const category = formData.get('category') as string | null;

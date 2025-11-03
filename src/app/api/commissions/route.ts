@@ -1,4 +1,5 @@
-import { db } from '@/lib/db';
+import { getCurrentUserId } from '@/lib/auth';
+import { db, query } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -7,6 +8,16 @@ export const runtime = 'nodejs';
 // GET - 取得傭金列表
 export async function GET(request: NextRequest) {
   try {
+    // 獲取當前用戶資訊以進行權限檢查
+    const userId = await getCurrentUserId(request);
+    const numericId = parseInt(userId.slice(-12), 10);
+
+    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
+      numericId,
+    ]);
+
+    const userRole = userResult.rows.length > 0 ? userResult.rows[0].role : null;
+
     const { searchParams } = new URL(request.url);
     const page = Number(searchParams.get('page') ?? '1');
     const pageSize = Number(searchParams.get('pageSize') ?? '10');
@@ -15,6 +26,11 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * pageSize;
 
     const whereConditions: string[] = [];
+
+    // 如果是 sales 角色，只能查看自己的資料
+    if (userRole === 'sales') {
+      whereConditions.push(`c.sales_user_id = ${numericId}`);
+    }
 
     if (q?.trim()) {
       whereConditions.push(
@@ -83,6 +99,28 @@ export async function GET(request: NextRequest) {
 // POST - 新增傭金記錄
 export async function POST(request: NextRequest) {
   try {
+    // 權限檢查：只有 admin 和 management 可以新增佣金記錄
+    const userId = await getCurrentUserId(request);
+
+    // 將 UUID 格式的 userId 轉換回整數 ID
+    const numericId = parseInt(userId.slice(-12), 10);
+
+    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
+      numericId,
+    ]);
+
+    if (userResult.rows.length === 0) {
+      return NextResponse.json({ error: '用戶不存在' }, { status: 404 });
+    }
+
+    const userRole = userResult.rows[0].role;
+    if (userRole === 'sales') {
+      return NextResponse.json(
+        { success: false, error: '身份組無權限進行此操作' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const {
       sales_user_id,
@@ -120,11 +158,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 取得業務員姓名
-    const userResult = await db.execute(
+    const salesUserResult = await db.execute(
       sql.raw(`SELECT display_name FROM app_users WHERE id = ${sales_user_id}`)
     );
 
-    const sales_user_name = userResult.rows[0]?.display_name || '';
+    const sales_user_name = salesUserResult.rows[0]?.display_name || '';
 
     // 新增記錄
     const insertSQL = `

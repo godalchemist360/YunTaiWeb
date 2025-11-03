@@ -78,7 +78,7 @@ export function SalesUserSelect({
 
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger className={className}>
+      <SelectTrigger className={className} size="default">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

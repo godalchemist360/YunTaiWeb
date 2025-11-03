@@ -45,6 +45,15 @@ export function getSidebarLinks(): NestedMenuItem[] {
   // if is demo website, allow user to access admin and user pages, but data is fake
   const isDemo = isDemoWebsite();
 
+  // 定義需要管理權限（admin 和 management）才能訪問的路由
+  const adminOnlyRoutes = [
+    Routes.DashboardCustomerData,
+    Routes.DashboardDataUpload,
+    Routes.DashboardTraining,
+    Routes.DashboardAnalytics,
+    Routes.DashboardAccountManagement,
+  ];
+
   // 基礎導航項目
   const baseLinks: NestedMenuItem[] = [
     {
@@ -59,6 +68,7 @@ export function getSidebarLinks(): NestedMenuItem[] {
       href: Routes.DashboardSalesSupport,
       external: false,
     },
+    // 以下頁面僅限 admin 和 management 訪問
     {
       title: t('customerData.title'),
       icon: <UserCheckIcon className="size-4 shrink-0" />,
@@ -78,6 +88,7 @@ export function getSidebarLinks(): NestedMenuItem[] {
       href: Routes.DashboardCommissionQuery,
       external: false,
     },
+    // 以下頁面僅限 admin 和 management 訪問
     {
       title: t('dataUpload.title'),
       icon: <UploadIcon className="size-4 shrink-0" />,
@@ -85,6 +96,7 @@ export function getSidebarLinks(): NestedMenuItem[] {
       external: false,
       isGrayed: true,
     },
+    // 以下頁面僅限 admin 和 management 訪問
     {
       title: t('training.title'),
       icon: <GraduationCapIcon className="size-4 shrink-0" />,
@@ -98,6 +110,7 @@ export function getSidebarLinks(): NestedMenuItem[] {
       href: Routes.DashboardCustomerTracking,
       external: false,
     },
+    // 以下頁面僅限 admin 和 management 訪問
     {
       title: t('analytics.title'),
       icon: <BarChart3Icon className="size-4 shrink-0" />,
@@ -107,16 +120,34 @@ export function getSidebarLinks(): NestedMenuItem[] {
     },
   ];
 
-  // 只有在權限載入完成後才決定是否顯示帳號管理
+  // 只有在權限載入完成後才決定是否顯示需要管理權限的項目和帳號管理
   // 這樣可以避免載入期間的閃爍效果
-  if (!isLoading && !isSales()) {
-    baseLinks.push({
-      title: t('accountManagement.title'),
-      icon: <UsersIcon className="size-4 shrink-0" />,
-      href: Routes.DashboardAccountManagement,
-      external: false,
+  if (!isLoading) {
+    // 過濾掉 sales 用戶不應該看到的項目
+    const filteredLinks = baseLinks.filter((link) => {
+      // 如果路由需要管理權限，且用戶是 sales，則過濾掉
+      if (link.href && adminOnlyRoutes.includes(link.href) && isSales()) {
+        return false;
+      }
+      return true;
     });
+
+    // 如果不是 sales 用戶，添加帳號管理
+    if (!isSales()) {
+      filteredLinks.push({
+        title: t('accountManagement.title'),
+        icon: <UsersIcon className="size-4 shrink-0" />,
+        href: Routes.DashboardAccountManagement,
+        external: false,
+      });
+    }
+
+    return filteredLinks;
   }
 
-  return baseLinks;
+  // 權限載入中時，只返回不需要權限檢查的連結，避免受限連結閃現
+  return baseLinks.filter((link) => {
+    // 只返回不在 adminOnlyRoutes 中的連結，以及帳號管理（稍後再根據權限添加）
+    return link.href && !adminOnlyRoutes.includes(link.href);
+  });
 }

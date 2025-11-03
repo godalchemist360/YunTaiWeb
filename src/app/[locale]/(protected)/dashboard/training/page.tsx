@@ -1,4 +1,7 @@
+'use client';
+
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { usePermissions } from '@/hooks/use-permissions';
 import {
   Award,
   BookOpen,
@@ -10,13 +13,38 @@ import {
   Star,
 } from 'lucide-react';
 
-export default async function TrainingPage() {
+export default function TrainingPage() {
+  const { isSales, isLoading: permissionsLoading } = usePermissions();
   const breadcrumbs = [
     {
       label: '教育訓練',
       isCurrentPage: true,
     },
   ];
+
+  // 權限檢查：sales 用戶無權限訪問此頁面
+  if (permissionsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">載入中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isSales()) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">無權限訪問</h1>
+          <p className="text-gray-600">您的身份組無權限訪問此頁面</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

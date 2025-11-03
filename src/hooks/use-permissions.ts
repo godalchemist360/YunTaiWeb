@@ -14,6 +14,13 @@ import {
   canEditCustomerTracking,
   canViewAnnouncement,
   canViewCustomerTracking,
+  canCreateSalesSupport,
+  canDeleteSalesSupport,
+  canViewSalesSupport,
+  canCreateCommission,
+  canEditCommission,
+  canDeleteCommission,
+  canViewCommission,
   hasPermission,
 } from '@/lib/permissions';
 import { useAppUser } from './use-app-user';
@@ -50,6 +57,17 @@ export function usePermissions() {
     canDeleteCustomerTracking: () => canDeleteCustomerTracking(userRole),
     canEditCustomerTracking: () => canEditCustomerTracking(userRole),
     canViewCustomerTracking: () => canViewCustomerTracking(userRole),
+
+    // 銷售支援相關權限
+    canCreateSalesSupport: () => canCreateSalesSupport(userRole),
+    canDeleteSalesSupport: () => canDeleteSalesSupport(userRole),
+    canViewSalesSupport: () => canViewSalesSupport(userRole),
+
+    // 佣金相關權限
+    canCreateCommission: () => canCreateCommission(userRole),
+    canEditCommission: () => canEditCommission(userRole),
+    canDeleteCommission: () => canDeleteCommission(userRole),
+    canViewCommission: () => canViewCommission(userRole),
 
     // 角色檢查
     isAdmin: () => userRole === 'admin',

@@ -13,7 +13,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  SalesSupportCreateGate,
+  SalesSupportDeleteGate,
+} from '@/components/permission-gate';
 import { createSalesSupportRecord, getClassificationOptions } from '@/actions/sales-support';
+import {
+  extractPermissionError,
+  showPermissionError,
+} from '@/lib/permission-utils';
 import {
   ArrowLeft,
   Paintbrush,
@@ -262,6 +270,15 @@ export default function InteriorDesignPage() {
       });
 
       if (!uploadResponse.ok) {
+        // 檢查是否為權限錯誤
+        if (uploadResponse.status === 403) {
+          const errorMessage = await extractPermissionError(
+            uploadResponse,
+            'sales-support.create'
+          );
+          showPermissionError(errorMessage);
+          return;
+        }
         const errorData = await uploadResponse.json();
         throw new Error(errorData.error || '檔案上傳失敗');
       }
@@ -359,6 +376,15 @@ export default function InteriorDesignPage() {
       });
 
       if (!response.ok) {
+        // 檢查是否為權限錯誤
+        if (response.status === 403) {
+          const errorMessage = await extractPermissionError(
+            response,
+            'sales-support.delete'
+          );
+          showPermissionError(errorMessage);
+          return;
+        }
         throw new Error('刪除失敗');
       }
 
@@ -465,13 +491,15 @@ export default function InteriorDesignPage() {
                   </div>
 
                   {/* 新增按鈕 */}
-                  <button
-                    onClick={() => setIsAddDialogOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>新增</span>
-                  </button>
+                  <SalesSupportCreateGate>
+                    <button
+                      onClick={() => setIsAddDialogOpen(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>新增</span>
+                    </button>
+                  </SalesSupportCreateGate>
                 </div>
 
                 {/* Main Content */}
@@ -550,13 +578,15 @@ export default function InteriorDesignPage() {
                                   </button>
                                 </td>
                                 <td className="py-3 px-4 text-center">
-                                  <button
-                                    onClick={() => handleDeleteDocument(document.id, document.file_name)}
-                                    className="inline-flex items-center justify-center p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                                    title="刪除"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
+                                  <SalesSupportDeleteGate>
+                                    <button
+                                      onClick={() => handleDeleteDocument(document.id, document.file_name)}
+                                      className="inline-flex items-center justify-center p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                      title="刪除"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </button>
+                                  </SalesSupportDeleteGate>
                                 </td>
                               </tr>
                             ))

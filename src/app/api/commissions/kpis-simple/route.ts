@@ -1,4 +1,5 @@
-import { db } from '@/lib/db';
+import { getCurrentUserId } from '@/lib/auth';
+import { db, query } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -7,38 +8,76 @@ export const runtime = 'nodejs';
 // GET - 取得傭金 KPI 統計資料
 export async function GET(request: NextRequest) {
   try {
-    // 直接從 commissions 表計算統計資料
-    const querySQL = `
-      SELECT
-        COALESCE(SUM(CASE
-          WHEN DATE_TRUNC('month', contract_date) = DATE_TRUNC('month', CURRENT_DATE)
-          THEN contract_amount
-          ELSE 0
-        END), 0) as month_revenue,
-        COALESCE(SUM(CASE
-          WHEN DATE_TRUNC('month', contract_date) = DATE_TRUNC('month', CURRENT_DATE)
-          THEN commission_amount
-          ELSE 0
-        END), 0) as month_commission,
-        COALESCE(SUM(CASE
-          WHEN EXTRACT(YEAR FROM contract_date) = EXTRACT(YEAR FROM CURRENT_DATE)
-          THEN contract_amount
-          ELSE 0
-        END), 0) as ytd_revenue
-      FROM commissions
-    `;
+    // 獲取當前用戶資訊以進行權限檢查
+    const userId = await getCurrentUserId(request);
+    const numericId = parseInt(userId.slice(-12), 10);
 
-    const result = await db.execute(sql.raw(querySQL));
+    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
+      numericId,
+    ]);
 
-    if (result.rows.length === 0) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          monthRevenue: 0,
-          monthCommission: 0,
-          ytdRevenue: 0,
-        },
-      });
+    const userRole = userResult.rows.length > 0 ? userResult.rows[0].role : null;
+
+    let querySQL: string;
+    let result;
+
+    // 如果是 sales 角色，從視圖查詢該用戶的 KPI 資料
+    if (userRole === 'sales') {
+      querySQL = `
+        SELECT
+          COALESCE(month_revenue, 0) as month_revenue,
+          COALESCE(month_commission, 0) as month_commission,
+          COALESCE(ytd_revenue, 0) as ytd_revenue
+        FROM v_sales_user_options
+        WHERE id = ${numericId}
+      `;
+
+      result = await db.execute(sql.raw(querySQL));
+
+      if (result.rows.length === 0) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            monthRevenue: 0,
+            monthCommission: 0,
+            ytdRevenue: 0,
+          },
+        });
+      }
+    } else {
+      // admin 和 management 角色：從 commissions 表計算所有資料的統計
+      querySQL = `
+        SELECT
+          COALESCE(SUM(CASE
+            WHEN DATE_TRUNC('month', contract_date) = DATE_TRUNC('month', CURRENT_DATE)
+            THEN contract_amount
+            ELSE 0
+          END), 0) as month_revenue,
+          COALESCE(SUM(CASE
+            WHEN DATE_TRUNC('month', contract_date) = DATE_TRUNC('month', CURRENT_DATE)
+            THEN commission_amount
+            ELSE 0
+          END), 0) as month_commission,
+          COALESCE(SUM(CASE
+            WHEN EXTRACT(YEAR FROM contract_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+            THEN contract_amount
+            ELSE 0
+          END), 0) as ytd_revenue
+        FROM commissions
+      `;
+
+      result = await db.execute(sql.raw(querySQL));
+
+      if (result.rows.length === 0) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            monthRevenue: 0,
+            monthCommission: 0,
+            ytdRevenue: 0,
+          },
+        });
+      }
     }
 
     const kpiData = result.rows[0];

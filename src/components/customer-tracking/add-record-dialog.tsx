@@ -1,6 +1,7 @@
 'use client';
 
 import { usePermissions } from '@/hooks/use-permissions';
+import { SalesUserSelect } from '@/components/ui/sales-user-select';
 import {
   Building,
   ChevronDown,
@@ -28,8 +29,10 @@ export function AddRecordDialog({
 }: AddRecordDialogProps) {
   const { user, isSales, isLoading } = usePermissions();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [salesOptions, setSalesOptions] = useState<Array<{ id: number; label: string }>>([]);
   const [formData, setFormData] = useState({
-    salesperson: '',
+    sales_user_id: '',
+    sales_user_name: '',
     customerName: '',
     leadSource: '',
     leadSourceOther: '',
@@ -99,6 +102,24 @@ export function AddRecordDialog({
     '企業相關',
     '其他',
   ];
+
+  // 載入業務員選項
+  useEffect(() => {
+    const fetchSalesOptions = async () => {
+      try {
+        const response = await fetch('/api/sales/options');
+        const result = await response.json();
+        if (result.success) {
+          setSalesOptions(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching sales options:', error);
+      }
+    };
+    if (isOpen) {
+      fetchSalesOptions();
+    }
+  }, [isOpen]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({
@@ -261,22 +282,41 @@ export function AddRecordDialog({
     [key: string]: string;
   }>({});
 
-  // 當彈出視窗開啟且是 sales 用戶時，自動填入業務員名稱
+  // 當彈出視窗開啟且是 sales 用戶時，自動填入業務員 ID 和名稱
   useEffect(() => {
-    if (isOpen && !isLoading && user?.role === 'sales' && user?.display_name) {
+    if (isOpen && !isLoading && user?.role === 'sales' && user?.id && salesOptions.length > 0) {
+      // 從選項中找到當前用戶的 label（格式為 "000011 andy"）
+      const currentUserOption = salesOptions.find(option => option.id === user.id);
+      if (currentUserOption) {
+        setFormData((prev) => ({
+          ...prev,
+          sales_user_id: user.id.toString(),
+          sales_user_name: currentUserOption.label.split(' ').slice(1).join(' '), // 取得名稱部分（去掉 ID）
+        }));
+      }
+    }
+  }, [isOpen, isLoading, user?.role, user?.id, salesOptions]);
+
+  const handleSalesUserChange = (userId: string) => {
+    // 從選項中找到選中的業務員
+    const selectedOption = salesOptions.find(option => option.id.toString() === userId);
+    if (selectedOption) {
+      // 從 label 中提取名稱（格式為 "000011 andy"）
+      const name = selectedOption.label.split(' ').slice(1).join(' ');
       setFormData((prev) => ({
         ...prev,
-        salesperson: user.display_name,
+        sales_user_id: userId,
+        sales_user_name: name,
       }));
     }
-  }, [isOpen, isLoading, user?.role, user?.display_name]);
+  };
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
 
     // 基本資訊驗證
-    if (!formData.salesperson.trim()) {
-      errors.salesperson = '業務員為必填欄位';
+    if (!formData.sales_user_id) {
+      errors.sales_user_id = '業務員為必填欄位';
     }
     if (!formData.customerName.trim()) {
       errors.customerName = '客戶名稱為必填欄位';
@@ -330,7 +370,8 @@ export function AddRecordDialog({
       onClose();
       // 重置表單
       setFormData({
-        salesperson: '',
+        sales_user_id: '',
+        sales_user_name: '',
         customerName: '',
         leadSource: '',
         leadSourceOther: '',
@@ -447,33 +488,23 @@ export function AddRecordDialog({
                       </span>
                     )}
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.salesperson}
-                    onChange={(e) =>
-                      handleInputChange('salesperson', e.target.value)
-                    }
-                    disabled={user?.role === 'sales'}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm ${
-                      user?.role === 'sales'
-                        ? 'bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed'
-                        : 'bg-white border-gray-300'
-                    } ${validationErrors.salesperson ? 'border-red-500' : ''}`}
-                    placeholder={
-                      user?.role === 'sales'
-                        ? '自動填入您的姓名'
-                        : '請輸入業務員'
-                    }
-                  />
-                  {validationErrors.salesperson && (
+                  <div className={`${validationErrors.sales_user_id ? '[&>button]:border-red-500' : ''}`}>
+                    <SalesUserSelect
+                      value={formData.sales_user_id}
+                      onChange={handleSalesUserChange}
+                      placeholder="選擇業務員"
+                      disabled={user?.role === 'sales'}
+                      className="w-full !px-4 !py-3 !h-auto !bg-white !shadow-sm !rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    />
+                  </div>
+                  {validationErrors.sales_user_id && (
                     <p className="text-sm text-red-600">
-                      {validationErrors.salesperson}
+                      {validationErrors.sales_user_id}
                     </p>
                   )}
                   {user?.role === 'sales' && (
                     <p className="text-xs text-gray-500">
-                      此欄位已自動填入您的姓名，無法修改
+                      此欄位已自動填入您的資訊，無法修改
                     </p>
                   )}
                 </div>

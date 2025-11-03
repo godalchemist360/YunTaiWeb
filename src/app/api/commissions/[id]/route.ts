@@ -1,4 +1,5 @@
-import { db } from '@/lib/db';
+import { getCurrentUserId } from '@/lib/auth';
+import { db, query } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -10,6 +11,28 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 權限檢查：只有 admin 和 management 可以編輯佣金記錄
+    const userId = await getCurrentUserId(request);
+
+    // 將 UUID 格式的 userId 轉換回整數 ID
+    const numericId = parseInt(userId.slice(-12), 10);
+
+    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
+      numericId,
+    ]);
+
+    if (userResult.rows.length === 0) {
+      return NextResponse.json({ success: false, error: '用戶不存在' }, { status: 404 });
+    }
+
+    const userRole = userResult.rows[0].role;
+    if (userRole === 'sales') {
+      return NextResponse.json(
+        { success: false, error: '身份組無權限進行此操作' },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
     const {
@@ -56,11 +79,11 @@ export async function PUT(
     }
 
     // 取得業務員姓名
-    const userResult = await db.execute(
+    const salesUserResult = await db.execute(
       sql.raw(`SELECT display_name FROM app_users WHERE id = ${sales_user_id}`)
     );
 
-    const sales_user_name = userResult.rows[0]?.display_name || '';
+    const sales_user_name = salesUserResult.rows[0]?.display_name || '';
 
     // 修改記錄
     const updateSQL = `
@@ -106,6 +129,28 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 權限檢查：只有 admin 和 management 可以刪除佣金記錄
+    const userId = await getCurrentUserId(request);
+
+    // 將 UUID 格式的 userId 轉換回整數 ID
+    const numericId = parseInt(userId.slice(-12), 10);
+
+    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
+      numericId,
+    ]);
+
+    if (userResult.rows.length === 0) {
+      return NextResponse.json({ success: false, error: '用戶不存在' }, { status: 404 });
+    }
+
+    const userRole = userResult.rows[0].role;
+    if (userRole === 'sales') {
+      return NextResponse.json(
+        { success: false, error: '身份組無權限進行此操作' },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
 
     // 驗證 ID 格式

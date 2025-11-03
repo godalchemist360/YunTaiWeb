@@ -4,6 +4,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Search } from 'lucide-react';
 import { SalesUserSelect } from '@/components/ui/sales-user-select';
+import { usePermissions } from '@/hooks/use-permissions';
 
 // Dynamic import for ECharts to avoid SSR issues
 const ReactECharts = dynamic(() => import('echarts-for-react'), {
@@ -263,6 +264,7 @@ const buildTreeOption = (root: TreeNode): any => {
  * Displays a tree chart using ECharts with API data
  */
 export default function OrgChartStatic(): React.JSX.Element {
+  const { isSales } = usePermissions();
   const [root, setRoot] = useState<TreeNode | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -781,22 +783,24 @@ export default function OrgChartStatic(): React.JSX.Element {
                 </div>
 
                 {/* 操作按鈕區域 */}
-                <div className="mt-4 flex gap-2">
-                  <button
-                    onClick={() => {
-                      setShowAddDownlineModal(true);
-                    }}
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
-                  >
-                    新增下線
-                  </button>
-                  <button
-                    onClick={() => setShowRemoveConfirmModal(true)}
-                    className="flex-1 bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
-                  >
-                    移除人員
-                  </button>
-                </div>
+                {!isSales() && (
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={() => {
+                        setShowAddDownlineModal(true);
+                      }}
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
+                    >
+                      新增下線
+                    </button>
+                    <button
+                      onClick={() => setShowRemoveConfirmModal(true)}
+                      className="flex-1 bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
+                    >
+                      移除人員
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
@@ -980,12 +984,14 @@ export default function OrgChartStatic(): React.JSX.Element {
                 </>
               ) : (
                 <>
-                  <button
-                    onClick={handleStartEdit}
-                    className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    編輯
-                  </button>
+                  {!isSales() && (
+                    <button
+                      onClick={handleStartEdit}
+                      className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      編輯
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setShowDetailModal(false);

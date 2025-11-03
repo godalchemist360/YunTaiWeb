@@ -1,7 +1,8 @@
 // 資料庫中的 customer_interactions 表結構
 export interface CustomerInteraction {
   id: string;
-  salesperson: string;
+  sales_user_id: number | null;
+  sales_user_name: string | null;
   customer_name: string;
   lead_source: string;
   consultation_motives: string[];

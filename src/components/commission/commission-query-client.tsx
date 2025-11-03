@@ -11,6 +11,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SalesUserSelect } from '@/components/ui/sales-user-select';
 import { ToastManager } from '@/components/ui/toast';
+import {
+  CommissionCreateGate,
+  CommissionEditGate,
+  CommissionDeleteGate,
+} from '@/components/permission-gate';
+import {
+  extractPermissionError,
+  showPermissionError,
+} from '@/lib/permission-utils';
 
 interface CommissionData {
   id: string;
@@ -256,6 +265,15 @@ export default function CommissionQueryClient() {
         setDeleteItemId(null);
         loadData(); // 重新載入資料
       } else {
+        // 檢查是否為權限錯誤
+        if (response.status === 403) {
+          const errorMessage = await extractPermissionError(
+            response,
+            'commission.delete'
+          );
+          showPermissionError(errorMessage);
+          return;
+        }
         showToast('error', '刪除失敗', result.error || '請稍後再試');
       }
     } catch (error) {
@@ -323,6 +341,15 @@ export default function CommissionQueryClient() {
         resetForm();
         loadData(); // 重新載入資料
       } else {
+        // 檢查是否為權限錯誤
+        if (response.status === 403) {
+          const errorMessage = await extractPermissionError(
+            response,
+            'commission.edit'
+          );
+          showPermissionError(errorMessage);
+          return;
+        }
         showToast('error', '修改失敗', result.error || '請稍後再試');
       }
     } catch (error) {
@@ -382,6 +409,15 @@ export default function CommissionQueryClient() {
         resetForm();
         loadData(); // 重新載入資料
       } else {
+        // 檢查是否為權限錯誤
+        if (response.status === 403) {
+          const errorMessage = await extractPermissionError(
+            response,
+            'commission.create'
+          );
+          showPermissionError(errorMessage);
+          return;
+        }
         showToast('error', '新增失敗', result.error || '請稍後再試');
       }
     } catch (error) {
@@ -483,13 +519,14 @@ export default function CommissionQueryClient() {
             />
           </div>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              新增紀錄
-            </Button>
-          </DialogTrigger>
+        <CommissionCreateGate>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                新增紀錄
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>新增傭金記錄</DialogTitle>
@@ -607,7 +644,8 @@ export default function CommissionQueryClient() {
                   </Button>
                 </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </CommissionCreateGate>
 
         {/* 編輯對話框 */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -784,24 +822,28 @@ export default function CommissionQueryClient() {
                     {formatCurrency(item.commissionAmount)}
                   </TableCell>
                   <TableCell className="text-center py-3 w-16">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-blue-600 hover:text-blue-700"
-                          onClick={() => handleEditClick(item)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                    <CommissionEditGate showFallback fallback={<div className="w-9 h-9" />}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-blue-600 hover:text-blue-700"
+                        onClick={() => handleEditClick(item)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </CommissionEditGate>
                   </TableCell>
                   <TableCell className="text-center py-3 w-16">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
-                          onClick={() => handleDeleteClick(item.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                    <CommissionDeleteGate showFallback fallback={<div className="w-9 h-9" />}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => handleDeleteClick(item.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </CommissionDeleteGate>
                   </TableCell>
                 </TableRow>
               ))
