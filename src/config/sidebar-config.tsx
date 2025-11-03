@@ -46,7 +46,7 @@ export function getSidebarLinks(): NestedMenuItem[] {
   const isDemo = isDemoWebsite();
 
   // 定義需要管理權限（admin 和 management）才能訪問的路由
-  const adminOnlyRoutes = [
+  const adminOnlyRoutes: string[] = [
     Routes.DashboardCustomerData,
     Routes.DashboardDataUpload,
     Routes.DashboardTraining,

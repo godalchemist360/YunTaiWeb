@@ -259,15 +259,11 @@ export async function POST(req: Request) {
 
 async function _getCustomerInteractions(req: Request) {
   try {
-    // 獲取當前用戶資訊以進行權限檢查
-    const userId = await getCurrentUserId(req);
-    const numericId = parseInt(userId.slice(-12), 10);
-
-    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
-      numericId,
-    ]);
-
-    const userRole = userResult.rows.length > 0 ? userResult.rows[0].role : null;
+    // 獲取當前用戶資訊以進行權限檢查（使用優化後的函數，合併查詢並緩存）
+    const { getCurrentUserInfo } = await import('@/lib/auth');
+    const userInfo = await getCurrentUserInfo(req);
+    const numericId = userInfo.numericId;
+    const userRole = userInfo.role;
 
     const url = new URL(req.url);
     const page = Number(url.searchParams.get('page') ?? '1');

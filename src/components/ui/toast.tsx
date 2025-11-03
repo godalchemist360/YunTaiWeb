@@ -2,16 +2,27 @@
 
 import { useEffect, useState } from 'react';
 import { X, CheckCircle, AlertCircle } from 'lucide-react';
+import * as React from 'react';
 
-interface ToastProps {
+export type ToastActionElement = React.ReactElement<unknown>;
+
+export interface ToastProps {
   id: string;
-  type: 'success' | 'error';
-  title: string;
-  description?: string;
+  type?: 'success' | 'error' | 'default';
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  action?: ToastActionElement;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onClose?: (id: string) => void;
+  duration?: number;
+}
+
+interface InternalToastProps extends ToastProps {
   onClose: (id: string) => void;
 }
 
-export function Toast({ id, type, title, description, onClose }: ToastProps) {
+export function Toast({ id, type = 'default', title, description, action, open, onOpenChange, onClose }: ToastProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {

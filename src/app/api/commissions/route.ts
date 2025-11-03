@@ -1,5 +1,5 @@
-import { getCurrentUserId } from '@/lib/auth';
 import { db, query } from '@/lib/db';
+import { getCurrentUserInfo } from '@/lib/auth';
 import { sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -8,15 +8,10 @@ export const runtime = 'nodejs';
 // GET - 取得傭金列表
 export async function GET(request: NextRequest) {
   try {
-    // 獲取當前用戶資訊以進行權限檢查
-    const userId = await getCurrentUserId(request);
-    const numericId = parseInt(userId.slice(-12), 10);
-
-    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
-      numericId,
-    ]);
-
-    const userRole = userResult.rows.length > 0 ? userResult.rows[0].role : null;
+    // 獲取當前用戶資訊以進行權限檢查（使用優化後的函數，合併查詢並緩存）
+    const userInfo = await getCurrentUserInfo(request);
+    const numericId = userInfo.numericId;
+    const userRole = userInfo.role;
 
     const { searchParams } = new URL(request.url);
     const page = Number(searchParams.get('page') ?? '1');
@@ -100,20 +95,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // 權限檢查：只有 admin 和 management 可以新增佣金記錄
-    const userId = await getCurrentUserId(request);
+    const userInfo = await getCurrentUserInfo(request);
+    const numericId = userInfo.numericId;
+    const userRole = userInfo.role;
 
-    // 將 UUID 格式的 userId 轉換回整數 ID
-    const numericId = parseInt(userId.slice(-12), 10);
-
-    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
-      numericId,
-    ]);
-
-    if (userResult.rows.length === 0) {
-      return NextResponse.json({ error: '用戶不存在' }, { status: 404 });
+    if (!numericId) {
+      return NextResponse.json({ error: '無法識別用戶' }, { status: 401 });
     }
-
-    const userRole = userResult.rows[0].role;
     if (userRole === 'sales') {
       return NextResponse.json(
         { success: false, error: '身份組無權限進行此操作' },

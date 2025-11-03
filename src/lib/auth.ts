@@ -219,72 +219,149 @@ async function onCreateUser(user: User) {
 }
 
 /**
- * 獲取當前登入用戶的ID
- * - 從自定義認證 cookie 中獲取用戶帳號
- * - 查詢 app_users 表獲取真實用戶ID
- * - 如果無法獲取，則回退到測試ID（開發階段）
- *
- * @param req 可選的 Request 物件，用於從特定請求中獲取 cookie
+ * 用戶資訊緩存結構
  */
-export async function getCurrentUserId(req?: Request): Promise<string> {
+interface CachedUserInfo {
+  id: string;
+  numericId: number;
+  role: string | null;
+  account: string;
+  timestamp: number;
+}
+
+// 記憶體緩存：使用 Map 存儲用戶帳號 -> 用戶資訊
+const userInfoCache = new Map<string, CachedUserInfo>();
+const CACHE_TTL = 30 * 1000; // 30秒緩存
+
+/**
+ * 從 cookie 中提取用戶帳號（內部輔助函數）
+ */
+async function extractUserAccountFromCookie(req?: Request): Promise<string | null> {
   try {
     let cookieHeader: string | null = null;
 
     if (req) {
-      // 如果有 Request 物件，直接從中獲取 cookie
       cookieHeader = req.headers.get('cookie');
     } else {
-      // 否則使用 headers() 函數（用於沒有 Request 的場合）
       const { headers } = await import('next/headers');
       const headersList = await headers();
       cookieHeader = headersList.get('cookie');
     }
 
-    if (cookieHeader) {
-      // 解析 cookie 字符串
-      const cookies = cookieHeader.split(';').reduce(
-        (acc, cookie) => {
-          const [key, value] = cookie.trim().split('=');
-          if (key && value) {
-            acc[key] = decodeURIComponent(value);
-          }
-          return acc;
-        },
-        {} as Record<string, string>
-      );
+    if (!cookieHeader) {
+      return null;
+    }
 
-      // 先獲取 session ID
-      const sessionId = cookies['session-id'];
-      if (!sessionId) {
-        console.warn('沒有找到 session ID');
-        return '00000000-0000-0000-0000-000000000001';
-      }
-
-      // 使用 session ID 獲取對應的用戶帳號
-      const userAccountKey = `user-account-${sessionId}`;
-      const userAccount = cookies[userAccountKey];
-
-      if (userAccount) {
-        // 查詢 app_users 表獲取用戶ID（添加索引優化）
-        const { query } = await import('./db');
-        const result = await query(
-          'SELECT id FROM app_users WHERE account = $1 LIMIT 1',
-          [userAccount]
-        );
-
-        if (result.rows.length > 0) {
-          // 將數字ID轉換為UUID格式，因為資料庫期望UUID
-          const numericId = result.rows[0].id;
-          // 創建一個基於數字ID的UUID（保持一致性）
-          return `00000000-0000-0000-0000-${numericId.toString().padStart(12, '0')}`;
+    // 解析 cookie 字符串
+    const cookies = cookieHeader.split(';').reduce(
+      (acc, cookie) => {
+        const [key, value] = cookie.trim().split('=');
+        if (key && value) {
+          acc[key] = decodeURIComponent(value);
         }
-      }
+        return acc;
+      },
+      {} as Record<string, string>
+    );
+
+    // 先獲取 session ID
+    const sessionId = cookies['session-id'];
+    if (!sessionId) {
+      return null;
+    }
+
+    // 使用 session ID 獲取對應的用戶帳號
+    const userAccountKey = `user-account-${sessionId}`;
+    return cookies[userAccountKey] || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * 獲取當前用戶資訊（ID 和 role）
+ * - 合併查詢減少資料庫往返
+ * - 添加 30 秒記憶體緩存提升性能
+ * - 這是推薦使用的新函數
+ *
+ * @param req 可選的 Request 物件，用於從特定請求中獲取 cookie
+ * @returns 用戶資訊物件，包含 id (UUID格式), numericId (數字ID), role, account
+ */
+export async function getCurrentUserInfo(
+  req?: Request
+): Promise<{
+  id: string;
+  numericId: number;
+  role: string | null;
+  account: string | null;
+}> {
+  const defaultResult = {
+    id: '00000000-0000-0000-0000-000000000001',
+    numericId: 1,
+    role: null,
+    account: null,
+  };
+
+  try {
+    const userAccount = await extractUserAccountFromCookie(req);
+    if (!userAccount) {
+      return defaultResult;
+    }
+
+    // 檢查緩存
+    const cached = userInfoCache.get(userAccount);
+    const now = Date.now();
+    if (cached && now - cached.timestamp < CACHE_TTL) {
+      return {
+        id: cached.id,
+        numericId: cached.numericId,
+        role: cached.role,
+        account: cached.account,
+      };
+    }
+
+    // 緩存未命中或已過期，查詢資料庫
+    const { query } = await import('./db');
+    // 合併查詢：一次獲取 id 和 role
+    const result = await query(
+      'SELECT id, role FROM app_users WHERE account = $1 LIMIT 1',
+      [userAccount]
+    );
+
+    if (result.rows.length > 0) {
+      const numericId = result.rows[0].id;
+      const role = result.rows[0].role;
+      // 將數字ID轉換為UUID格式
+      const id = `00000000-0000-0000-0000-${numericId.toString().padStart(12, '0')}`;
+
+      // 更新緩存
+      userInfoCache.set(userAccount, {
+        id,
+        numericId,
+        role,
+        account: userAccount,
+        timestamp: now,
+      });
+
+      return { id, numericId, role, account: userAccount };
     }
   } catch (error) {
-    // 如果獲取用戶ID失敗，記錄錯誤但不中斷程序
-    console.warn('無法獲取當前用戶ID，使用測試ID:', error);
+    console.warn('無法獲取當前用戶資訊，使用預設值:', error);
   }
 
-  // 回退到測試ID（開發階段使用）
-  return '00000000-0000-0000-0000-000000000001';
+  return defaultResult;
+}
+
+/**
+ * 獲取當前登入用戶的ID
+ * - 從自定義認證 cookie 中獲取用戶帳號
+ * - 查詢 app_users 表獲取真實用戶ID
+ * - 如果無法獲取，則回退到測試ID（開發階段）
+ * - 建議使用 getCurrentUserInfo() 以獲得更好的性能
+ *
+ * @param req 可選的 Request 物件，用於從特定請求中獲取 cookie
+ */
+export async function getCurrentUserId(req?: Request): Promise<string> {
+  const userInfo = await getCurrentUserInfo(req);
+  return userInfo.id;
 }

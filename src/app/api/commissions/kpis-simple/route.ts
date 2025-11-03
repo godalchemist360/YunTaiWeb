@@ -1,4 +1,3 @@
-import { getCurrentUserId } from '@/lib/auth';
 import { db, query } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
@@ -8,15 +7,11 @@ export const runtime = 'nodejs';
 // GET - 取得傭金 KPI 統計資料
 export async function GET(request: NextRequest) {
   try {
-    // 獲取當前用戶資訊以進行權限檢查
-    const userId = await getCurrentUserId(request);
-    const numericId = parseInt(userId.slice(-12), 10);
-
-    const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
-      numericId,
-    ]);
-
-    const userRole = userResult.rows.length > 0 ? userResult.rows[0].role : null;
+    // 獲取當前用戶資訊以進行權限檢查（使用優化後的函數，合併查詢並緩存）
+    const { getCurrentUserInfo } = await import('@/lib/auth');
+    const userInfo = await getCurrentUserInfo(request);
+    const numericId = userInfo.numericId;
+    const userRole = userInfo.role;
 
     let querySQL: string;
     let result;

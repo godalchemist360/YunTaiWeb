@@ -1,5 +1,4 @@
-import { db } from '@/lib/db';
-import { sql } from 'drizzle-orm';
+import { query } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
@@ -18,14 +17,14 @@ export async function GET(request: NextRequest) {
       params.push(`%${q}%`);
     }
 
-    const query = `
+    const sqlQuery = `
       SELECT id, label
       FROM v_sales_user_options
       ${whereSQL}
       ORDER BY id ASC
     `;
 
-    const result = await db.execute(sql.raw(query, params));
+    const result = await query(sqlQuery, params);
 
     return NextResponse.json({
       success: true,
