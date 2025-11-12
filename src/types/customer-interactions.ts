@@ -1,4 +1,20 @@
 // 資料庫中的 customer_interactions 表結構
+export interface MeetingRecordEntry {
+  main_goal?: string;
+  main_goal_other?: string;
+  success_rate?: number;
+  appointment_date?: string;
+  pain_points?: string;
+  observations?: string;
+}
+
+export interface MeetingRecordStage {
+  marketing_stage?: number | string | null;
+  [meetingKey: `meet${number}`]: MeetingRecordEntry | undefined;
+}
+
+export type MeetingRecord = Record<string, MeetingRecordStage>;
+
 export interface CustomerInteraction {
   id: string;
   sales_user_id: number | null;
@@ -17,9 +33,7 @@ export interface CustomerInteraction {
   };
   next_action_date: string | null;
   next_action_description: string | null;
-  meeting_record: {
-    [key: string]: string;
-  };
+  meeting_record: MeetingRecord | null;
   meeting_count: number | null;
   created_at: string;
   updated_at: string;

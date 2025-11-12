@@ -339,7 +339,29 @@ async function _getCustomerInteractions(req: Request) {
     console.timeEnd('customer_interactions_combined');
 
     const total = Number(result.rows[0].total_count);
-    const items = result.rows[0].items || [];
+    const rawItems = (result.rows[0].items || []) as any[];
+
+    const items = rawItems.map((item) => {
+      let meetingRecord = item.meeting_record ?? null;
+
+      if (typeof meetingRecord === 'string') {
+        try {
+          meetingRecord = JSON.parse(meetingRecord);
+        } catch (error) {
+          console.error(
+            '❗ 解析 meeting_record 失敗，返回原始字串',
+            meetingRecord,
+            error
+          );
+        }
+      }
+
+      return {
+        ...item,
+        meeting_record: meetingRecord,
+      };
+    });
+
     console.log('📊 查詢結果總數:', total, '筆數:', items.length);
 
     return NextResponse.json({

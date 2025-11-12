@@ -156,7 +156,9 @@ export async function PUT(
       }
     }
 
-    // 驗證會面紀錄（如果提供）
+    let normalizedMeetingRecord: Record<string, any> | undefined;
+    let normalizedMeetingCount = meeting_count;
+
     if (meeting_record !== undefined) {
       if (typeof meeting_record !== 'object' || meeting_record === null) {
         return NextResponse.json(
@@ -164,11 +166,138 @@ export async function PUT(
           { status: 400 }
         );
       }
+
+      if (meeting_count === undefined || meeting_count === null) {
+        return NextResponse.json(
+          { error: '會面紀錄更新時必須提供 meeting_count' },
+          { status: 400 }
+        );
+      }
+
+      if (typeof meeting_count !== 'number' || !Number.isFinite(meeting_count) || meeting_count < 0) {
+        return NextResponse.json(
+          { error: '會面次數格式不正確' },
+          { status: 400 }
+        );
+      }
+
+      const stageEntries = Object.entries(meeting_record as Record<string, any>);
+      const normalizedRecord: Record<string, any> = {};
+      let calculatedMeetingCount = 0;
+
+      for (const [stageKey, stageValue] of stageEntries) {
+        if (!stageKey) {
+          return NextResponse.json(
+            { error: '會面紀錄階段鍵值不可為空' },
+            { status: 400 }
+          );
+        }
+
+        if (typeof stageValue !== 'object' || stageValue === null) {
+          return NextResponse.json(
+            { error: `會面紀錄「${stageKey}」資料格式不正確` },
+            { status: 400 }
+          );
+        }
+
+        const stageData = stageValue as Record<string, any>;
+        const marketingStageRaw = stageData.marketing_stage ?? stageData.marketingStage ?? 1;
+        const marketingStageNumeric = Number.parseInt(String(marketingStageRaw), 10);
+
+        if (
+          Number.isNaN(marketingStageNumeric) ||
+          marketingStageNumeric < 1 ||
+          marketingStageNumeric > 8
+        ) {
+          return NextResponse.json(
+            { error: `行銷階段數值無效（${stageKey}）` },
+            { status: 400 }
+          );
+        }
+
+        const normalizedStage: Record<string, any> = {
+          marketing_stage: marketingStageNumeric,
+        };
+
+        for (const [meetKey, meetValue] of Object.entries(stageData)) {
+          if (meetKey === 'marketing_stage' || meetKey === 'marketingStage') {
+            continue;
+          }
+
+          if (!meetKey.startsWith('meet')) {
+            normalizedStage[meetKey] = meetValue;
+            continue;
+          }
+
+          if (typeof meetValue !== 'object' || meetValue === null) {
+            return NextResponse.json(
+              { error: `會面紀錄 ${stageKey}.${meetKey} 資料格式不正確` },
+              { status: 400 }
+            );
+          }
+
+          const meetEntry = meetValue as Record<string, any>;
+
+          if (!('appointment_date' in meetEntry)) {
+            return NextResponse.json(
+              { error: `會面紀錄 ${stageKey}.${meetKey} 缺少約訪日期` },
+              { status: 400 }
+            );
+          }
+          if (!('main_goal' in meetEntry)) {
+            return NextResponse.json(
+              { error: `會面紀錄 ${stageKey}.${meetKey} 缺少約訪主軸目標` },
+              { status: 400 }
+            );
+          }
+          if (!('success_rate' in meetEntry)) {
+            return NextResponse.json(
+              { error: `會面紀錄 ${stageKey}.${meetKey} 缺少預估成交率` },
+              { status: 400 }
+            );
+          }
+
+          const successRateNumeric = Number.parseInt(
+            String(meetEntry.success_rate ?? 0),
+            10
+          );
+
+          if (
+            Number.isNaN(successRateNumeric) ||
+            successRateNumeric < 0 ||
+            successRateNumeric > 100
+          ) {
+            return NextResponse.json(
+              { error: `會面紀錄 ${stageKey}.${meetKey} 的預估成交率須為 0~100 的整數` },
+              { status: 400 }
+            );
+          }
+
+          normalizedStage[meetKey] = {
+            appointment_date: meetEntry.appointment_date ?? '',
+            main_goal: meetEntry.main_goal ?? '',
+            main_goal_other: meetEntry.main_goal_other ?? '',
+            success_rate: successRateNumeric,
+            pain_points: meetEntry.pain_points ?? '',
+            observations: meetEntry.observations ?? '',
+          };
+
+          calculatedMeetingCount++;
+        }
+
+        normalizedRecord[stageKey] = normalizedStage;
+      }
+
+      normalizedMeetingRecord = normalizedRecord;
+      normalizedMeetingCount = meeting_count ?? calculatedMeetingCount;
     }
 
-    // 驗證會面次數（如果提供）
-    if (meeting_count !== undefined && meeting_count !== null) {
-      if (typeof meeting_count !== 'number' || meeting_count < 0) {
+    if (normalizedMeetingCount !== undefined && normalizedMeetingCount !== null) {
+      if (
+        typeof normalizedMeetingCount !== 'number' ||
+        !Number.isFinite(normalizedMeetingCount) ||
+        normalizedMeetingCount < 0
+      ) {
         return NextResponse.json(
           { error: '會面次數格式不正確' },
           { status: 400 }
@@ -244,18 +373,15 @@ export async function PUT(
       paramIndex++;
     }
 
-    if (meeting_record !== undefined) {
-      // 對於 meeting_record，需要合併到現有資料而不是覆蓋
-      updateFields.push(
-        `meeting_record = COALESCE(meeting_record, '{}'::jsonb) || $${paramIndex}::jsonb`
-      );
-      updateValues.push(JSON.stringify(meeting_record));
+    if (normalizedMeetingRecord !== undefined) {
+      updateFields.push(`meeting_record = $${paramIndex}::jsonb`);
+      updateValues.push(JSON.stringify(normalizedMeetingRecord));
       paramIndex++;
     }
 
-    if (meeting_count !== undefined) {
+    if (normalizedMeetingCount !== undefined) {
       updateFields.push(`meeting_count = $${paramIndex}`);
-      updateValues.push(meeting_count);
+      updateValues.push(normalizedMeetingCount);
       paramIndex++;
     }
 
@@ -278,9 +404,23 @@ export async function PUT(
       return NextResponse.json({ error: '更新失敗' }, { status: 500 });
     }
 
+    const updatedRow = updateResult.rows[0];
+    let parsedMeetingRecord = updatedRow.meeting_record;
+
+    if (typeof parsedMeetingRecord === 'string') {
+      try {
+        parsedMeetingRecord = JSON.parse(parsedMeetingRecord);
+      } catch (error) {
+        console.warn('更新後 meeting_record 解析失敗，保留原始字串', error);
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      data: updateResult.rows[0],
+      data: {
+        ...updatedRow,
+        meeting_record: parsedMeetingRecord,
+      },
     });
   } catch (error) {
     console.error('Error updating customer name:', error);

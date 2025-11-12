@@ -44,7 +44,7 @@ function MeetingRecordDropdown({
     for (let i = 1; i <= meetingCount; i++) {
       options.push({
         value: i.toString(),
-        label: `第${i}次`,
+        label: `第${i}案`,
       });
     }
     return options;
