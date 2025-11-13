@@ -572,6 +572,7 @@ export default function CommissionQueryClient() {
                     <SelectItem value="房地產">房地產</SelectItem>
                     <SelectItem value="保險">保險</SelectItem>
                     <SelectItem value="諮詢">諮詢</SelectItem>
+                    <SelectItem value="顧問費">顧問費</SelectItem>
                     <SelectItem value="基金">基金</SelectItem>
                     <SelectItem value="行銷">行銷</SelectItem>
                   </SelectContent>
@@ -694,6 +695,7 @@ export default function CommissionQueryClient() {
                     <SelectItem value="房地產">房地產</SelectItem>
                     <SelectItem value="保險">保險</SelectItem>
                     <SelectItem value="諮詢">諮詢</SelectItem>
+                    <SelectItem value="顧問費">顧問費</SelectItem>
                     <SelectItem value="基金">基金</SelectItem>
                     <SelectItem value="行銷">行銷</SelectItem>
                   </SelectContent>

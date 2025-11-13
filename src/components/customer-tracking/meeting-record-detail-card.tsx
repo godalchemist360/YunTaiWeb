@@ -131,6 +131,8 @@ export function MeetingRecordDetailCard({
     });
   }, [meetingForms]);
 
+  const isNewMode = Boolean(data?.isNew);
+
   const getNextMeetingKey = () => {
     const maxNumber = meetingKeys.reduce((max, key) => {
       const num = Number.parseInt(key.replace(/^\D+/u, ''), 10);
@@ -227,7 +229,7 @@ export function MeetingRecordDetailCard({
       setStageMarketingStage(MARKETING_STAGE_DEFAULT);
       setMeetingForms({ meet1: { ...defaultMeetingEntry } });
       setIsStageEditing(true);
-      setEditingMeetings({});
+      setEditingMeetings({ meet1: true });
     } else {
       const meetingIndex = data.meetingIndex || '1';
       const stageData =
@@ -293,6 +295,10 @@ export function MeetingRecordDetailCard({
   };
 
   const toggleStageEditing = () => {
+    if (isNewMode) {
+      return;
+    }
+
     if (isStageEditing) {
       resetFormsFromData();
       setIsStageEditing(false);
@@ -305,6 +311,10 @@ export function MeetingRecordDetailCard({
   };
 
   const toggleMeetingEditing = (meetKey: string) => {
+    if (isNewMode) {
+      return;
+    }
+
     setIsStageEditing(false);
     setEditingMeetings((prev) => {
       const isCurrentlyEditing = !!prev[meetKey];
@@ -360,6 +370,14 @@ export function MeetingRecordDetailCard({
     const success = await handleSave({ meetingKey: meetKey });
     if (success) {
       stopMeetingEditing(meetKey);
+    }
+  };
+
+  const handleConfirmNewAddition = async () => {
+    const primaryKey = meetingKeys[0];
+    const success = await handleSave({ meetingKey: primaryKey });
+    if (success) {
+      setEditingMeetings({});
     }
   };
 
@@ -626,7 +644,7 @@ export function MeetingRecordDetailCard({
         meeting_record: updatedMeetingRecord,
       };
 
-      requestBody.meeting_count = meetingKeys.length;
+      requestBody.meeting_count = Object.keys(updatedMeetingRecord).length;
 
       const response = await fetch(`/api/customer-interactions/${interactionId}`, {
         method: 'PUT',
@@ -775,21 +793,28 @@ export function MeetingRecordDetailCard({
                 <Target className="h-4 w-4" />
                 行銷階段
               </div>
-              <div className="flex items-center gap-2">
-                {isStageEditing && (
-                  <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
-                    編輯中
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={toggleStageEditing}
-                  className={`rounded-full p-2 transition-colors ${isStageEditing ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600'}`}
-                  title={isStageEditing ? '關閉行銷階段編輯' : '編輯行銷階段'}
-                >
-                  <Edit className="h-4 w-4" />
-                </button>
-              </div>
+              {!isNewMode && (
+                <div className="flex items-center gap-2">
+                  {isStageEditing && (
+                    <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
+                      編輯中
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={toggleStageEditing}
+                    className={`rounded-full p-2 transition-colors ${isStageEditing ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600'}`}
+                    title={isStageEditing ? '關閉行銷階段編輯' : '編輯行銷階段'}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+              {isNewMode && (
+                <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
+                  新增模式
+                </span>
+              )}
             </div>
             <MarketingStageFlowchart
               currentStageValue={stageMarketingStage}
@@ -798,7 +823,7 @@ export function MeetingRecordDetailCard({
                 isStageEditing ? handleMarketingStageSelect : undefined
               }
             />
-            {isStageEditing && (
+            {isStageEditing && !isNewMode && (
               <div className="mt-4 flex justify-end gap-2">
                 <button
                   type="button"
@@ -832,7 +857,7 @@ export function MeetingRecordDetailCard({
                 entry.main_goal === '其他' && entry.main_goal_other
                   ? entry.main_goal_other
                   : entry.main_goal;
-              const isMeetingEditing = !!editingMeetings[meetKey];
+              const isMeetingEditing = isNewMode || !!editingMeetings[meetKey];
               const meetingIndexKey = data?.meetingIndex || '1';
               const persistedStage =
                 (meetingRecordRef.current?.[meetingIndexKey] as
@@ -851,21 +876,28 @@ export function MeetingRecordDetailCard({
                       </div>
                       第{index + 1}次會面
                     </div>
-                    <div className="flex items-center gap-2">
-                      {isMeetingEditing && (
-                        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
-                          編輯中
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => toggleMeetingEditing(meetKey)}
-                        className={`rounded-full p-2 transition-colors ${isMeetingEditing ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600'}`}
-                        title={isMeetingEditing ? '關閉會面編輯' : '編輯會面內容'}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                    </div>
+                    {!isNewMode && (
+                      <div className="flex items-center gap-2">
+                        {isMeetingEditing && (
+                          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
+                            編輯中
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => toggleMeetingEditing(meetKey)}
+                          className={`rounded-full p-2 transition-colors ${isMeetingEditing ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600'}`}
+                          title={isMeetingEditing ? '關閉會面編輯' : '編輯會面內容'}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                    {isNewMode && (
+                      <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
+                        新增會面
+                      </span>
+                    )}
                   </div>
 
                   {isMeetingEditing ? (
@@ -1009,28 +1041,30 @@ export function MeetingRecordDetailCard({
                         </div>
                       </div>
 
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleMeetingCancel(meetKey)}
-                          className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-                        >
-                          取消
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleMeetingSave(meetKey)}
-                          disabled={isLoading}
-                          className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
-                        >
-                          {isLoading ? (
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <Save className="h-4 w-4" />
-                          )}
-                          {isNewMeeting ? '新增' : '儲存'}
-                        </button>
-                      </div>
+                      {!isNewMode && (
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleMeetingCancel(meetKey)}
+                            className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                          >
+                            取消
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMeetingSave(meetKey)}
+                            disabled={isLoading}
+                            className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                          >
+                            {isLoading ? (
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <Save className="h-4 w-4" />
+                            )}
+                            {isNewMeeting ? '新增' : '儲存'}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-5">
@@ -1103,22 +1137,39 @@ export function MeetingRecordDetailCard({
               );
             })}
 
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={handleAddMeetingCard}
-                className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-600 shadow-sm transition-colors hover:bg-emerald-100"
-              >
-                <Plus className="h-4 w-4" />
-                新增會面紀錄
-              </button>
-            </div>
+            {!isNewMode && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleAddMeetingCard}
+                  className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-600 shadow-sm transition-colors hover:bg-emerald-100"
+                >
+                  <Plus className="h-4 w-4" />
+                  新增會面紀錄
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Footer with gradient background */}
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-b-2xl border-t border-gray-200">
           <div className="flex justify-end gap-3">
+            {isNewMode && (
+              <button
+                type="button"
+                onClick={handleConfirmNewAddition}
+                disabled={isLoading}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isLoading ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                確定新增
+              </button>
+            )}
             <button
               type="button"
               onClick={onClose}
