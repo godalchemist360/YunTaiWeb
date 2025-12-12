@@ -247,7 +247,7 @@ export function AddRecordDialog({
   const updateNewItem = (
     section: keyof typeof newItemInputs,
     index: number,
-    field: 'name' | 'value',
+    field: 'name' | 'value' | 'category' | 'subCategory' | 'customName',
     value: string
   ) => {
     setNewItemInputs((prev) => ({
