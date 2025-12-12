@@ -5,6 +5,7 @@ import { SalesUserSelect } from '@/components/ui/sales-user-select';
 import {
   Building,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   DollarSign,
   FileText,
@@ -15,6 +16,20 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+
+// 支出兩層級結構定義
+const EXPENSE_CATEGORIES = {
+  必要性: ['生活伙食', '租金'],
+  雜支: ['交通', '電話'],
+  娛樂: ['訂閱費', '治裝費', '興趣愛好'],
+  理財投資: ['定期定額', '貸款還款'],
+  人情: ['孝親費'],
+  其他: [], // 可自訂項目
+} as const;
+
+const EXPENSE_CATEGORY_KEYS = Object.keys(EXPENSE_CATEGORIES) as Array<
+  keyof typeof EXPENSE_CATEGORIES
+>;
 
 interface AddRecordDialogProps {
   isOpen: boolean;
@@ -58,16 +73,8 @@ export function AddRecordDialog({
       },
     },
     incomeExpense: {
-      income: {
-        mainIncome: '',
-        sideIncome: '',
-        otherIncome: '',
-      },
-      expenses: {
-        livingExpenses: '',
-        housingExpenses: '',
-        insurance: '',
-      },
+      income: {} as { [key: string]: string },
+      expense: {} as { [key: string]: { [key: string]: string } },
     },
     situation: {
       painPoints: '',
@@ -82,7 +89,7 @@ export function AddRecordDialog({
     assets: Array<{ name: string; value: string }>;
     liabilities: Array<{ name: string; value: string }>;
     income: Array<{ name: string; value: string }>;
-    expenses: Array<{ name: string; value: string }>;
+    expenses: Array<{ category?: string; subCategory?: string; customName?: string; name?: string; value: string }>;
   }>({
     assets: [],
     liabilities: [],
@@ -118,6 +125,72 @@ export function AddRecordDialog({
     };
     if (isOpen) {
       fetchSalesOptions();
+    }
+  }, [isOpen]);
+
+  // 當對話框打開時重置所有狀態
+  useEffect(() => {
+    if (isOpen) {
+      // 重置表單數據
+      setFormData({
+        sales_user_id: '',
+        sales_user_name: '',
+        customerName: '',
+        leadSource: '',
+        leadSourceOther: '',
+        consultationMotives: [],
+        consultationMotivesOther: [],
+        assetLiability: {
+          assets: {
+            realEstate: '',
+            cash: '',
+            stocks: '',
+            funds: '',
+            insurance: '',
+            others: '',
+          },
+          liabilities: {
+            mortgage: '',
+            carLoan: '',
+            creditLoan: '',
+            creditCard: '',
+            studentLoan: '',
+            installment: '',
+            otherLoans: '',
+          },
+        },
+        incomeExpense: {
+          income: {},
+          expense: {},
+        },
+        situation: {
+          painPoints: '',
+          goals: '',
+          familyRelationships: '',
+          others: '',
+        },
+      });
+      // 重置動態新增項目
+      setNewItemInputs({
+        assets: [],
+        liabilities: [],
+        income: [],
+        expenses: [],
+      });
+      // 重置展開狀態
+      setExpandedSections({
+        assetLiability: false,
+        incomeExpense: false,
+        situation: false,
+      });
+      // 重置支出分類折疊狀態
+      const collapsed: { [key: string]: boolean } = {};
+      EXPENSE_CATEGORY_KEYS.forEach((key) => {
+        collapsed[key] = true;
+      });
+      setExpenseCollapsed(collapsed);
+      // 清除驗證錯誤
+      setValidationErrors({});
     }
   }, [isOpen]);
 
@@ -174,7 +247,7 @@ export function AddRecordDialog({
   const updateNewItem = (
     section: keyof typeof newItemInputs,
     index: number,
-    field: 'name' | 'value',
+    field: 'name' | 'value' | 'category' | 'subCategory' | 'customName',
     value: string
   ) => {
     setNewItemInputs((prev) => ({
@@ -244,27 +317,106 @@ export function AddRecordDialog({
     }));
   };
 
-  // 更新收支狀況
-  const updateIncomeExpense = (
-    section: string,
-    field: string,
-    value: string
-  ) => {
-    setFormData((prev) => {
-      const sectionData = prev.incomeExpense[
-        section as keyof typeof prev.incomeExpense
-      ] as Record<string, string>;
-      return {
-        ...prev,
-        incomeExpense: {
-          ...prev.incomeExpense,
-          [section]: {
-            ...sectionData,
-            [field]: value,
+  // 更新收支狀況 - 收入（單層級）
+  const updateIncome = (key: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      incomeExpense: {
+        ...prev.incomeExpense,
+        income: {
+          ...prev.incomeExpense.income,
+          [key]: value,
+        },
+      },
+    }));
+  };
+
+  // 更新收支狀況 - 支出（兩層級）
+  const updateExpense = (category: string, itemKey: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      incomeExpense: {
+        ...prev.incomeExpense,
+        expense: {
+          ...prev.incomeExpense.expense,
+          [category]: {
+            ...(prev.incomeExpense.expense[category] || {}),
+            [itemKey]: value,
           },
         },
-      };
+      },
+    }));
+  };
+
+  // 刪除支出項目
+  const removeExpenseItem = (category: string, itemKey: string) => {
+    setFormData((prev) => {
+      const newData = { ...prev };
+      if (newData.incomeExpense.expense[category]) {
+        const newCategoryItems = { ...newData.incomeExpense.expense[category] };
+        delete newCategoryItems[itemKey];
+        if (Object.keys(newCategoryItems).length === 0) {
+          delete newData.incomeExpense.expense[category];
+        } else {
+          newData.incomeExpense.expense[category] = newCategoryItems;
+        }
+      }
+      return newData;
     });
+  };
+
+  // 支出分類的折疊狀態
+  const [expenseCollapsed, setExpenseCollapsed] = useState<{ [key: string]: boolean }>(() => {
+    const collapsed: { [key: string]: boolean } = {};
+    EXPENSE_CATEGORY_KEYS.forEach((key) => {
+      collapsed[key] = true; // 預設全部折疊
+    });
+    return collapsed;
+  });
+
+  const toggleExpenseCategory = (category: string) => {
+    setExpenseCollapsed((prev) => ({
+      ...prev,
+      [category]: !prev[category],
+    }));
+  };
+
+  // 新增支出項目
+  const addExpenseItem = (category: string, inputIndex: number) => {
+    const input = newItemInputs.expenses[inputIndex];
+    if (!input || !input.value.trim()) {
+      return;
+    }
+
+    if (category === '其他' && !input.customName?.trim()) {
+      return;
+    }
+    if (category !== '其他' && !input.subCategory) {
+      return;
+    }
+
+    const cleanValue = Number.parseFloat(input.value) || 0;
+    const itemKey = category === '其他' ? (input.customName || '') : (input.subCategory || '');
+
+    setFormData((prev) => ({
+      ...prev,
+      incomeExpense: {
+        ...prev.incomeExpense,
+        expense: {
+          ...prev.incomeExpense.expense,
+          [category]: {
+            ...(prev.incomeExpense.expense[category] || {}),
+            [itemKey]: cleanValue.toString(),
+          },
+        },
+      },
+    }));
+
+    // 清除輸入
+    setNewItemInputs((prev) => ({
+      ...prev,
+      expenses: prev.expenses.filter((_, idx) => idx !== inputIndex),
+    }));
   };
 
   // 更新現況說明
@@ -282,9 +434,9 @@ export function AddRecordDialog({
     [key: string]: string;
   }>({});
 
-  // 當彈出視窗開啟且是 sales 用戶時，自動填入業務員 ID 和名稱
+  // 當彈出視窗開啟且是 sales 用戶時，自動填入業務員 ID 和名稱（在重置之後執行）
   useEffect(() => {
-    if (isOpen && !isLoading && user?.role === 'sales' && user?.id && salesOptions.length > 0) {
+    if (isOpen && !isLoading && user?.role === 'sales' && user?.id && salesOptions.length > 0 && !formData.sales_user_id) {
       // 從選項中找到當前用戶的 label（格式為 "000011 andy"）
       const currentUserOption = salesOptions.find(option => option.id === user.id);
       if (currentUserOption) {
@@ -295,7 +447,7 @@ export function AddRecordDialog({
         }));
       }
     }
-  }, [isOpen, isLoading, user?.role, user?.id, salesOptions]);
+  }, [isOpen, isLoading, user?.role, user?.id, salesOptions, formData.sales_user_id]);
 
   const handleSalesUserChange = (userId: string) => {
     // 從選項中找到選中的業務員
@@ -397,16 +549,8 @@ export function AddRecordDialog({
           },
         },
         incomeExpense: {
-          income: {
-            mainIncome: '',
-            sideIncome: '',
-            otherIncome: '',
-          },
-          expenses: {
-            livingExpenses: '',
-            housingExpenses: '',
-            insurance: '',
-          },
+          income: {},
+          expense: {},
         },
         situation: {
           painPoints: '',
@@ -1162,42 +1306,78 @@ export function AddRecordDialog({
                       一、收入
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {/* 預設欄位：主業收入 */}
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">
                           主業收入
                         </label>
                         <input
                           type="text"
-                          value={formData.incomeExpense.income.mainIncome}
-                          onChange={(e) =>
-                            updateIncomeExpense(
-                              'income',
-                              'mainIncome',
-                              e.target.value
-                            )
-                          }
+                          value={formData.incomeExpense.income['主業收入'] || ''}
+                          onChange={(e) => updateIncome('主業收入', e.target.value)}
                           className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                           placeholder="請輸入收入"
                         />
                       </div>
+                      
+                      {/* 預設欄位：副業收入 */}
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">
                           副業收入
                         </label>
                         <input
                           type="text"
-                          value={formData.incomeExpense.income.sideIncome}
-                          onChange={(e) =>
-                            updateIncomeExpense(
-                              'income',
-                              'sideIncome',
-                              e.target.value
-                            )
-                          }
+                          value={formData.incomeExpense.income['副業收入'] || ''}
+                          onChange={(e) => updateIncome('副業收入', e.target.value)}
                           className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                           placeholder="請輸入收入"
                         />
                       </div>
+
+                      {/* 其他收入項目 */}
+                      {Object.keys(formData.incomeExpense.income)
+                        .filter((key) => key !== '主業收入' && key !== '副業收入')
+                        .map((key) => {
+                          const value = formData.incomeExpense.income[key];
+                          return (
+                            <div key={key} className="col-span-full">
+                              <div className="flex items-center justify-between py-2 px-3 bg-blue-50 rounded-lg border border-blue-100">
+                                <span className="text-sm font-medium text-gray-700 flex-1">
+                                  {key}
+                                </span>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <input
+                                    type="text"
+                                    value={value}
+                                    onChange={(e) => updateIncome(key, e.target.value)}
+                                    className="w-28 px-3 py-2 text-sm border border-blue-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="0"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setFormData((prev) => {
+                                        const newIncome = { ...prev.incomeExpense.income };
+                                        delete newIncome[key];
+                                        return {
+                                          ...prev,
+                                          incomeExpense: {
+                                            ...prev.incomeExpense,
+                                            income: newIncome,
+                                          },
+                                        };
+                                      });
+                                    }}
+                                    className="p-1 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      
                       {/* 動態新增的收入項目 */}
                       {newItemInputs.income.map((item, index) => (
                         <div key={index} className="col-span-full">
@@ -1210,12 +1390,7 @@ export function AddRecordDialog({
                                 type="text"
                                 value={item.name}
                                 onChange={(e) =>
-                                  updateNewItem(
-                                    'income',
-                                    index,
-                                    'name',
-                                    e.target.value
-                                  )
+                                  updateNewItem('income', index, 'name', e.target.value)
                                 }
                                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                                 placeholder="請輸入項目名稱"
@@ -1229,28 +1404,44 @@ export function AddRecordDialog({
                                 type="text"
                                 value={item.value}
                                 onChange={(e) =>
-                                  updateNewItem(
-                                    'income',
-                                    index,
-                                    'value',
-                                    e.target.value
-                                  )
+                                  updateNewItem('income', index, 'value', e.target.value)
                                 }
                                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                                 placeholder="請輸入收入"
                               />
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => removeNewItem('income', index)}
-                              className="px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              移除
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (item.name && item.value) {
+                                    updateIncome(item.name, item.value);
+                                    setNewItemInputs((prev) => ({
+                                      ...prev,
+                                      income: prev.income.filter((_, i) => i !== index),
+                                    }));
+                                  } else {
+                                    removeNewItem('income', index);
+                                  }
+                                }}
+                                className="px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
+                              >
+                                <Plus className="h-4 w-4" />
+                                新增
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeNewItem('income', index)}
+                                className="px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                取消
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))}
+                      
                       {/* 新增按鈕 */}
                       <div className="col-span-full">
                         <button
@@ -1270,127 +1461,216 @@ export function AddRecordDialog({
                     <h4 className="text-sm font-semibold text-gray-900 mb-3">
                       二、支出
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">
-                          生活費
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.incomeExpense.expenses.livingExpenses}
-                          onChange={(e) =>
-                            updateIncomeExpense(
-                              'expenses',
-                              'livingExpenses',
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                          placeholder="請輸入支出"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">
-                          房貸或房租
-                        </label>
-                        <input
-                          type="text"
-                          value={
-                            formData.incomeExpense.expenses.housingExpenses
-                          }
-                          onChange={(e) =>
-                            updateIncomeExpense(
-                              'expenses',
-                              'housingExpenses',
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                          placeholder="請輸入支出"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">
-                          保費
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.incomeExpense.expenses.insurance}
-                          onChange={(e) =>
-                            updateIncomeExpense(
-                              'expenses',
-                              'insurance',
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                          placeholder="請輸入支出"
-                        />
-                      </div>
-                      {/* 動態新增的支出項目 */}
-                      {newItemInputs.expenses.map((item, index) => (
-                        <div key={index} className="col-span-full">
-                          <div className="flex gap-2 items-end">
-                            <div className="flex-1">
-                              <label className="block text-sm text-gray-600 mb-1">
-                                項目名稱
-                              </label>
-                              <input
-                                type="text"
-                                value={item.name}
-                                onChange={(e) =>
-                                  updateNewItem(
-                                    'expenses',
-                                    index,
-                                    'name',
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                                placeholder="請輸入項目名稱"
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <label className="block text-sm text-gray-600 mb-1">
-                                支出
-                              </label>
-                              <input
-                                type="text"
-                                value={item.value}
-                                onChange={(e) =>
-                                  updateNewItem(
-                                    'expenses',
-                                    index,
-                                    'value',
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                                placeholder="請輸入支出"
-                              />
-                            </div>
+                    <div className="space-y-2">
+                      {EXPENSE_CATEGORY_KEYS.map((categoryKey) => {
+                        const categoryItems = formData.incomeExpense.expense[categoryKey] || {};
+                        const hasItems = Object.keys(categoryItems).length > 0;
+                        const isCollapsed = expenseCollapsed[categoryKey];
+
+                        // 沒有項目就不顯示
+                        if (!hasItems && !newItemInputs.expenses.some(item => item.category === categoryKey)) {
+                          return null;
+                        }
+
+                        return (
+                          <div
+                            key={categoryKey}
+                            className="border border-purple-200 rounded-lg overflow-hidden"
+                          >
                             <button
                               type="button"
-                              onClick={() => removeNewItem('expenses', index)}
-                              className="px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
+                              onClick={() => toggleExpenseCategory(categoryKey)}
+                              className="w-full flex items-center justify-between px-4 py-2 bg-purple-50 hover:bg-purple-100 transition-colors"
                             >
-                              <Trash2 className="h-4 w-4" />
-                              移除
+                              <span className="text-sm font-semibold text-purple-800">
+                                {categoryKey}
+                              </span>
+                              {isCollapsed ? (
+                                <ChevronRight className="h-4 w-4 text-purple-600" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4 text-purple-600" />
+                              )}
                             </button>
+
+                            {!isCollapsed && (
+                              <div className="p-2 space-y-1 bg-white">
+                                {Object.keys(categoryItems).map((itemKey) => {
+                                  const value = categoryItems[itemKey];
+                                  return (
+                                    <div
+                                      key={itemKey}
+                                      className="flex items-center justify-between py-2 px-3 bg-purple-50 rounded border border-purple-100 hover:bg-purple-100 transition-colors"
+                                    >
+                                      <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">
+                                        {itemKey}
+                                      </span>
+                                      <div className="flex items-center gap-2 flex-shrink-0">
+                                        <input
+                                          type="text"
+                                          value={value || ''}
+                                          onChange={(e) =>
+                                            updateExpense(categoryKey, itemKey, e.target.value)
+                                          }
+                                          className="w-24 px-2 py-1 text-sm border border-purple-300 rounded text-right focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                          placeholder="0"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => removeExpenseItem(categoryKey, itemKey)}
+                                          className="p-1 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+
+                                {/* 新增支出項目輸入框 */}
+                                {newItemInputs.expenses
+                                  .map((input, idx) => {
+                                    if (input.category !== categoryKey) return null;
+                                    
+                                    const showSubCategory = categoryKey && categoryKey !== '其他';
+                                    const showCustomName = categoryKey === '其他';
+                                    const subCategories = categoryKey
+                                      ? EXPENSE_CATEGORIES[categoryKey as keyof typeof EXPENSE_CATEGORIES] || []
+                                      : [];
+
+                                    return (
+                                      <div
+                                        key={`input-${categoryKey}-${idx}`}
+                                        className="mt-2 p-3 bg-purple-50 border border-purple-200 rounded-lg"
+                                      >
+                                        <div className="space-y-2">
+                                          {showSubCategory && (
+                                            <div>
+                                              <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                子分類
+                                              </label>
+                                              <select
+                                                value={input?.subCategory || ''}
+                                                onChange={(e) =>
+                                                  updateNewItem(
+                                                    'expenses',
+                                                    idx,
+                                                    'subCategory',
+                                                    e.target.value
+                                                  )
+                                                }
+                                                className="w-full px-2 py-1 text-sm border border-purple-300 rounded focus:ring-1 focus:ring-purple-500"
+                                              >
+                                                <option value="">請選擇子分類</option>
+                                                {subCategories.map((sub) => (
+                                                  <option key={sub} value={sub}>
+                                                    {sub}
+                                                  </option>
+                                                ))}
+                                              </select>
+                                            </div>
+                                          )}
+
+                                          {showCustomName && (
+                                            <div>
+                                              <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                自訂項目名稱
+                                              </label>
+                                              <input
+                                                type="text"
+                                                value={input?.customName || ''}
+                                                onChange={(e) =>
+                                                  updateNewItem(
+                                                    'expenses',
+                                                    idx,
+                                                    'customName',
+                                                    e.target.value
+                                                  )
+                                                }
+                                                className="w-full px-2 py-1 text-sm border border-purple-300 rounded focus:ring-1 focus:ring-purple-500"
+                                                placeholder="請輸入自訂項目名稱"
+                                              />
+                                            </div>
+                                          )}
+
+                                          <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                              金額
+                                            </label>
+                                            <div className="flex gap-2">
+                                              <input
+                                                type="text"
+                                                value={input?.value || ''}
+                                                onChange={(e) =>
+                                                  updateNewItem(
+                                                    'expenses',
+                                                    idx,
+                                                    'value',
+                                                    e.target.value
+                                                  )
+                                                }
+                                                className="flex-1 px-2 py-1 text-sm border border-purple-300 rounded focus:ring-1 focus:ring-purple-500"
+                                                placeholder="請輸入金額"
+                                              />
+                                              <button
+                                                type="button"
+                                                onClick={() => addExpenseItem(categoryKey, idx)}
+                                                className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                              >
+                                                新增
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() => removeNewItem('expenses', idx)}
+                                                className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                                              >
+                                                取消
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })
+                                  .filter(Boolean)}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      ))}
-                      {/* 新增按鈕 */}
-                      <div className="col-span-full">
-                        <button
-                          type="button"
-                          onClick={() => addNewItem('expenses')}
-                          className="flex items-center gap-1 px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                          <Plus className="h-4 w-4" />
-                          新增支出項目
-                        </button>
-                      </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* 新增支出項目按鈕 - 移到外面 */}
+                    <div className="mt-4">
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          const selectedCategory = e.target.value;
+                          if (selectedCategory) {
+                            setNewItemInputs((prev) => ({
+                              ...prev,
+                              expenses: [
+                                ...prev.expenses,
+                                { category: selectedCategory, value: '' },
+                              ],
+                            }));
+                            // 自動展開選中的分類
+                            setExpenseCollapsed((prev) => ({
+                              ...prev,
+                              [selectedCategory]: false,
+                            }));
+                            // 重置選擇
+                            e.target.value = '';
+                          }
+                        }}
+                        className="w-full md:w-auto px-4 py-2 text-sm border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white"
+                      >
+                        <option value="">選擇分類後新增支出項目</option>
+                        {EXPENSE_CATEGORY_KEYS.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 
@@ -1403,35 +1683,26 @@ export function AddRecordDialog({
                       <div className="px-3 py-2 text-sm border border-gray-300 rounded bg-gray-50 text-gray-700">
                         {(() => {
                           // 計算總收入
-                          const totalIncome =
-                            (Number.parseFloat(
-                              formData.incomeExpense.income.mainIncome
-                            ) || 0) +
-                            (Number.parseFloat(
-                              formData.incomeExpense.income.sideIncome
-                            ) || 0) +
-                            newItemInputs.income.reduce(
-                              (sum, item) =>
-                                sum + (Number.parseFloat(item.value) || 0),
-                              0
-                            );
+                          const totalIncome = Object.values(formData.incomeExpense.income).reduce(
+                            (sum, value) => sum + (Number.parseFloat(value.toString()) || 0),
+                            0
+                          );
 
-                          // 計算總支出
-                          const totalExpenses =
-                            (Number.parseFloat(
-                              formData.incomeExpense.expenses.livingExpenses
-                            ) || 0) +
-                            (Number.parseFloat(
-                              formData.incomeExpense.expenses.housingExpenses
-                            ) || 0) +
-                            (Number.parseFloat(
-                              formData.incomeExpense.expenses.insurance
-                            ) || 0) +
-                            newItemInputs.expenses.reduce(
-                              (sum, item) =>
-                                sum + (Number.parseFloat(item.value) || 0),
-                              0
-                            );
+                          // 計算總支出（兩層級結構）
+                          const totalExpenses = Object.keys(formData.incomeExpense.expense).reduce(
+                            (sum, category) => {
+                              const categoryData = formData.incomeExpense.expense[category];
+                              if (typeof categoryData === 'object' && categoryData !== null) {
+                                const categoryTotal = Object.values(categoryData).reduce(
+                                  (catSum, value) => catSum + (Number.parseFloat(value.toString()) || 0),
+                                  0
+                                );
+                                return sum + categoryTotal;
+                              }
+                              return sum;
+                            },
+                            0
+                          );
 
                           // 計算月結餘
                           const monthlyBalance = totalIncome - totalExpenses;

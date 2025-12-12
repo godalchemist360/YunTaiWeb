@@ -165,48 +165,88 @@ export async function POST(req: Request) {
       );
     }
 
-    // 轉換收支資料格式
-    const incomeExpenseData: { [key: string]: string } = {};
+    // 轉換收支資料格式 - 新格式：{income: {...}, expense: {...}}
+    const incomeData: { [key: string]: number } = {};
+    const expenseData: { [key: string]: { [key: string]: number } } = {};
 
-    // 收入
-    if (incomeExpense.income?.mainIncome)
-      incomeExpenseData.主業收入 = incomeExpense.income.mainIncome;
-    if (incomeExpense.income?.sideIncome)
-      incomeExpenseData.副業收入 = incomeExpense.income.sideIncome;
-    if (incomeExpense.income?.otherIncome)
-      incomeExpenseData.其他收入 = incomeExpense.income.otherIncome;
+    // 處理收入（新格式：直接使用中文key）
+    if (incomeExpense.income) {
+      Object.keys(incomeExpense.income).forEach((key) => {
+        const value = incomeExpense.income[key];
+        if (value && value.toString().trim()) {
+          const numValue = Number.parseFloat(value.toString()) || 0;
+          if (numValue > 0) {
+            incomeData[key] = numValue;
+          }
+        }
+      });
+    }
 
     // 動態新增的收入項目
     if (newItemInputs?.income) {
       newItemInputs.income.forEach((item: { name: string; value: string }) => {
         if (item.name && item.value) {
-          incomeExpenseData[`收入_${item.name}`] = item.value;
+          const numValue = Number.parseFloat(item.value) || 0;
+          if (numValue > 0) {
+            incomeData[item.name] = numValue;
+          }
         }
       });
     }
 
-    // 支出
-    if (incomeExpense.expenses?.livingExpenses)
-      incomeExpenseData.生活費 = incomeExpense.expenses.livingExpenses;
-    if (incomeExpense.expenses?.housingExpenses)
-      incomeExpenseData.房租或房貸 = incomeExpense.expenses.housingExpenses;
-    if (incomeExpense.expenses?.otherExpenses)
-      incomeExpenseData.保費 = incomeExpense.expenses.otherExpenses;
+    // 處理支出（新格式：兩層級結構 {category: {item: value}}）
+    if (incomeExpense.expense) {
+      Object.keys(incomeExpense.expense).forEach((category) => {
+        const categoryItems = incomeExpense.expense[category];
+        if (categoryItems && typeof categoryItems === 'object') {
+          const cleanedCategory: { [key: string]: number } = {};
+          Object.keys(categoryItems).forEach((itemKey) => {
+            const value = categoryItems[itemKey];
+            if (value && value.toString().trim()) {
+              const numValue = Number.parseFloat(value.toString()) || 0;
+              if (numValue > 0) {
+                cleanedCategory[itemKey] = numValue;
+              }
+            }
+          });
+          if (Object.keys(cleanedCategory).length > 0) {
+            expenseData[category] = cleanedCategory;
+          }
+        }
+      });
+    }
 
-    // 動態新增的支出項目
+    // 動態新增的支出項目（如果有舊格式的動態新增，轉換為新格式）
     if (newItemInputs?.expenses) {
       newItemInputs.expenses.forEach(
-        (item: { name: string; value: string }) => {
+        (item: { name: string; value: string; category?: string; subCategory?: string; customName?: string }) => {
           if (item.name && item.value) {
-            incomeExpenseData[`支出_${item.name}`] = item.value;
+            const numValue = Number.parseFloat(item.value) || 0;
+            if (numValue > 0) {
+              // 如果有category和subCategory/customName，使用兩層級結構
+              if (item.category) {
+                if (!expenseData[item.category]) {
+                  expenseData[item.category] = {};
+                }
+                const itemKey = item.category === '其他' ? (item.customName || item.name) : (item.subCategory || item.name);
+                expenseData[item.category][itemKey] = numValue;
+              } else {
+                // 否則放在"其他"分類下
+                if (!expenseData['其他']) {
+                  expenseData['其他'] = {};
+                }
+                expenseData['其他'][item.name] = numValue;
+              }
+            }
           }
         }
       );
     }
 
-    // 月結餘
-    if (incomeExpense.monthlyBalance)
-      incomeExpenseData.月結餘 = incomeExpense.monthlyBalance;
+    const incomeExpenseData: { income: { [key: string]: number }; expense: { [key: string]: { [key: string]: number } } } = {
+      income: incomeData,
+      expense: expenseData,
+    };
 
     // 轉換現況說明資料格式
     const situationData: { [key: string]: string } = {};

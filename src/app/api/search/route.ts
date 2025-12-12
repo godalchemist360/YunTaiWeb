@@ -43,6 +43,16 @@ const searchAPI = createI18nSearchAPI('advanced', {
         tolerance: 0,
       },
     },
+    // zh-TW also uses Mandarin tokenizer
+    'zh-TW': {
+      components: {
+        tokenizer: createTokenizer(),
+      },
+      search: {
+        threshold: 0,
+        tolerance: 0,
+      },
+    },
 
     // Use the default English tokenizer for English content
     en: 'english',
