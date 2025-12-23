@@ -26,12 +26,15 @@ export function ChangePasswordDialog({
   onOpenChange,
   userId,
 }: ChangePasswordDialogProps) {
+  const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [passwordMismatch, setPasswordMismatch] = useState(false);
+  const [oldPasswordError, setOldPasswordError] = useState('');
 
   // 即時驗證密碼是否一致
   const handleConfirmPasswordChange = (value: string) => {
@@ -40,6 +43,14 @@ export function ChangePasswordDialog({
       setPasswordMismatch(true);
     } else {
       setPasswordMismatch(false);
+    }
+  };
+
+  const handleOldPasswordChange = (value: string) => {
+    setOldPassword(value);
+    // 清除舊密碼錯誤
+    if (oldPasswordError) {
+      setOldPasswordError('');
     }
   };
 
@@ -53,6 +64,16 @@ export function ChangePasswordDialog({
   };
 
   const handleSubmit = async () => {
+    // 清除之前的錯誤
+    setOldPasswordError('');
+    setPasswordMismatch(false);
+
+    // 驗證舊密碼是否必填
+    if (!oldPassword.trim()) {
+      setOldPasswordError('請輸入舊密碼');
+      return;
+    }
+
     // 驗證新密碼是否必填
     if (!newPassword.trim()) {
       toast.error('請輸入新密碼');
@@ -68,21 +89,34 @@ export function ChangePasswordDialog({
     setIsLoading(true);
 
     try {
-      await updateUser(userId, { password: newPassword });
+      await updateUser(userId, { 
+        password: newPassword,
+        oldPassword: oldPassword 
+      });
       toast.success('密碼修改成功');
       
       // 重置表單
+      setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setPasswordMismatch(false);
+      setOldPasswordError('');
+      setShowOldPassword(false);
       setShowNewPassword(false);
       setShowConfirmPassword(false);
       
       // 關閉對話框
       onOpenChange(false);
     } catch (error: any) {
-      console.error('修改密碼失敗:', error);
-      toast.error('修改失敗');
+      // 檢查是否是舊密碼錯誤
+      if (error.message?.includes('舊密碼錯誤')) {
+        setOldPasswordError('舊密碼錯誤');
+        setOldPassword('');
+        // 舊密碼錯誤不需要顯示 toast，只在表單內顯示錯誤即可
+      } else {
+        console.error('修改密碼失敗:', error);
+        toast.error('修改失敗');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -90,9 +124,12 @@ export function ChangePasswordDialog({
 
   const handleCancel = () => {
     // 重置表單
+    setOldPassword('');
     setNewPassword('');
     setConfirmPassword('');
     setPasswordMismatch(false);
+    setOldPasswordError('');
+    setShowOldPassword(false);
     setShowNewPassword(false);
     setShowConfirmPassword(false);
     
@@ -108,6 +145,34 @@ export function ChangePasswordDialog({
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="oldPassword">舊密碼</Label>
+            <div className="relative">
+              <Input
+                id="oldPassword"
+                type={showOldPassword ? 'text' : 'password'}
+                value={oldPassword}
+                onChange={(e) => handleOldPasswordChange(e.target.value)}
+                placeholder="請輸入舊密碼"
+                className={`pr-10 ${oldPasswordError ? 'border-red-500' : ''}`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowOldPassword(!showOldPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                {showOldPassword ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+              </button>
+            </div>
+            {oldPasswordError && (
+              <p className="text-sm text-red-500">{oldPasswordError}</p>
+            )}
+          </div>
+
           <div className="grid gap-2">
             <Label htmlFor="newPassword">新密碼</Label>
             <div className="relative">

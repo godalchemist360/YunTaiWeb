@@ -18,11 +18,11 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { display_name, role, status, password, avatar_url } = body;
+    const { display_name, role, status, password, oldPassword, avatar_url } = body;
 
-    // 檢查用戶是否存在，並獲取現有的頭像 URL
+    // 檢查用戶是否存在，並獲取現有的頭像 URL 和密碼 hash
     const checkResult = await db.execute(
-      sql`SELECT id, avatar_url FROM app_users WHERE id = ${id}`
+      sql`SELECT id, avatar_url, password_hash FROM app_users WHERE id = ${id}`
     );
 
     if (checkResult.rows.length === 0) {
@@ -30,6 +30,19 @@ export async function PUT(
     }
 
     const currentAvatarUrl = checkResult.rows[0].avatar_url as string | null;
+    const currentPasswordHash = checkResult.rows[0].password_hash as string | null;
+
+    // 如果要更新密碼且提供了舊密碼，則驗證舊密碼
+    if (password !== undefined && oldPassword !== undefined) {
+      if (!currentPasswordHash) {
+        return NextResponse.json({ error: '舊密碼錯誤' }, { status: 400 });
+      }
+      
+      const isOldPasswordCorrect = await bcrypt.compare(oldPassword, currentPasswordHash);
+      if (!isOldPasswordCorrect) {
+        return NextResponse.json({ error: '舊密碼錯誤' }, { status: 400 });
+      }
+    }
 
     // 建立更新欄位
     const updateFields: string[] = [];

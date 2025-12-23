@@ -56,7 +56,10 @@ export const PERMISSIONS: Record<UserRole, PermissionAction[]> = {
     'announcements.delete',
     'announcements.edit',
     'announcements.view',
-    'users.view', // 管理層可以查看用戶，但可能不能創建/刪除
+    'users.create',
+    'users.delete',
+    'users.edit',
+    'users.view',
     'customer-tracking.create',
     'customer-tracking.edit',
     'customer-tracking.view',
