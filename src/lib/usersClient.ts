@@ -59,6 +59,7 @@ export async function updateUser(
     role: string;
     status: string;
     password: string;
+    oldPassword?: string;
     avatar_url: string;
   }>
 ) {
@@ -69,6 +70,12 @@ export async function updateUser(
     },
     body: JSON.stringify(data),
   });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || '更新失敗');
+  }
+  
   return response.json();
 }
 
