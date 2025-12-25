@@ -37,7 +37,7 @@ export function LoanCalculator() {
     totalMonths: number
   ): number => {
     if (monthlyRate <= 0 || totalMonths <= 0) return 0;
-    
+
     // 公式：每月還款 = 本金 × [r(1+r)^n] / [(1+r)^n - 1]
     const factor = Math.pow(1 + monthlyRate, totalMonths);
     return principal * (monthlyRate * factor) / (factor - 1);
@@ -124,8 +124,9 @@ export function LoanCalculator() {
           // 等額本金：第一個月還款最多，逐月遞減
           const principalPerMonth = principal / totalMonths;
           const firstMonthPayment = principalPerMonth + principal * monthlyRate;
-          const totalPayment = (firstMonthPayment + principalPerMonth) * totalMonths / 2;
-          const totalInterest = totalPayment - principal;
+          // 總利息 = 月利率 × 本金 × (期數 + 1) / 2
+          const totalInterest = monthlyRate * principal * (totalMonths + 1) / 2;
+          const totalPayment = principal + totalInterest;
           result = {
             value: firstMonthPayment, // 顯示第一個月還款
             totalPayment,
@@ -143,13 +144,13 @@ export function LoanCalculator() {
             result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
             break;
           }
-          
+
           // 反推公式：本金 = 每月還款 × [(1+r)^n - 1] / [r(1+r)^n]
           const factor = Math.pow(1 + monthlyRate, totalMonths);
           const requiredPrincipal = payment * (factor - 1) / (monthlyRate * factor);
           const totalPayment = payment * totalMonths;
           const totalInterest = totalPayment - requiredPrincipal;
-          
+
           result = {
             value: Math.max(0, requiredPrincipal),
             totalPayment,
@@ -157,14 +158,20 @@ export function LoanCalculator() {
             isValid: requiredPrincipal > 0,
           };
         } else {
-          // 等額本金：反推較複雜，使用近似值
-          // 平均每月還款 ≈ 本金/期數 + 本金×月利率/2
-          // 本金 ≈ 每月還款 × 2 / (1/期數 + 月利率)
-          const avgRate = monthlyRate / 2;
-          const requiredPrincipal = payment * 2 / (1 / totalMonths + monthlyRate);
-          const totalPayment = payment * totalMonths;
-          const totalInterest = totalPayment - requiredPrincipal;
-          
+          // 等額本金：假設輸入的是第一個月還款
+          // 第一個月還款 = 本金/期數 + 本金×月利率 = 本金 × (1/期數 + 月利率)
+          // 所以：本金 = 第一個月還款 / (1/期數 + 月利率)
+          const requiredPrincipal = payment / (1 / totalMonths + monthlyRate);
+
+          // 計算總還款金額（等額本金的總還款）
+          // 等額本金：每月還本金固定，利息逐月遞減
+          // 總還款 = 本金 + 總利息
+          // 總利息 = 月利率 × (本金 + (本金-本金/期數) + ... + 本金/期數)
+          //        = 月利率 × 本金 × (期數 + 1) / 2
+          const principalPerMonth = requiredPrincipal / totalMonths;
+          const totalInterest = monthlyRate * requiredPrincipal * (totalMonths + 1) / 2;
+          const totalPayment = requiredPrincipal + totalInterest;
+
           result = {
             value: Math.max(0, requiredPrincipal),
             totalPayment,
@@ -181,54 +188,88 @@ export function LoanCalculator() {
           result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
           break;
         }
-        
+
         if (repaymentMethod === 'equal-payment') {
-          // 使用二分法
-          let low = 0;
-          let high = 50; // 最多50年
-          const tolerance = 0.01;
-          const maxIterations = 100;
+          // 檢查：每月還款必須至少大於本金×月利率，否則永遠無法還清
+          const minPayment = principal * monthlyRate;
+          if (payment <= minPayment) {
+            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            break;
+          }
+
+          // 使用新的邏輯：從0.1年開始，每次增加0.1年，計算應還款總額和實際還款總額
+          // 如果實際還款 < 應還款，增加年數
+          const maxYears = 50;
           let found = false;
-          
-          for (let i = 0; i < maxIterations; i++) {
-            const mid = (low + high) / 2;
-            const months = mid * 12;
-            const calculatedPayment = calculateEqualPayment(principal, monthlyRate, months);
-            
-            if (Math.abs(calculatedPayment - payment) < tolerance) {
-              const totalPayment = payment * months;
-              const totalInterest = totalPayment - principal;
-              result = { value: mid, totalPayment, totalInterest, isValid: true };
+
+          for (let testYears = 0.1; testYears <= maxYears; testYears += 0.1) {
+            const testMonths = Math.round(testYears * 12); // 轉換為整數月數
+
+            if (testMonths < 1) continue;
+
+            // 計算在該年數下，根據貸款金額和年利率，總共需要還多少（應還款總額）
+            const monthlyPaymentForThisTerm = calculateEqualPayment(principal, monthlyRate, testMonths);
+            const requiredTotalPayment = monthlyPaymentForThisTerm * testMonths;
+
+            // 計算依據當前月還款，到這年份會還多少（實際還款總額）
+            const actualTotalPayment = payment * testMonths;
+
+            // 如果實際還款 >= 應還款，找到了正確的年數
+            if (actualTotalPayment >= requiredTotalPayment) {
+              const totalInterest = actualTotalPayment - principal;
+              result = {
+                value: testYears,
+                totalPayment: actualTotalPayment,
+                totalInterest,
+                isValid: true
+              };
               found = true;
               break;
             }
-            
-            if (calculatedPayment < payment) {
-              low = mid;
-            } else {
-              high = mid;
-            }
           }
-          
+
+          // 如果到了50年還是不夠，表示無解
           if (!found) {
-            const finalYears = (low + high) / 2;
-            const totalPayment = payment * finalYears * 12;
-            const totalInterest = totalPayment - principal;
-            result = { value: finalYears, totalPayment, totalInterest, isValid: true };
+            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
           }
         } else {
-          // 等額本金：近似計算
-          const principalPerMonth = principal / (payment / (1 + monthlyRate * principal / payment));
-          const requiredMonths = principal / principalPerMonth;
-          const requiredYears = requiredMonths / 12;
-          const totalPayment = payment * requiredMonths;
-          const totalInterest = totalPayment - principal;
-          
+          // 等額本金：假設輸入的是第一個月還款
+          // 檢查：第一個月還款必須至少大於本金×月利率，否則永遠無法還清
+          const minPayment = principal * monthlyRate;
+          if (payment <= minPayment) {
+            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            break;
+          }
+
+          // 等額本金：第一個月還款 = 本金/期數 + 本金×月利率
+          // payment = principal / testMonths + principal * monthlyRate
+          // payment = principal × (1/testMonths + monthlyRate)
+          // payment / principal = 1/testMonths + monthlyRate
+          // payment / principal - monthlyRate = 1/testMonths
+          // testMonths = 1 / (payment / principal - monthlyRate)
+          // 但更直接：payment = principal / testMonths + principal * monthlyRate
+          // payment - principal * monthlyRate = principal / testMonths
+          // testMonths = principal / (payment - principal * monthlyRate)
+
+          const calculatedMonths = principal / (payment - principal * monthlyRate);
+
+          if (calculatedMonths <= 0 || calculatedMonths > 50 * 12) {
+            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            break;
+          }
+
+          const calculatedYears = calculatedMonths / 12;
+          const roundedMonths = Math.round(calculatedMonths);
+
+          // 驗證：計算實際總還款
+          const totalInterest = monthlyRate * principal * (roundedMonths + 1) / 2;
+          const totalPayment = principal + totalInterest;
+
           result = {
-            value: Math.max(0, requiredYears),
+            value: calculatedYears,
             totalPayment,
             totalInterest,
-            isValid: requiredYears > 0,
+            isValid: true
           };
         }
         break;
@@ -240,18 +281,18 @@ export function LoanCalculator() {
           result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
           break;
         }
-        
+
         // 使用二分法
         let low = 0;
         let high = 0.2; // 0% 到 20%
         const tolerance = 0.0001;
         const maxIterations = 100;
         let found = false;
-        
+
         for (let i = 0; i < maxIterations; i++) {
           const mid = (low + high) / 2;
           const midMonthlyRate = mid / 12;
-          
+
           let calculatedPayment: number;
           if (repaymentMethod === 'equal-payment') {
             calculatedPayment = calculateEqualPayment(principal, midMonthlyRate, totalMonths);
@@ -260,7 +301,7 @@ export function LoanCalculator() {
             const principalPerMonth = principal / totalMonths;
             calculatedPayment = principalPerMonth + principal * midMonthlyRate;
           }
-          
+
           if (Math.abs(calculatedPayment - payment) < tolerance) {
             const totalPayment = payment * totalMonths;
             const totalInterest = totalPayment - principal;
@@ -268,14 +309,14 @@ export function LoanCalculator() {
             found = true;
             break;
           }
-          
+
           if (calculatedPayment < payment) {
             low = mid;
           } else {
             high = mid;
           }
         }
-        
+
         if (!found) {
           const finalRate = ((low + high) / 2) * 100;
           const totalPayment = payment * totalMonths;
