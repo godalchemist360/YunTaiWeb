@@ -364,7 +364,7 @@ export function FlexibleCalculator() {
 
   const chartConfig: ChartConfig = {
     value: {
-      label: '當下資金',
+      label: '最終金額',
       color: '#ef4444', // 紅色，類似圖片中的顏色
     },
   };
@@ -390,31 +390,31 @@ export function FlexibleCalculator() {
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="final-amount" id="final-amount" />
                 <Label htmlFor="final-amount" className="cursor-pointer">
-                  算最終金額
+                  最終金額
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="principal" id="principal" />
                 <Label htmlFor="principal" className="cursor-pointer">
-                  算所需本金
+                  所需本金
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="time" id="time" />
                 <Label htmlFor="time" className="cursor-pointer">
-                  算所需時間
+                  所需時間
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="rate" id="rate" />
                 <Label htmlFor="rate" className="cursor-pointer">
-                  算年化報酬
+                  年化報酬
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="regular-amount" id="regular-amount" />
                 <Label htmlFor="regular-amount" className="cursor-pointer">
-                  算定期定額
+                  定期定額
                 </Label>
               </div>
             </RadioGroup>
@@ -604,6 +604,7 @@ export function FlexibleCalculator() {
                 <Legend />
                 <Bar
                   dataKey="value"
+                  name="最終金額"
                   fill="var(--color-value)"
                   radius={[4, 4, 0, 0]}
                   stroke="var(--color-value)"
