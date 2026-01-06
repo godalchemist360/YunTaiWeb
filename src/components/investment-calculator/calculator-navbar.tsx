@@ -6,8 +6,8 @@ import { Routes } from '@/routes';
 import { cn } from '@/lib/utils';
 
 interface CalculatorNavbarProps {
-  activeTab?: 'inflation' | 'financial-planning' | 'loan';
-  onTabChange?: (tab: 'inflation' | 'financial-planning' | 'loan') => void;
+  activeTab?: 'inflation' | 'financial-planning' | 'loan' | 'mortgage';
+  onTabChange?: (tab: 'inflation' | 'financial-planning' | 'loan' | 'mortgage') => void;
 }
 
 export function CalculatorNavbar({
@@ -18,6 +18,7 @@ export function CalculatorNavbar({
     { id: 'inflation' as const, label: '通膨計算器' },
     { id: 'financial-planning' as const, label: '理財規劃計算器' },
     { id: 'loan' as const, label: '貸款計算器' },
+    { id: 'mortgage' as const, label: '貸款財力試算' },
   ];
 
   return (
@@ -26,8 +27,12 @@ export function CalculatorNavbar({
         <div className="flex items-center justify-between h-16">
           {/* 左側：Logo */}
           <div className="flex items-center">
-            <LocaleLink href={Routes.Root} className="flex items-center gap-2">
+            <LocaleLink href={Routes.Root} className="flex items-center gap-3">
               <Logo className="h-8 w-auto" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium leading-tight">昀泰策略資產顧問</span>
+                <span className="text-xs text-muted-foreground leading-tight">YourTime Family Office</span>
+              </div>
             </LocaleLink>
           </div>
 
