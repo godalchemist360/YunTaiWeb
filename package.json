@@ -124,6 +124,7 @@
     "react-day-picker": "8.10.1",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.62.0",
+    "react-number-format": "^5.4.4",
     "react-remove-scroll": "^2.6.3",
     "react-resizable-panels": "^2.1.7",
     "react-tweet": "^3.2.2",

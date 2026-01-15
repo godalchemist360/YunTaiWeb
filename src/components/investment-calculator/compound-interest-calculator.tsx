@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/select';
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
+import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
 
 export function CompoundInterestCalculator() {
   const [principal, setPrincipal] = useState<string>('100000');
@@ -69,11 +71,10 @@ export function CompoundInterestCalculator() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="principal">本金（新台幣）</Label>
-              <Input
+              <FormattedNumberInput
                 id="principal"
-                type="number"
                 value={principal}
-                onChange={(e) => setPrincipal(e.target.value)}
+                onValueChange={setPrincipal}
                 placeholder="100000"
                 min="0"
                 step="1000"
@@ -82,11 +83,10 @@ export function CompoundInterestCalculator() {
 
             <div className="space-y-2">
               <Label htmlFor="annualRate">年利率（%）</Label>
-              <Input
+              <FormattedNumberInput
                 id="annualRate"
-                type="number"
                 value={annualRate}
-                onChange={(e) => setAnnualRate(e.target.value)}
+                onValueChange={setAnnualRate}
                 placeholder="5"
                 min="0"
                 step="0.1"
@@ -95,11 +95,10 @@ export function CompoundInterestCalculator() {
 
             <div className="space-y-2">
               <Label htmlFor="years">投資期間（年）</Label>
-              <Input
+              <FormattedNumberInput
                 id="years"
-                type="number"
                 value={years}
-                onChange={(e) => setYears(e.target.value)}
+                onValueChange={setYears}
                 placeholder="10"
                 min="0"
                 step="1"
@@ -136,32 +135,34 @@ export function CompoundInterestCalculator() {
             <div className="space-y-2">
               <Label className="text-muted-foreground">最終金額</Label>
               <div className="text-3xl font-bold text-primary">
-                NT$ {formatNumber(calculationResult.futureValue)}
+                NT$ <NumberWithSmallDecimals text={formatNumber(calculationResult.futureValue)} />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label className="text-muted-foreground">總利息收益</Label>
               <div className="text-2xl font-semibold text-green-600">
-                NT$ {formatNumber(calculationResult.totalInterest)}
+                NT$ <NumberWithSmallDecimals text={formatNumber(calculationResult.totalInterest)} />
               </div>
             </div>
 
             <div className="pt-4 border-t">
               <div className="text-sm text-muted-foreground space-y-1">
                 <div>
-                  本金：NT$ {formatNumber(parseFloat(principal) || 0)}
+                  本金：NT$ <NumberWithSmallDecimals text={formatNumber(parseFloat(principal) || 0)} />
                 </div>
                 <div>
                   投資報酬率：
-                  {principal && parseFloat(principal) > 0
-                    ? (
-                        ((calculationResult.futureValue -
-                          parseFloat(principal)) /
-                          parseFloat(principal)) *
-                        100
-                      ).toFixed(2)
-                    : '0.00'}
+                  <NumberWithSmallDecimals
+                    text={
+                      principal && parseFloat(principal) > 0
+                        ? (
+                            ((calculationResult.futureValue - parseFloat(principal)) / parseFloat(principal)) *
+                            100
+                          ).toFixed(2)
+                        : '0.00'
+                    }
+                  />
                   %
                 </div>
               </div>

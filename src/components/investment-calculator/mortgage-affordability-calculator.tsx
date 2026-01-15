@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Plus } from 'lucide-react';
+import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
+import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
 
 export function MortgageAffordabilityCalculator() {
   // 輸入欄位狀態
@@ -296,11 +298,10 @@ export function MortgageAffordabilityCalculator() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1">
                   <Label htmlFor="annualRate" className="text-sm justify-center w-full">年利率 (%)</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="annualRate"
-                    type="number"
                     value={annualRate}
-                    onChange={(e) => setAnnualRate(e.target.value)}
+                    onValueChange={setAnnualRate}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="0.01"
@@ -309,11 +310,10 @@ export function MortgageAffordabilityCalculator() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="loanTerm" className="text-sm justify-center w-full">貸款年期</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="loanTerm"
-                    type="number"
                     value={loanTerm}
-                    onChange={(e) => setLoanTerm(e.target.value)}
+                    onValueChange={setLoanTerm}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="1"
@@ -322,11 +322,10 @@ export function MortgageAffordabilityCalculator() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="loanAmount" className="text-sm justify-center w-full">貸款金額</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="loanAmount"
-                    type="number"
                     value={loanAmount}
-                    onChange={(e) => setLoanAmount(e.target.value)}
+                    onValueChange={setLoanAmount}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="1000"
@@ -335,11 +334,10 @@ export function MortgageAffordabilityCalculator() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="gracePeriod" className="text-sm justify-center w-full">寬限期 (年)</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="gracePeriod"
-                    type="number"
                     value={gracePeriod}
-                    onChange={(e) => setGracePeriod(e.target.value)}
+                    onValueChange={setGracePeriod}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="1"
@@ -355,11 +353,10 @@ export function MortgageAffordabilityCalculator() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1">
                   <Label htmlFor="monthlyIncome" className="text-sm justify-center w-full">工作收入 (月)</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="monthlyIncome"
-                    type="number"
                     value={monthlyIncome}
-                    onChange={(e) => setMonthlyIncome(e.target.value)}
+                    onValueChange={setMonthlyIncome}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="1000"
@@ -387,11 +384,10 @@ export function MortgageAffordabilityCalculator() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1">
                   <Label htmlFor="stocks" className="text-sm justify-center w-full">股票</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="stocks"
-                    type="number"
                     value={stocks}
-                    onChange={(e) => setStocks(e.target.value)}
+                    onValueChange={setStocks}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="1000"
@@ -400,11 +396,10 @@ export function MortgageAffordabilityCalculator() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="funds" className="text-sm justify-center w-full">基金</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="funds"
-                    type="number"
                     value={funds}
-                    onChange={(e) => setFunds(e.target.value)}
+                    onValueChange={setFunds}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="1000"
@@ -413,11 +408,10 @@ export function MortgageAffordabilityCalculator() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="investmentInsurance" className="text-sm justify-center w-full">投資型保單</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="investmentInsurance"
-                    type="number"
                     value={investmentInsurance}
-                    onChange={(e) => setInvestmentInsurance(e.target.value)}
+                    onValueChange={setInvestmentInsurance}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="1000"
@@ -426,11 +420,10 @@ export function MortgageAffordabilityCalculator() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="financialBonds" className="text-sm justify-center w-full">金融債券</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="financialBonds"
-                    type="number"
                     value={financialBonds}
-                    onChange={(e) => setFinancialBonds(e.target.value)}
+                    onValueChange={setFinancialBonds}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="1000"
@@ -455,10 +448,9 @@ export function MortgageAffordabilityCalculator() {
                           <X className="h-3 w-3" />
                         </Button>
                       </Label>
-                      <Input
-                        type="number"
+                      <FormattedNumberInput
                         value={item.value}
-                        onChange={(e) => updateAggressiveAssetValue(item.id, e.target.value)}
+                        onValueChange={(v) => updateAggressiveAssetValue(item.id, v)}
                         onWheel={(e) => e.currentTarget.blur()}
                         min="0"
                         step="1000"
@@ -485,10 +477,9 @@ export function MortgageAffordabilityCalculator() {
                       </div>
                       <div className="space-y-1 w-[200px]">
                         <Label className="text-sm justify-center w-full">金額</Label>
-                        <Input
-                          type="number"
+                        <FormattedNumberInput
                           value={newAggressiveAsset.value}
-                          onChange={(e) => setNewAggressiveAsset({ ...newAggressiveAsset, value: e.target.value })}
+                          onValueChange={(v) => setNewAggressiveAsset({ ...newAggressiveAsset, value: v })}
                           onWheel={(e) => e.currentTarget.blur()}
                           min="0"
                           step="1000"
@@ -539,11 +530,10 @@ export function MortgageAffordabilityCalculator() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1">
                   <Label htmlFor="savingsInsurance" className="text-sm justify-center w-full">儲蓄險保單價值</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="savingsInsurance"
-                    type="number"
                     value={savingsInsurance}
-                    onChange={(e) => setSavingsInsurance(e.target.value)}
+                    onValueChange={setSavingsInsurance}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="1000"
@@ -552,11 +542,10 @@ export function MortgageAffordabilityCalculator() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="threeMonthDeposit" className="text-sm justify-center w-full">滿三個月定存</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="threeMonthDeposit"
-                    type="number"
                     value={threeMonthDeposit}
-                    onChange={(e) => setThreeMonthDeposit(e.target.value)}
+                    onValueChange={setThreeMonthDeposit}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="1000"
@@ -565,11 +554,10 @@ export function MortgageAffordabilityCalculator() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="otherConservativeAssets" className="text-sm justify-center w-full">其他保守資產</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="otherConservativeAssets"
-                    type="number"
                     value={otherConservativeAssets}
-                    onChange={(e) => setOtherConservativeAssets(e.target.value)}
+                    onValueChange={setOtherConservativeAssets}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="1000"
@@ -594,10 +582,9 @@ export function MortgageAffordabilityCalculator() {
                           <X className="h-3 w-3" />
                         </Button>
                       </Label>
-                      <Input
-                        type="number"
+                      <FormattedNumberInput
                         value={item.value}
-                        onChange={(e) => updateConservativeAssetValue(item.id, e.target.value)}
+                        onValueChange={(v) => updateConservativeAssetValue(item.id, v)}
                         onWheel={(e) => e.currentTarget.blur()}
                         min="0"
                         step="1000"
@@ -624,10 +611,9 @@ export function MortgageAffordabilityCalculator() {
                       </div>
                       <div className="space-y-1 w-[200px]">
                         <Label className="text-sm justify-center w-full">金額</Label>
-                        <Input
-                          type="number"
+                        <FormattedNumberInput
                           value={newConservativeAsset.value}
-                          onChange={(e) => setNewConservativeAsset({ ...newConservativeAsset, value: e.target.value })}
+                          onValueChange={(v) => setNewConservativeAsset({ ...newConservativeAsset, value: v })}
                           onWheel={(e) => e.currentTarget.blur()}
                           min="0"
                           step="1000"
@@ -678,11 +664,10 @@ export function MortgageAffordabilityCalculator() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1">
                   <Label htmlFor="creditLoan" className="text-sm justify-center w-full">信貸</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="creditLoan"
-                    type="number"
                     value={creditLoan}
-                    onChange={(e) => setCreditLoan(e.target.value)}
+                    onValueChange={setCreditLoan}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="100"
@@ -691,11 +676,10 @@ export function MortgageAffordabilityCalculator() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="mortgageLoan" className="text-sm justify-center w-full">房貸</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="mortgageLoan"
-                    type="number"
                     value={mortgageLoan}
-                    onChange={(e) => setMortgageLoan(e.target.value)}
+                    onValueChange={setMortgageLoan}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="100"
@@ -704,11 +688,10 @@ export function MortgageAffordabilityCalculator() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="carLoan" className="text-sm justify-center w-full">車貸</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="carLoan"
-                    type="number"
                     value={carLoan}
-                    onChange={(e) => setCarLoan(e.target.value)}
+                    onValueChange={setCarLoan}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="100"
@@ -717,11 +700,10 @@ export function MortgageAffordabilityCalculator() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="creditCardInstallment" className="text-sm justify-center w-full">信用卡分期</Label>
-                  <Input
+                  <FormattedNumberInput
                     id="creditCardInstallment"
-                    type="number"
                     value={creditCardInstallment}
-                    onChange={(e) => setCreditCardInstallment(e.target.value)}
+                    onValueChange={setCreditCardInstallment}
                     onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="100"
@@ -746,10 +728,9 @@ export function MortgageAffordabilityCalculator() {
                           <X className="h-3 w-3" />
                         </Button>
                       </Label>
-                      <Input
-                        type="number"
+                      <FormattedNumberInput
                         value={item.value}
-                        onChange={(e) => updateExistingLoanValue(item.id, e.target.value)}
+                        onValueChange={(v) => updateExistingLoanValue(item.id, v)}
                         onWheel={(e) => e.currentTarget.blur()}
                         min="0"
                         step="100"
@@ -776,10 +757,9 @@ export function MortgageAffordabilityCalculator() {
                       </div>
                       <div className="space-y-1 w-[200px]">
                         <Label className="text-sm justify-center w-full">月付金</Label>
-                        <Input
-                          type="number"
+                        <FormattedNumberInput
                           value={newExistingLoan.value}
-                          onChange={(e) => setNewExistingLoan({ ...newExistingLoan, value: e.target.value })}
+                          onValueChange={(v) => setNewExistingLoan({ ...newExistingLoan, value: v })}
                           onWheel={(e) => e.currentTarget.blur()}
                           min="0"
                           step="100"
@@ -835,37 +815,37 @@ export function MortgageAffordabilityCalculator() {
                 <div className="space-y-2">
                   <Label>需要月收入</Label>
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ {formatNumber(calculateResult.requiredMonthlyIncome)}
+                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.requiredMonthlyIncome)} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>銀行認列月收入</Label>
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ {formatNumber(calculateResult.bankRecognizedMonthlyIncome)}
+                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.bankRecognizedMonthlyIncome)} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>償還負債能力</Label>
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ {formatNumber(calculateResult.debtRepaymentCapacity)}
+                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.debtRepaymentCapacity)} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>寬限期後每月還款金額</Label>
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ {formatNumber(calculateResult.monthlyPaymentAfterGracePeriod)}
+                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.monthlyPaymentAfterGracePeriod)} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>名下貸款月付金</Label>
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ {formatNumber(calculateResult.totalExistingLoanPayment)}
+                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.totalExistingLoanPayment)} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>剩餘償還負債能力</Label>
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ {formatNumber(calculateResult.remainingDebtRepaymentCapacity)}
+                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.remainingDebtRepaymentCapacity)} />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -873,7 +853,11 @@ export function MortgageAffordabilityCalculator() {
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
                     {calculateResult.requiredAdditionalMonthlyIncome <= 0
                       ? '不需補足'
-                      : `NT$ ${formatNumber(calculateResult.requiredAdditionalMonthlyIncome)}`
+                      : (
+                          <span>
+                            NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.requiredAdditionalMonthlyIncome)} />
+                          </span>
+                        )
                     }
                   </div>
                 </div>

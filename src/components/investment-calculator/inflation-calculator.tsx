@@ -8,6 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import type { ChartConfig } from '@/components/ui/chart';
+import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
+import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
 
 export function InflationCalculator() {
   const [principal, setPrincipal] = useState<string>('1000000');
@@ -98,11 +100,10 @@ export function InflationCalculator() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="principal">本金（元）</Label>
-              <Input
+              <FormattedNumberInput
                 id="principal"
-                type="number"
                 value={principal}
-                onChange={(e) => setPrincipal(e.target.value)}
+                onValueChange={setPrincipal}
                 min="0"
                 step="10000"
               />
@@ -110,11 +111,10 @@ export function InflationCalculator() {
 
             <div className="space-y-2">
               <Label htmlFor="inflationRate">預期通貨膨脹率（%）</Label>
-              <Input
+              <FormattedNumberInput
                 id="inflationRate"
-                type="number"
                 value={inflationRate}
-                onChange={(e) => setInflationRate(e.target.value)}
+                onValueChange={setInflationRate}
                 min="0"
                 step="0.1"
               />
@@ -122,11 +122,10 @@ export function InflationCalculator() {
 
             <div className="space-y-2">
               <Label htmlFor="years">年數</Label>
-              <Input
+              <FormattedNumberInput
                 id="years"
-                type="number"
                 value={years}
-                onChange={(e) => setYears(e.target.value)}
+                onValueChange={setYears}
                 min="0"
                 step="1"
               />
@@ -172,7 +171,11 @@ export function InflationCalculator() {
                   <ChartTooltip
                     content={
                       <ChartTooltipContent
-                        formatter={(value) => `NT$ ${formatNumber(Number(value))}`}
+                        formatter={(value) => (
+                          <span>
+                            NT$ <NumberWithSmallDecimals text={formatNumber(Number(value))} />
+                          </span>
+                        )}
                       />
                     }
                   />

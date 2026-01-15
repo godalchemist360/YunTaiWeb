@@ -6,6 +6,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
+import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
 
 type LoanCalculationTarget = 'monthly-payment' | 'loan-amount' | 'loan-term' | 'interest-rate';
 type RepaymentMethod = 'equal-payment' | 'equal-principal';
@@ -186,16 +188,23 @@ export function LoanCalculator() {
             break;
           }
 
-          // 假設輸入的 payment 是寬限期內的還款（只還利息）
-          // 寬限期內：每月還款 = 本金 × 月利率
-          // 所以：本金 = 每月還款 / 月利率
-          const requiredPrincipal = payment / monthlyRate;
+          // 無論是否有寬限期，輸入的 payment 都是寬限期後的還款（本息均攤）
+          // 每月還款 = 本金 × [r(1+r)^n] / [(1+r)^n - 1]
+          // 反推：本金 = 每月還款 × [(1+r)^n - 1] / [r(1+r)^n]
+          const factor = Math.pow(1 + monthlyRate, actualTermMonths);
+          const denominator = monthlyRate * factor;
+          if (denominator <= 0) {
+            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            break;
+          }
+          const requiredPrincipal = payment * (factor - 1) / denominator;
+          const paymentAfterGracePeriod = payment;
 
-          // 計算寬限期後的每月還款
-          const paymentAfterGracePeriod = calculateEqualPayment(requiredPrincipal, monthlyRate, actualTermMonths);
+          // 計算寬限期內的還款（只還利息）
+          const gracePeriodPayment = gracePeriodMonths > 0 ? requiredPrincipal * monthlyRate : 0;
 
           // 寬限期內總還款
-          const gracePeriodTotalPayment = payment * gracePeriodMonths;
+          const gracePeriodTotalPayment = gracePeriodPayment * gracePeriodMonths;
           // 寬限期後總還款
           const afterGracePeriodTotalPayment = paymentAfterGracePeriod * actualTermMonths;
           const totalPayment = gracePeriodTotalPayment + afterGracePeriodTotalPayment;
@@ -208,17 +217,22 @@ export function LoanCalculator() {
             isValid: requiredPrincipal > 0 && actualTermYears > 0,
           };
         } else {
-          // 等額本金：假設輸入的是寬限期內的還款（只還利息）
-          // 寬限期內：每月還款 = 本金 × 月利率
-          // 所以：本金 = 每月還款 / 月利率
-          const requiredPrincipal = payment / monthlyRate;
+          // 等額本金：無論是否有寬限期，輸入的 payment 都是寬限期後第一個月還款
+          // 第一個月還款 = 本金/期數 + 本金×月利率 = 本金 × (1/期數 + 月利率)
+          // 所以：本金 = 第一個月還款 / (1/期數 + 月利率)
+          const ratePerMonth = 1 / actualTermMonths + monthlyRate;
+          if (ratePerMonth <= 0) {
+            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            break;
+          }
+          const requiredPrincipal = payment / ratePerMonth;
+          const paymentAfterGracePeriod = payment;
 
-          // 寬限期後：第一個月還款 = 本金/期數 + 本金×月利率
-          const principalPerMonth = requiredPrincipal / actualTermMonths;
-          const firstMonthPaymentAfterGrace = principalPerMonth + requiredPrincipal * monthlyRate;
+          // 計算寬限期內的還款（只還利息）
+          const gracePeriodPayment = gracePeriodMonths > 0 ? requiredPrincipal * monthlyRate : 0;
 
           // 寬限期內總還款
-          const gracePeriodTotalPayment = payment * gracePeriodMonths;
+          const gracePeriodTotalPayment = gracePeriodPayment * gracePeriodMonths;
           // 寬限期後總利息 = 月利率 × 本金 × (期數 + 1) / 2
           const afterGracePeriodTotalInterest = monthlyRate * requiredPrincipal * (actualTermMonths + 1) / 2;
           const afterGracePeriodTotalPayment = requiredPrincipal + afterGracePeriodTotalInterest;
@@ -491,14 +505,13 @@ export function LoanCalculator() {
               <Label htmlFor="loanAmount">貸款金額（新台幣）</Label>
               {target === 'loan-amount' ? (
                 <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                  NT$ {formatNumber(calculateResult.value)}
+                  NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.value)} />
                 </div>
               ) : (
-                <Input
+                <FormattedNumberInput
                   id="loanAmount"
-                  type="number"
                   value={loanAmount}
-                  onChange={(e) => setLoanAmount(e.target.value)}
+                  onValueChange={setLoanAmount}
                   min="0"
                   step="10000"
                 />
@@ -510,14 +523,13 @@ export function LoanCalculator() {
               <Label htmlFor="annualRate">年利率（%）</Label>
               {target === 'interest-rate' ? (
                 <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                  {formatNumber(calculateResult.value, 2)}%
+                  <NumberWithSmallDecimals text={formatNumber(calculateResult.value, 2)} />%
                 </div>
               ) : (
-                <Input
+                <FormattedNumberInput
                   id="annualRate"
-                  type="number"
                   value={annualRate}
-                  onChange={(e) => setAnnualRate(e.target.value)}
+                  onValueChange={setAnnualRate}
                   min="0"
                   step="0.1"
                 />
@@ -529,14 +541,13 @@ export function LoanCalculator() {
               <Label htmlFor="loanTerm">貸款期限（年）</Label>
               {target === 'loan-term' ? (
                 <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                  {formatNumber(calculateResult.value, 1)} 年
+                  <NumberWithSmallDecimals text={formatNumber(calculateResult.value, 1)} /> 年
                 </div>
               ) : (
-                <Input
+                <FormattedNumberInput
                   id="loanTerm"
-                  type="number"
                   value={loanTerm}
-                  onChange={(e) => setLoanTerm(e.target.value)}
+                  onValueChange={setLoanTerm}
                   min="0"
                   step="1"
                 />
@@ -546,11 +557,10 @@ export function LoanCalculator() {
             {/* 寬限期 */}
             <div className="space-y-2">
               <Label htmlFor="gracePeriod">寬限期（年）</Label>
-              <Input
+              <FormattedNumberInput
                 id="gracePeriod"
-                type="number"
                 value={gracePeriod}
-                onChange={(e) => setGracePeriod(e.target.value)}
+                onValueChange={setGracePeriod}
                 min="0"
                 step="1"
               />
@@ -563,7 +573,11 @@ export function LoanCalculator() {
                   <Label>寬限期間每月還款</Label>
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
                     {calculateResult.gracePeriodPayment !== undefined && parseFloat(gracePeriod) > 0
-                      ? `NT$ ${formatNumber(calculateResult.gracePeriodPayment)}`
+                      ? (
+                          <span>
+                            NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.gracePeriodPayment)} />
+                          </span>
+                        )
                       : '無寬限'}
                   </div>
                 </div>
@@ -571,7 +585,11 @@ export function LoanCalculator() {
                   <Label>寬限期後每月還款</Label>
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
                     {calculateResult.paymentAfterGracePeriod !== undefined
-                      ? `NT$ ${formatNumber(calculateResult.paymentAfterGracePeriod)}`
+                      ? (
+                          <span>
+                            NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.paymentAfterGracePeriod)} />
+                          </span>
+                        )
                       : 'NT$ 0.00'}
                     {repaymentMethod === 'equal-principal' && (
                       <span className="text-xs text-muted-foreground ml-2">（第一個月）</span>
@@ -582,11 +600,10 @@ export function LoanCalculator() {
             ) : (
               <div className="space-y-2">
                 <Label htmlFor="monthlyPayment">每月還款（新台幣）</Label>
-                <Input
+                <FormattedNumberInput
                   id="monthlyPayment"
-                  type="number"
                   value={monthlyPayment}
-                  onChange={(e) => setMonthlyPayment(e.target.value)}
+                  onValueChange={setMonthlyPayment}
                   min="0"
                   step="100"
                 />
@@ -615,24 +632,28 @@ export function LoanCalculator() {
               <div className="space-y-1">
                 <Label className="text-muted-foreground text-sm">總還款金額</Label>
                 <div className="text-xl font-semibold">
-                  NT$ {formatNumber(calculateResult.totalPayment)}
+                  NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.totalPayment)} />
                 </div>
               </div>
               <div className="space-y-1">
                 <Label className="text-muted-foreground text-sm">總利息支出</Label>
                 <div className="text-xl font-semibold text-orange-600">
-                  NT$ {formatNumber(calculateResult.totalInterest)}
+                  NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.totalInterest)} />
                 </div>
               </div>
               <div className="space-y-1">
                 <Label className="text-muted-foreground text-sm">利息佔比</Label>
                 <div className="text-xl font-semibold">
-                  {calculateResult.totalPayment > 0
-                    ? (
-                        (calculateResult.totalInterest / calculateResult.totalPayment) *
-                        100
-                      ).toFixed(2)
-                    : '0.00'}
+                  <NumberWithSmallDecimals
+                    text={
+                      calculateResult.totalPayment > 0
+                        ? (
+                            (calculateResult.totalInterest / calculateResult.totalPayment) *
+                            100
+                          ).toFixed(2)
+                        : '0.00'
+                    }
+                  />
                   %
                 </div>
               </div>
