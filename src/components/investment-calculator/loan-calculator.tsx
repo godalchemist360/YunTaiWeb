@@ -17,7 +17,7 @@ export function LoanCalculator() {
   const [repaymentMethod, setRepaymentMethod] = useState<RepaymentMethod>('equal-payment');
   const [loanAmount, setLoanAmount] = useState<string>('1000000');
   const [annualRate, setAnnualRate] = useState<string>('2.5');
-  const [loanTerm, setLoanTerm] = useState<string>('20');
+  const [loanTerm, setLoanTerm] = useState<string>('30');
   const [gracePeriod, setGracePeriod] = useState<string>('0');
   const [monthlyPayment, setMonthlyPayment] = useState<string>('5300');
   const [calculateResult, setCalculateResult] = useState<{
@@ -34,6 +34,17 @@ export function LoanCalculator() {
     isValid: false,
   });
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [scheduleOpen, setScheduleOpen] = useState<boolean>(true);
+  const [scheduleRows, setScheduleRows] = useState<
+    Array<{
+      period: number;
+      principalPaid: number;
+      interestPaid: number;
+      payment: number;
+      remainingPrincipal: number;
+      cumulativeInterest: number;
+    }>
+  >([]);
 
   // 計算本息平均攤還的每月還款金額
   const calculateEqualPayment = (
@@ -46,6 +57,108 @@ export function LoanCalculator() {
     // 公式：每月還款 = 本金 × [r(1+r)^n] / [(1+r)^n - 1]
     const factor = Math.pow(1 + monthlyRate, totalMonths);
     return principal * (monthlyRate * factor) / (factor - 1);
+  };
+
+  const buildAmortizationSchedule = (params: {
+    principal: number;
+    annualRate: number; // decimal, e.g. 0.025
+    totalYears: number;
+    graceYears: number;
+    repaymentMethod: RepaymentMethod;
+    paymentAfterGracePeriod?: number; // only for equal-payment
+  }) => {
+    const totalMonths = Math.max(0, Math.round(params.totalYears * 12));
+    const graceMonths = Math.max(0, Math.round(params.graceYears * 12));
+    const actualMonths = Math.max(0, totalMonths - graceMonths);
+    const monthlyRate = params.annualRate / 12;
+
+    if (params.principal <= 0 || params.annualRate < 0 || totalMonths <= 0 || actualMonths <= 0) {
+      return [];
+    }
+
+    const rows: Array<{
+      period: number;
+      principalPaid: number;
+      interestPaid: number;
+      payment: number;
+      remainingPrincipal: number;
+      cumulativeInterest: number;
+    }> = [];
+
+    let remaining = params.principal;
+    let cumulativeInterest = 0;
+
+    // Grace period: interest-only, principal unchanged
+    for (let m = 1; m <= graceMonths; m++) {
+      const interestPaid = monthlyRate === 0 ? 0 : remaining * monthlyRate;
+      const principalPaid = 0;
+      const payment = interestPaid;
+      cumulativeInterest += interestPaid;
+      rows.push({
+        period: m,
+        principalPaid,
+        interestPaid,
+        payment,
+        remainingPrincipal: remaining,
+        cumulativeInterest,
+      });
+    }
+
+    if (params.repaymentMethod === 'equal-payment') {
+      const fixedPayment =
+        params.paymentAfterGracePeriod && params.paymentAfterGracePeriod > 0
+          ? params.paymentAfterGracePeriod
+          : calculateEqualPayment(params.principal, monthlyRate, actualMonths);
+
+      for (let m = 1; m <= actualMonths; m++) {
+        const period = graceMonths + m;
+        const interestPaid = monthlyRate === 0 ? 0 : remaining * monthlyRate;
+        let principalPaid = fixedPayment - interestPaid;
+
+        // Last month: clear remaining principal to avoid negative residue from rounding
+        if (m === actualMonths) {
+          principalPaid = remaining;
+        } else {
+          principalPaid = Math.max(0, Math.min(principalPaid, remaining));
+        }
+
+        const payment = principalPaid + interestPaid;
+        remaining = Math.max(0, remaining - principalPaid);
+        cumulativeInterest += interestPaid;
+
+        rows.push({
+          period,
+          principalPaid,
+          interestPaid,
+          payment,
+          remainingPrincipal: remaining,
+          cumulativeInterest,
+        });
+      }
+    } else {
+      // Equal principal: principal paid per month is constant
+      const principalPerMonth = params.principal / actualMonths;
+
+      for (let m = 1; m <= actualMonths; m++) {
+        const period = graceMonths + m;
+        const interestPaid = monthlyRate === 0 ? 0 : remaining * monthlyRate;
+        const principalPaid = m === actualMonths ? remaining : principalPerMonth;
+        const payment = principalPaid + interestPaid;
+        remaining = Math.max(0, remaining - principalPaid);
+        cumulativeInterest += interestPaid;
+
+        rows.push({
+          period,
+          principalPaid,
+          interestPaid,
+          payment,
+          remainingPrincipal: remaining,
+          cumulativeInterest,
+        });
+      }
+    }
+
+    return rows;
   };
 
   // 計算函數
@@ -111,6 +224,7 @@ export function LoanCalculator() {
     if (missingFields.length > 0) {
       setErrorMessage(`請填寫：${missingFields.join('、')}`);
       setCalculateResult({ value: 0, totalPayment: 0, totalInterest: 0, isValid: false, gracePeriodPayment: undefined, paymentAfterGracePeriod: undefined });
+      setScheduleRows([]);
       return;
     }
 
@@ -420,6 +534,30 @@ export function LoanCalculator() {
     }
 
     setCalculateResult(result);
+
+    // 產生每月還款明細（攤還表）
+    if (result.isValid) {
+      const scenarioPrincipal = target === 'loan-amount' ? result.value : principal;
+      const scenarioAnnualRate = target === 'interest-rate' ? (result.value / 100) : r;
+      const scenarioYears = target === 'loan-term' ? result.value : years;
+      const afterGracePayment =
+        repaymentMethod === 'equal-payment'
+          ? (target === 'monthly-payment' ? (result.paymentAfterGracePeriod ?? 0) : payment)
+          : undefined;
+
+      setScheduleRows(
+        buildAmortizationSchedule({
+          principal: scenarioPrincipal,
+          annualRate: scenarioAnnualRate,
+          totalYears: scenarioYears,
+          graceYears: gracePeriodYears,
+          repaymentMethod,
+          paymentAfterGracePeriod: afterGracePayment,
+        })
+      );
+    } else {
+      setScheduleRows([]);
+    }
   };
 
   // 格式化數字
@@ -429,6 +567,14 @@ export function LoanCalculator() {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     }).format(num);
+  };
+
+  const formatInt = (num: number) => {
+    if (!isFinite(num)) return '0';
+    return new Intl.NumberFormat('zh-TW', {
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,
+    }).format(Math.round(num));
   };
 
   return (
@@ -657,6 +803,64 @@ export function LoanCalculator() {
                   %
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* 每月還款明細 */}
+          {calculateResult.isValid && scheduleRows.length > 0 && (
+            <div className="pt-4 border-t">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="text-sm font-medium">每月還款明細</div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setScheduleOpen((v) => !v)}
+                  className="h-8 text-xs"
+                >
+                  {scheduleOpen ? '收合' : '展開'}
+                </Button>
+              </div>
+
+              {scheduleOpen && (
+                <div className="mt-3 overflow-y-auto max-h-[420px] rounded-md border">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted sticky top-0">
+                      <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-center [&>th]:font-semibold">
+                        <th>期數</th>
+                        <th>當期還本金金額</th>
+                        <th>當期利息金額</th>
+                        <th>月付本息金額</th>
+                        <th>本金餘額</th>
+                        <th>累計利息</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {scheduleRows.map((row, idx) => (
+                        <tr
+                          key={row.period}
+                          className={`border-t [&>td]:px-3 [&>td]:py-2 [&>td]:text-center ${idx % 2 === 1 ? 'bg-muted/20' : ''}`}
+                        >
+                          <td className="font-medium">{row.period}</td>
+                          <td>{formatInt(row.principalPaid)}</td>
+                          <td>{formatInt(row.interestPaid)}</td>
+                          <td>{formatInt(row.payment)}</td>
+                          <td>{formatInt(row.remainingPrincipal)}</td>
+                          <td>{formatInt(row.cumulativeInterest)}</td>
+                        </tr>
+                      ))}
+                      <tr className="border-t bg-muted/10 [&>td]:px-3 [&>td]:py-2 [&>td]:text-center font-semibold">
+                        <td>總計</td>
+                        <td>{formatInt(scheduleRows[scheduleRows.length - 1]?.period ? scheduleRows.reduce((s, r) => s + r.principalPaid, 0) : 0)}</td>
+                        <td>{formatInt(scheduleRows.reduce((s, r) => s + r.interestPaid, 0))}</td>
+                        <td>{formatInt(scheduleRows.reduce((s, r) => s + r.payment, 0))}</td>
+                        <td>{formatInt(scheduleRows[scheduleRows.length - 1]?.remainingPrincipal ?? 0)}</td>
+                        <td>{formatInt(scheduleRows[scheduleRows.length - 1]?.cumulativeInterest ?? 0)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 

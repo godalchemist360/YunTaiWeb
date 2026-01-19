@@ -6,8 +6,8 @@ import { Routes } from '@/routes';
 import { cn } from '@/lib/utils';
 
 interface CalculatorNavbarProps {
-  activeTab?: 'inflation' | 'financial-planning' | 'loan' | 'mortgage';
-  onTabChange?: (tab: 'inflation' | 'financial-planning' | 'loan' | 'mortgage') => void;
+  activeTab?: 'inflation' | 'financial-planning' | 'loan' | 'mortgage' | 'retirement';
+  onTabChange?: (tab: 'inflation' | 'financial-planning' | 'loan' | 'mortgage' | 'retirement') => void;
 }
 
 export function CalculatorNavbar({
@@ -19,6 +19,7 @@ export function CalculatorNavbar({
     { id: 'financial-planning' as const, label: '理財規劃計算器' },
     { id: 'loan' as const, label: '貸款計算器' },
     { id: 'mortgage' as const, label: '貸款財力試算' },
+    { id: 'retirement' as const, label: '退休規劃模擬器' },
   ];
 
   return (
