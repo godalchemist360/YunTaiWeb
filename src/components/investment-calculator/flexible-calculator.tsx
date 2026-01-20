@@ -543,8 +543,8 @@ export function FlexibleCalculator() {
   };
 
   // 格式化數字
-  const formatNumber = (num: number, decimals: number = 2) => {
-    if (!isFinite(num) || num < 0) return '0.00';
+  const formatNumber = (num: number, decimals: number = 0) => {
+    if (!isFinite(num) || num < 0) return '0';
     return new Intl.NumberFormat('zh-TW', {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
@@ -808,9 +808,9 @@ export function FlexibleCalculator() {
                 )}
               </div>
 
-              <div className="mt-3 overflow-x-auto rounded-md border">
+              <div className="mt-3 overflow-auto max-h-[420px] rounded-md border">
                 <table className="w-full text-sm">
-                  <thead className="bg-muted/40">
+                  <thead className="bg-muted sticky top-0 z-10">
                     <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-left [&>th]:font-semibold">
                       <th>{scheduleView === 'period' ? getPeriodLabel(scheduleRows.periodsPerYear) : '年'}</th>
                       <th>本金（元）</th>
