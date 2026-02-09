@@ -2,12 +2,19 @@
 
 import { Logo } from '@/components/layout/logo';
 import { LocaleLink } from '@/i18n/navigation';
-import { Routes } from '@/routes';
 import { cn } from '@/lib/utils';
+import { Routes } from '@/routes';
 
 interface CalculatorNavbarProps {
-  activeTab?: 'inflation' | 'financial-planning' | 'loan' | 'mortgage' | 'retirement';
-  onTabChange?: (tab: 'inflation' | 'financial-planning' | 'loan' | 'mortgage' | 'retirement') => void;
+  activeTab?:
+    | 'inflation'
+    | 'financial-planning'
+    | 'loan'
+    | 'mortgage'
+    | 'retirement';
+  onTabChange?: (
+    tab: 'inflation' | 'financial-planning' | 'loan' | 'mortgage' | 'retirement'
+  ) => void;
 }
 
 export function CalculatorNavbar({
@@ -31,8 +38,12 @@ export function CalculatorNavbar({
             <LocaleLink href={Routes.Root} className="flex items-center gap-3">
               <Logo className="h-8 w-auto" />
               <div className="flex flex-col">
-                <span className="text-sm font-medium leading-tight">昀泰策略資產顧問</span>
-                <span className="text-xs text-muted-foreground leading-tight">YourTime Family Office</span>
+                <span className="text-sm font-medium leading-tight">
+                  昀泰策略資產顧問
+                </span>
+                <span className="text-xs text-muted-foreground leading-tight">
+                  YourTime Family Office
+                </span>
               </div>
             </LocaleLink>
           </div>
@@ -42,6 +53,7 @@ export function CalculatorNavbar({
             {tabs.map((tab) => (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => onTabChange?.(tab.id)}
                 className={cn(
                   'px-3 py-2 text-sm font-medium transition-colors',
@@ -66,6 +78,7 @@ export function CalculatorNavbar({
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => onTabChange?.(tab.id)}
               className={cn(
                 'px-4 py-2 text-sm font-medium whitespace-nowrap rounded-md transition-colors',
@@ -82,4 +95,3 @@ export function CalculatorNavbar({
     </nav>
   );
 }
-

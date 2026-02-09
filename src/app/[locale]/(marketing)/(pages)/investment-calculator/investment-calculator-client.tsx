@@ -5,7 +5,7 @@ import { FlexibleCalculator } from '@/components/investment-calculator/flexible-
 import { InflationCalculator } from '@/components/investment-calculator/inflation-calculator';
 import { LoanCalculator } from '@/components/investment-calculator/loan-calculator';
 import { MortgageAffordabilityCalculator } from '@/components/investment-calculator/mortgage-affordability-calculator';
-import { RetirementPlannerSimulator } from '@/components/investment-calculator/retirement-planner-simulator';
+import { RetirementPlannerSimulatorV2 } from '@/components/investment-calculator/retirement-planner-simulator-v2';
 import { useState } from 'react';
 
 export function InvestmentCalculatorClient() {
@@ -26,9 +26,8 @@ export function InvestmentCalculatorClient() {
 
         {activeTab === 'mortgage' && <MortgageAffordabilityCalculator />}
 
-        {activeTab === 'retirement' && <RetirementPlannerSimulator />}
+        {activeTab === 'retirement' && <RetirementPlannerSimulatorV2 />}
       </div>
     </div>
   );
 }
-

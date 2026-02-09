@@ -1,13 +1,18 @@
 'use client';
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { X, Plus } from 'lucide-react';
-import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
-import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
 
 export function MortgageAffordabilityCalculator() {
   // 輸入欄位狀態
@@ -25,38 +30,68 @@ export function MortgageAffordabilityCalculator() {
 
   // 積極資產 - 動態新增項目
   type AssetItem = { id: string; label: string; value: string };
-  const [additionalAggressiveAssets, setAdditionalAggressiveAssets] = useState<AssetItem[]>([]);
-  const [newAggressiveAsset, setNewAggressiveAsset] = useState<{ label: string; value: string } | null>(null);
+  const [additionalAggressiveAssets, setAdditionalAggressiveAssets] = useState<
+    AssetItem[]
+  >([]);
+  const [newAggressiveAsset, setNewAggressiveAsset] = useState<{
+    label: string;
+    value: string;
+  } | null>(null);
 
   // 保守資產 - 固定欄位
   const [savingsInsurance, setSavingsInsurance] = useState<string>('');
   const [threeMonthDeposit, setThreeMonthDeposit] = useState<string>('');
-  const [otherConservativeAssets, setOtherConservativeAssets] = useState<string>('');
+  const [otherConservativeAssets, setOtherConservativeAssets] =
+    useState<string>('');
 
   // 保守資產 - 動態新增項目
-  const [additionalConservativeAssets, setAdditionalConservativeAssets] = useState<AssetItem[]>([]);
-  const [newConservativeAsset, setNewConservativeAsset] = useState<{ label: string; value: string } | null>(null);
+  const [additionalConservativeAssets, setAdditionalConservativeAssets] =
+    useState<AssetItem[]>([]);
+  const [newConservativeAsset, setNewConservativeAsset] = useState<{
+    label: string;
+    value: string;
+  } | null>(null);
 
   // 名下貸款月付金 - 固定欄位
   const [creditLoan, setCreditLoan] = useState<string>('');
   const [mortgageLoan, setMortgageLoan] = useState<string>('');
   const [carLoan, setCarLoan] = useState<string>('');
-  const [creditCardInstallment, setCreditCardInstallment] = useState<string>('');
+  const [creditCardInstallment, setCreditCardInstallment] =
+    useState<string>('');
 
   // 名下貸款月付金 - 動態新增項目
-  const [additionalExistingLoans, setAdditionalExistingLoans] = useState<AssetItem[]>([]);
-  const [newExistingLoan, setNewExistingLoan] = useState<{ label: string; value: string } | null>(null);
+  const [additionalExistingLoans, setAdditionalExistingLoans] = useState<
+    AssetItem[]
+  >([]);
+  const [newExistingLoan, setNewExistingLoan] = useState<{
+    label: string;
+    value: string;
+  } | null>(null);
 
-  // 計算結果狀態（暫時為空，後續實作）
-  const [calculateResult, setCalculateResult] = useState<{
+  type PaymentMode = 'after' | 'grace';
+
+  type ScenarioResult = {
+    // 當前情境下的「房貸月付」（寬限期間：只繳利息；寬限期後：等額本息）
+    monthlyPayment: number;
+    // 可用償債額度（已扣除名下貸款月付金）
+    availableDebtCapacity: number;
+    // 房貸月付 vs 可用償債額度 的差距（正數代表餘裕，負數代表超出）
+    debtMargin: number;
+    // 需要月收入（依當前情境的房貸月付 + 名下貸款）
     requiredMonthlyIncome: number;
-    bankRecognizedMonthlyIncome: number;
-    debtRepaymentCapacity: number;
-    monthlyPaymentAfterGracePeriod: number;
-    totalExistingLoanPayment: number;
-    remainingDebtRepaymentCapacity: number;
+    // 需補足月收入（正數代表需補足；<=0 代表不需補足）
     requiredAdditionalMonthlyIncome: number;
     canLoan: boolean;
+  };
+
+  // 計算結果狀態
+  const [calculateResult, setCalculateResult] = useState<{
+    bankRecognizedMonthlyIncome: number;
+    debtRepaymentCapacity: number;
+    totalExistingLoanPayment: number;
+    gracePeriodMonthlyPayment: number;
+    monthlyPaymentAfterGracePeriod: number;
+    scenarios: Record<PaymentMode, ScenarioResult>;
   } | null>(null);
 
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -68,63 +103,84 @@ export function MortgageAffordabilityCalculator() {
     totalMonths: number
   ): number => {
     if (monthlyRate <= 0 || totalMonths <= 0) return 0;
-    const factor = Math.pow(1 + monthlyRate, totalMonths);
-    return principal * (monthlyRate * factor) / (factor - 1);
+    const factor = (1 + monthlyRate) ** totalMonths;
+    return (principal * (monthlyRate * factor)) / (factor - 1);
   };
 
   const calculate = () => {
     setErrorMessage('');
 
     // 解析輸入值
-    const principal = parseFloat(loanAmount) || 0;
-    const r = (parseFloat(annualRate) || 0) / 100;
-    const loanTermYears = parseFloat(loanTerm) || 0;
-    const gracePeriodYears = parseFloat(gracePeriod) || 0;
-    const workIncome = parseFloat(monthlyIncome) || 0;
+    const principal = Number.parseFloat(loanAmount) || 0;
+    const r = (Number.parseFloat(annualRate) || 0) / 100;
+    const loanTermYears = Number.parseFloat(loanTerm) || 0;
+    const gracePeriodYears = Number.parseFloat(gracePeriod) || 0;
+    const workIncome = Number.parseFloat(monthlyIncome) || 0;
 
     // 積極資產 - 固定欄位總和
-    const stocksValue = parseFloat(stocks) || 0;
-    const fundsValue = parseFloat(funds) || 0;
-    const investmentInsuranceValue = parseFloat(investmentInsurance) || 0;
-    const financialBondsValue = parseFloat(financialBonds) || 0;
-    const fixedAggressiveAssetsTotal = stocksValue + fundsValue + investmentInsuranceValue + financialBondsValue;
+    const stocksValue = Number.parseFloat(stocks) || 0;
+    const fundsValue = Number.parseFloat(funds) || 0;
+    const investmentInsuranceValue =
+      Number.parseFloat(investmentInsurance) || 0;
+    const financialBondsValue = Number.parseFloat(financialBonds) || 0;
+    const fixedAggressiveAssetsTotal =
+      stocksValue + fundsValue + investmentInsuranceValue + financialBondsValue;
 
     // 積極資產 - 動態新增項目總和
-    const additionalAggressiveAssetsTotal = additionalAggressiveAssets.reduce((sum, item) => {
-      return sum + (parseFloat(item.value) || 0);
-    }, 0);
+    const additionalAggressiveAssetsTotal = additionalAggressiveAssets.reduce(
+      (sum, item) => {
+        return sum + (Number.parseFloat(item.value) || 0);
+      },
+      0
+    );
 
     // 積極資產總和
-    const aggressiveAssetsTotal = fixedAggressiveAssetsTotal + additionalAggressiveAssetsTotal;
+    const aggressiveAssetsTotal =
+      fixedAggressiveAssetsTotal + additionalAggressiveAssetsTotal;
 
     // 保守資產 - 固定欄位總和
-    const savingsInsuranceValue = parseFloat(savingsInsurance) || 0;
-    const threeMonthDepositValue = parseFloat(threeMonthDeposit) || 0;
-    const otherConservativeAssetsValue = parseFloat(otherConservativeAssets) || 0;
-    const fixedConservativeAssetsTotal = savingsInsuranceValue + threeMonthDepositValue + otherConservativeAssetsValue;
+    const savingsInsuranceValue = Number.parseFloat(savingsInsurance) || 0;
+    const threeMonthDepositValue = Number.parseFloat(threeMonthDeposit) || 0;
+    const otherConservativeAssetsValue =
+      Number.parseFloat(otherConservativeAssets) || 0;
+    const fixedConservativeAssetsTotal =
+      savingsInsuranceValue +
+      threeMonthDepositValue +
+      otherConservativeAssetsValue;
 
     // 保守資產 - 動態新增項目總和
-    const additionalConservativeAssetsTotal = additionalConservativeAssets.reduce((sum, item) => {
-      return sum + (parseFloat(item.value) || 0);
-    }, 0);
+    const additionalConservativeAssetsTotal =
+      additionalConservativeAssets.reduce((sum, item) => {
+        return sum + (Number.parseFloat(item.value) || 0);
+      }, 0);
 
     // 保守資產總和
-    const conservativeAssetsTotal = fixedConservativeAssetsTotal + additionalConservativeAssetsTotal;
+    const conservativeAssetsTotal =
+      fixedConservativeAssetsTotal + additionalConservativeAssetsTotal;
 
     // 名下貸款月付金 - 固定欄位總和
-    const creditLoanValue = parseFloat(creditLoan) || 0;
-    const mortgageLoanValue = parseFloat(mortgageLoan) || 0;
-    const carLoanValue = parseFloat(carLoan) || 0;
-    const creditCardInstallmentValue = parseFloat(creditCardInstallment) || 0;
-    const fixedExistingLoanPayment = creditLoanValue + mortgageLoanValue + carLoanValue + creditCardInstallmentValue;
+    const creditLoanValue = Number.parseFloat(creditLoan) || 0;
+    const mortgageLoanValue = Number.parseFloat(mortgageLoan) || 0;
+    const carLoanValue = Number.parseFloat(carLoan) || 0;
+    const creditCardInstallmentValue =
+      Number.parseFloat(creditCardInstallment) || 0;
+    const fixedExistingLoanPayment =
+      creditLoanValue +
+      mortgageLoanValue +
+      carLoanValue +
+      creditCardInstallmentValue;
 
     // 名下貸款月付金 - 動態新增項目總和
-    const additionalExistingLoanPayment = additionalExistingLoans.reduce((sum, item) => {
-      return sum + (parseFloat(item.value) || 0);
-    }, 0);
+    const additionalExistingLoanPayment = additionalExistingLoans.reduce(
+      (sum, item) => {
+        return sum + (Number.parseFloat(item.value) || 0);
+      },
+      0
+    );
 
     // 名下貸款月付金總和
-    const totalExistingLoanPayment = fixedExistingLoanPayment + additionalExistingLoanPayment;
+    const totalExistingLoanPayment =
+      fixedExistingLoanPayment + additionalExistingLoanPayment;
 
     // 驗證必填欄位
     const missingFields: string[] = [];
@@ -146,40 +202,71 @@ export function MortgageAffordabilityCalculator() {
     const actualTermYears = loanTermYears - gracePeriodYears;
     const actualTermMonths = actualTermYears * 12;
     const monthlyRate = r / 12;
-    const monthlyPaymentAfterGracePeriod = calculateEqualPayment(principal, monthlyRate, actualTermMonths);
+    const monthlyPaymentAfterGracePeriod = calculateEqualPayment(
+      principal,
+      monthlyRate,
+      actualTermMonths
+    );
+    const gracePeriodMonthlyPayment =
+      gracePeriodYears > 0 ? principal * monthlyRate : 0;
 
     // 2. 計算銀行認列月收入
-    const bankRecognizedMonthlyIncome = workIncome + (aggressiveAssetsTotal * 0.01) + (conservativeAssetsTotal * 0.015);
+    const bankRecognizedMonthlyIncome =
+      workIncome +
+      aggressiveAssetsTotal * 0.01 +
+      conservativeAssetsTotal * 0.015;
 
     // 3. 計算償還負債能力
     const debtRepaymentCapacity = bankRecognizedMonthlyIncome * 0.7;
 
-    // 4. 計算需要月收入
-    const requiredMonthlyIncome = (monthlyPaymentAfterGracePeriod + totalExistingLoanPayment) / 0.7;
+    const availableDebtCapacityBase =
+      debtRepaymentCapacity - totalExistingLoanPayment;
 
-    // 5. 計算剩餘償還負債能力
-    const remainingDebtRepaymentCapacity = debtRepaymentCapacity - monthlyPaymentAfterGracePeriod - totalExistingLoanPayment;
+    const buildScenario = (monthlyPayment: number): ScenarioResult => {
+      const requiredMonthlyIncome =
+        (monthlyPayment + totalExistingLoanPayment) / 0.7;
+      const requiredAdditionalMonthlyIncome =
+        requiredMonthlyIncome - bankRecognizedMonthlyIncome;
+      const debtMargin = availableDebtCapacityBase - monthlyPayment;
+      const canLoan = requiredAdditionalMonthlyIncome <= 0; // 等價於 debtMargin >= 0
 
-    // 6. 計算需補足月收入
-    const requiredAdditionalMonthlyIncome = requiredMonthlyIncome - bankRecognizedMonthlyIncome;
-
-    // 7. 判斷是否能貸款成功
-    const canLoan = requiredAdditionalMonthlyIncome <= 0;
+      return {
+        monthlyPayment: Math.round(monthlyPayment),
+        availableDebtCapacity: Math.round(availableDebtCapacityBase),
+        debtMargin: Math.round(debtMargin),
+        requiredMonthlyIncome: Math.round(requiredMonthlyIncome),
+        requiredAdditionalMonthlyIncome: Math.round(
+          requiredAdditionalMonthlyIncome
+        ),
+        canLoan,
+      };
+    };
 
     setCalculateResult({
-      requiredMonthlyIncome: Math.round(requiredMonthlyIncome),
+      gracePeriodMonthlyPayment: Math.round(gracePeriodMonthlyPayment),
+      monthlyPaymentAfterGracePeriod: Math.round(
+        monthlyPaymentAfterGracePeriod
+      ),
+      totalExistingLoanPayment: Math.round(totalExistingLoanPayment),
       bankRecognizedMonthlyIncome: Math.round(bankRecognizedMonthlyIncome),
       debtRepaymentCapacity: Math.round(debtRepaymentCapacity),
-      monthlyPaymentAfterGracePeriod: Math.round(monthlyPaymentAfterGracePeriod),
-      totalExistingLoanPayment: Math.round(totalExistingLoanPayment),
-      remainingDebtRepaymentCapacity: Math.round(remainingDebtRepaymentCapacity),
-      requiredAdditionalMonthlyIncome: Math.round(requiredAdditionalMonthlyIncome),
-      canLoan,
+      scenarios: {
+        after: buildScenario(monthlyPaymentAfterGracePeriod),
+        grace: buildScenario(
+          gracePeriodYears > 0
+            ? gracePeriodMonthlyPayment
+            : monthlyPaymentAfterGracePeriod
+        ),
+      },
     });
   };
 
   const formatNumber = (value: number): string => {
     return new Intl.NumberFormat('zh-TW').format(value);
+  };
+
+  const formatMoneyText = (value: number): string => {
+    return `NT$ ${formatNumber(value)}`;
   };
 
   // 添加積極資產項目 - 顯示輸入框
@@ -189,13 +276,16 @@ export function MortgageAffordabilityCalculator() {
 
   // 確認新增積極資產項目
   const confirmAggressiveAsset = () => {
-    if (newAggressiveAsset && newAggressiveAsset.label && newAggressiveAsset.value) {
+    if (newAggressiveAsset?.label && newAggressiveAsset?.value) {
       const newId = Date.now().toString();
-      setAdditionalAggressiveAssets([...additionalAggressiveAssets, {
-        id: newId,
-        label: newAggressiveAsset.label,
-        value: newAggressiveAsset.value
-      }]);
+      setAdditionalAggressiveAssets([
+        ...additionalAggressiveAssets,
+        {
+          id: newId,
+          label: newAggressiveAsset.label,
+          value: newAggressiveAsset.value,
+        },
+      ]);
       setNewAggressiveAsset(null);
     }
   };
@@ -207,14 +297,18 @@ export function MortgageAffordabilityCalculator() {
 
   // 刪除積極資產項目（只能刪除新增的）
   const removeAggressiveAsset = (id: string) => {
-    setAdditionalAggressiveAssets(additionalAggressiveAssets.filter(item => item.id !== id));
+    setAdditionalAggressiveAssets(
+      additionalAggressiveAssets.filter((item) => item.id !== id)
+    );
   };
 
   // 更新積極資產項目數值
   const updateAggressiveAssetValue = (id: string, value: string) => {
-    setAdditionalAggressiveAssets(additionalAggressiveAssets.map(item =>
-      item.id === id ? { ...item, value } : item
-    ));
+    setAdditionalAggressiveAssets(
+      additionalAggressiveAssets.map((item) =>
+        item.id === id ? { ...item, value } : item
+      )
+    );
   };
 
   // 添加保守資產項目 - 顯示輸入框
@@ -224,13 +318,16 @@ export function MortgageAffordabilityCalculator() {
 
   // 確認新增保守資產項目
   const confirmConservativeAsset = () => {
-    if (newConservativeAsset && newConservativeAsset.label && newConservativeAsset.value) {
+    if (newConservativeAsset?.label && newConservativeAsset?.value) {
       const newId = Date.now().toString();
-      setAdditionalConservativeAssets([...additionalConservativeAssets, {
-        id: newId,
-        label: newConservativeAsset.label,
-        value: newConservativeAsset.value
-      }]);
+      setAdditionalConservativeAssets([
+        ...additionalConservativeAssets,
+        {
+          id: newId,
+          label: newConservativeAsset.label,
+          value: newConservativeAsset.value,
+        },
+      ]);
       setNewConservativeAsset(null);
     }
   };
@@ -242,14 +339,18 @@ export function MortgageAffordabilityCalculator() {
 
   // 刪除保守資產項目（只能刪除新增的）
   const removeConservativeAsset = (id: string) => {
-    setAdditionalConservativeAssets(additionalConservativeAssets.filter(item => item.id !== id));
+    setAdditionalConservativeAssets(
+      additionalConservativeAssets.filter((item) => item.id !== id)
+    );
   };
 
   // 更新保守資產項目數值
   const updateConservativeAssetValue = (id: string, value: string) => {
-    setAdditionalConservativeAssets(additionalConservativeAssets.map(item =>
-      item.id === id ? { ...item, value } : item
-    ));
+    setAdditionalConservativeAssets(
+      additionalConservativeAssets.map((item) =>
+        item.id === id ? { ...item, value } : item
+      )
+    );
   };
 
   // 添加名下貸款月付金項目 - 顯示輸入框
@@ -259,13 +360,16 @@ export function MortgageAffordabilityCalculator() {
 
   // 確認新增名下貸款月付金項目
   const confirmExistingLoan = () => {
-    if (newExistingLoan && newExistingLoan.label && newExistingLoan.value) {
+    if (newExistingLoan?.label && newExistingLoan?.value) {
       const newId = Date.now().toString();
-      setAdditionalExistingLoans([...additionalExistingLoans, {
-        id: newId,
-        label: newExistingLoan.label,
-        value: newExistingLoan.value
-      }]);
+      setAdditionalExistingLoans([
+        ...additionalExistingLoans,
+        {
+          id: newId,
+          label: newExistingLoan.label,
+          value: newExistingLoan.value,
+        },
+      ]);
       setNewExistingLoan(null);
     }
   };
@@ -277,14 +381,18 @@ export function MortgageAffordabilityCalculator() {
 
   // 刪除名下貸款月付金項目（只能刪除新增的）
   const removeExistingLoan = (id: string) => {
-    setAdditionalExistingLoans(additionalExistingLoans.filter(item => item.id !== id));
+    setAdditionalExistingLoans(
+      additionalExistingLoans.filter((item) => item.id !== id)
+    );
   };
 
   // 更新名下貸款月付金項目數值
   const updateExistingLoanValue = (id: string, value: string) => {
-    setAdditionalExistingLoans(additionalExistingLoans.map(item =>
-      item.id === id ? { ...item, value } : item
-    ));
+    setAdditionalExistingLoans(
+      additionalExistingLoans.map((item) =>
+        item.id === id ? { ...item, value } : item
+      )
+    );
   };
 
   return (
@@ -297,7 +405,12 @@ export function MortgageAffordabilityCalculator() {
               <h3 className="text-base font-semibold">基本貸款資訊</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="annualRate" className="text-sm justify-center w-full">年利率 (%)</Label>
+                  <Label
+                    htmlFor="annualRate"
+                    className="text-sm justify-center w-full"
+                  >
+                    年利率 (%)
+                  </Label>
                   <FormattedNumberInput
                     id="annualRate"
                     value={annualRate}
@@ -309,7 +422,12 @@ export function MortgageAffordabilityCalculator() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="loanTerm" className="text-sm justify-center w-full">貸款年期</Label>
+                  <Label
+                    htmlFor="loanTerm"
+                    className="text-sm justify-center w-full"
+                  >
+                    貸款年期
+                  </Label>
                   <FormattedNumberInput
                     id="loanTerm"
                     value={loanTerm}
@@ -321,7 +439,12 @@ export function MortgageAffordabilityCalculator() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="loanAmount" className="text-sm justify-center w-full">貸款金額</Label>
+                  <Label
+                    htmlFor="loanAmount"
+                    className="text-sm justify-center w-full"
+                  >
+                    貸款金額
+                  </Label>
                   <FormattedNumberInput
                     id="loanAmount"
                     value={loanAmount}
@@ -333,7 +456,12 @@ export function MortgageAffordabilityCalculator() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="gracePeriod" className="text-sm justify-center w-full">寬限期 (年)</Label>
+                  <Label
+                    htmlFor="gracePeriod"
+                    className="text-sm justify-center w-full"
+                  >
+                    寬限期 (年)
+                  </Label>
                   <FormattedNumberInput
                     id="gracePeriod"
                     value={gracePeriod}
@@ -352,7 +480,12 @@ export function MortgageAffordabilityCalculator() {
               <h3 className="text-base font-semibold">收入資訊</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="monthlyIncome" className="text-sm justify-center w-full">工作收入 (月)</Label>
+                  <Label
+                    htmlFor="monthlyIncome"
+                    className="text-sm justify-center w-full"
+                  >
+                    工作收入 (月)
+                  </Label>
                   <FormattedNumberInput
                     id="monthlyIncome"
                     value={monthlyIncome}
@@ -383,7 +516,12 @@ export function MortgageAffordabilityCalculator() {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="stocks" className="text-sm justify-center w-full">股票</Label>
+                  <Label
+                    htmlFor="stocks"
+                    className="text-sm justify-center w-full"
+                  >
+                    股票
+                  </Label>
                   <FormattedNumberInput
                     id="stocks"
                     value={stocks}
@@ -395,7 +533,12 @@ export function MortgageAffordabilityCalculator() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="funds" className="text-sm justify-center w-full">基金</Label>
+                  <Label
+                    htmlFor="funds"
+                    className="text-sm justify-center w-full"
+                  >
+                    基金
+                  </Label>
                   <FormattedNumberInput
                     id="funds"
                     value={funds}
@@ -407,7 +550,12 @@ export function MortgageAffordabilityCalculator() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="investmentInsurance" className="text-sm justify-center w-full">投資型保單</Label>
+                  <Label
+                    htmlFor="investmentInsurance"
+                    className="text-sm justify-center w-full"
+                  >
+                    投資型保單
+                  </Label>
                   <FormattedNumberInput
                     id="investmentInsurance"
                     value={investmentInsurance}
@@ -419,7 +567,12 @@ export function MortgageAffordabilityCalculator() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="financialBonds" className="text-sm justify-center w-full">金融債券</Label>
+                  <Label
+                    htmlFor="financialBonds"
+                    className="text-sm justify-center w-full"
+                  >
+                    金融債券
+                  </Label>
                   <FormattedNumberInput
                     id="financialBonds"
                     value={financialBonds}
@@ -450,7 +603,9 @@ export function MortgageAffordabilityCalculator() {
                       </Label>
                       <FormattedNumberInput
                         value={item.value}
-                        onValueChange={(v) => updateAggressiveAssetValue(item.id, v)}
+                        onValueChange={(v) =>
+                          updateAggressiveAssetValue(item.id, v)
+                        }
                         onWheel={(e) => e.currentTarget.blur()}
                         min="0"
                         step="1000"
@@ -466,20 +621,34 @@ export function MortgageAffordabilityCalculator() {
                   <div className="inline-block p-3 border rounded-md bg-muted/30">
                     <div className="flex items-end gap-3">
                       <div className="space-y-1 w-[200px]">
-                        <Label className="text-sm justify-center w-full">項目名稱</Label>
+                        <Label className="text-sm justify-center w-full">
+                          項目名稱
+                        </Label>
                         <Input
                           type="text"
                           value={newAggressiveAsset.label}
-                          onChange={(e) => setNewAggressiveAsset({ ...newAggressiveAsset, label: e.target.value })}
+                          onChange={(e) =>
+                            setNewAggressiveAsset({
+                              ...newAggressiveAsset,
+                              label: e.target.value,
+                            })
+                          }
                           placeholder="例如：其他積極資產"
                           className="h-9"
                         />
                       </div>
                       <div className="space-y-1 w-[200px]">
-                        <Label className="text-sm justify-center w-full">金額</Label>
+                        <Label className="text-sm justify-center w-full">
+                          金額
+                        </Label>
                         <FormattedNumberInput
                           value={newAggressiveAsset.value}
-                          onValueChange={(v) => setNewAggressiveAsset({ ...newAggressiveAsset, value: v })}
+                          onValueChange={(v) =>
+                            setNewAggressiveAsset({
+                              ...newAggressiveAsset,
+                              value: v,
+                            })
+                          }
                           onWheel={(e) => e.currentTarget.blur()}
                           min="0"
                           step="1000"
@@ -529,7 +698,12 @@ export function MortgageAffordabilityCalculator() {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="savingsInsurance" className="text-sm justify-center w-full">儲蓄險保單價值</Label>
+                  <Label
+                    htmlFor="savingsInsurance"
+                    className="text-sm justify-center w-full"
+                  >
+                    儲蓄險保單價值
+                  </Label>
                   <FormattedNumberInput
                     id="savingsInsurance"
                     value={savingsInsurance}
@@ -541,7 +715,12 @@ export function MortgageAffordabilityCalculator() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="threeMonthDeposit" className="text-sm justify-center w-full">滿三個月定存</Label>
+                  <Label
+                    htmlFor="threeMonthDeposit"
+                    className="text-sm justify-center w-full"
+                  >
+                    滿三個月定存
+                  </Label>
                   <FormattedNumberInput
                     id="threeMonthDeposit"
                     value={threeMonthDeposit}
@@ -553,7 +732,12 @@ export function MortgageAffordabilityCalculator() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="otherConservativeAssets" className="text-sm justify-center w-full">其他保守資產</Label>
+                  <Label
+                    htmlFor="otherConservativeAssets"
+                    className="text-sm justify-center w-full"
+                  >
+                    其他保守資產
+                  </Label>
                   <FormattedNumberInput
                     id="otherConservativeAssets"
                     value={otherConservativeAssets}
@@ -584,7 +768,9 @@ export function MortgageAffordabilityCalculator() {
                       </Label>
                       <FormattedNumberInput
                         value={item.value}
-                        onValueChange={(v) => updateConservativeAssetValue(item.id, v)}
+                        onValueChange={(v) =>
+                          updateConservativeAssetValue(item.id, v)
+                        }
                         onWheel={(e) => e.currentTarget.blur()}
                         min="0"
                         step="1000"
@@ -600,20 +786,34 @@ export function MortgageAffordabilityCalculator() {
                   <div className="inline-block p-3 border rounded-md bg-muted/30">
                     <div className="flex items-end gap-3">
                       <div className="space-y-1 w-[200px]">
-                        <Label className="text-sm justify-center w-full">項目名稱</Label>
+                        <Label className="text-sm justify-center w-full">
+                          項目名稱
+                        </Label>
                         <Input
                           type="text"
                           value={newConservativeAsset.label}
-                          onChange={(e) => setNewConservativeAsset({ ...newConservativeAsset, label: e.target.value })}
+                          onChange={(e) =>
+                            setNewConservativeAsset({
+                              ...newConservativeAsset,
+                              label: e.target.value,
+                            })
+                          }
                           placeholder="例如：其他保守資產"
                           className="h-9"
                         />
                       </div>
                       <div className="space-y-1 w-[200px]">
-                        <Label className="text-sm justify-center w-full">金額</Label>
+                        <Label className="text-sm justify-center w-full">
+                          金額
+                        </Label>
                         <FormattedNumberInput
                           value={newConservativeAsset.value}
-                          onValueChange={(v) => setNewConservativeAsset({ ...newConservativeAsset, value: v })}
+                          onValueChange={(v) =>
+                            setNewConservativeAsset({
+                              ...newConservativeAsset,
+                              value: v,
+                            })
+                          }
                           onWheel={(e) => e.currentTarget.blur()}
                           min="0"
                           step="1000"
@@ -663,7 +863,12 @@ export function MortgageAffordabilityCalculator() {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="creditLoan" className="text-sm justify-center w-full">信貸</Label>
+                  <Label
+                    htmlFor="creditLoan"
+                    className="text-sm justify-center w-full"
+                  >
+                    信貸
+                  </Label>
                   <FormattedNumberInput
                     id="creditLoan"
                     value={creditLoan}
@@ -675,7 +880,12 @@ export function MortgageAffordabilityCalculator() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="mortgageLoan" className="text-sm justify-center w-full">房貸</Label>
+                  <Label
+                    htmlFor="mortgageLoan"
+                    className="text-sm justify-center w-full"
+                  >
+                    房貸
+                  </Label>
                   <FormattedNumberInput
                     id="mortgageLoan"
                     value={mortgageLoan}
@@ -687,7 +897,12 @@ export function MortgageAffordabilityCalculator() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="carLoan" className="text-sm justify-center w-full">車貸</Label>
+                  <Label
+                    htmlFor="carLoan"
+                    className="text-sm justify-center w-full"
+                  >
+                    車貸
+                  </Label>
                   <FormattedNumberInput
                     id="carLoan"
                     value={carLoan}
@@ -699,7 +914,12 @@ export function MortgageAffordabilityCalculator() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="creditCardInstallment" className="text-sm justify-center w-full">信用卡分期</Label>
+                  <Label
+                    htmlFor="creditCardInstallment"
+                    className="text-sm justify-center w-full"
+                  >
+                    信用卡分期
+                  </Label>
                   <FormattedNumberInput
                     id="creditCardInstallment"
                     value={creditCardInstallment}
@@ -730,7 +950,9 @@ export function MortgageAffordabilityCalculator() {
                       </Label>
                       <FormattedNumberInput
                         value={item.value}
-                        onValueChange={(v) => updateExistingLoanValue(item.id, v)}
+                        onValueChange={(v) =>
+                          updateExistingLoanValue(item.id, v)
+                        }
                         onWheel={(e) => e.currentTarget.blur()}
                         min="0"
                         step="100"
@@ -746,20 +968,31 @@ export function MortgageAffordabilityCalculator() {
                   <div className="inline-block p-3 border rounded-md bg-muted/30">
                     <div className="flex items-end gap-3">
                       <div className="space-y-1 w-[200px]">
-                        <Label className="text-sm justify-center w-full">項目名稱</Label>
+                        <Label className="text-sm justify-center w-full">
+                          項目名稱
+                        </Label>
                         <Input
                           type="text"
                           value={newExistingLoan.label}
-                          onChange={(e) => setNewExistingLoan({ ...newExistingLoan, label: e.target.value })}
+                          onChange={(e) =>
+                            setNewExistingLoan({
+                              ...newExistingLoan,
+                              label: e.target.value,
+                            })
+                          }
                           placeholder="例如：其他貸款"
                           className="h-9"
                         />
                       </div>
                       <div className="space-y-1 w-[200px]">
-                        <Label className="text-sm justify-center w-full">月付金</Label>
+                        <Label className="text-sm justify-center w-full">
+                          月付金
+                        </Label>
                         <FormattedNumberInput
                           value={newExistingLoan.value}
-                          onValueChange={(v) => setNewExistingLoan({ ...newExistingLoan, value: v })}
+                          onValueChange={(v) =>
+                            setNewExistingLoan({ ...newExistingLoan, value: v })
+                          }
                           onWheel={(e) => e.currentTarget.blur()}
                           min="0"
                           step="100"
@@ -794,7 +1027,10 @@ export function MortgageAffordabilityCalculator() {
 
             {/* 計算按鈕 */}
             <div className="flex items-center gap-4">
-              <Button onClick={calculate} className="bg-primary text-primary-foreground">
+              <Button
+                onClick={calculate}
+                className="bg-primary text-primary-foreground"
+              >
                 計算
               </Button>
               {errorMessage && (
@@ -809,74 +1045,214 @@ export function MortgageAffordabilityCalculator() {
       {calculateResult && (
         <Card>
           <CardContent className="pt-6 pb-8">
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">計算結果</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>需要月收入</Label>
-                  <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.requiredMonthlyIncome)} />
+            {(() => {
+              const graceYears = Number.parseFloat(gracePeriod) || 0;
+              const hasGrace = graceYears > 0;
+              // 核貸判斷「一律以寬限期後」為準；寬限期間僅用於查看與比較
+              const decisionScenario = calculateResult.scenarios.after;
+
+              const decisionIncomeGap =
+                decisionScenario.requiredAdditionalMonthlyIncome > 0
+                  ? decisionScenario.requiredAdditionalMonthlyIncome
+                  : 0;
+              const isIncomeInsufficient = decisionIncomeGap > 0;
+
+              const incomeTarget = decisionScenario.requiredMonthlyIncome;
+              const incomeActual = calculateResult.bankRecognizedMonthlyIncome;
+              const incomeRatio =
+                incomeTarget > 0 ? Math.min(incomeActual / incomeTarget, 1) : 0;
+
+              return (
+                <div className="space-y-5">
+                  {/* 結果狀態 Banner（置頂，全寬） */}
+                  <div
+                    className={`rounded-lg border p-4 md:p-5 ${
+                      decisionScenario.canLoan
+                        ? 'bg-green-50 border-green-200'
+                        : 'bg-red-50 border-red-200'
+                    }`}
+                  >
+                    <div className="flex flex-col gap-4">
+                      {/* 結果 */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-lg font-semibold">結果</div>
+                        <span
+                          className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${
+                            decisionScenario.canLoan
+                              ? 'bg-green-100 text-green-900'
+                              : 'bg-red-100 text-red-900'
+                          }`}
+                        >
+                          {decisionScenario.canLoan ? '可以貸款' : '無法貸款'}
+                        </span>
+                      </div>
+
+                      {/* 首屏重點數據（全寬 KPI） */}
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        <div className="rounded-lg border bg-background/70 p-4">
+                          <div className="text-xs text-muted-foreground">
+                            需補足月收
+                          </div>
+                          {decisionIncomeGap > 0 ? (
+                            <div className="mt-1 text-2xl font-semibold tabular-nums text-destructive">
+                              {formatMoneyText(decisionIncomeGap)}
+                            </div>
+                          ) : (
+                            <div className="mt-1 text-2xl font-semibold tabular-nums text-muted-foreground">
+                              不需補足
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="rounded-lg border bg-background/70 p-4">
+                          <div className="text-xs text-muted-foreground">
+                            寬限期間月還款
+                          </div>
+                          <div className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
+                            {hasGrace
+                              ? formatMoneyText(
+                                  calculateResult.gracePeriodMonthlyPayment
+                                )
+                              : '無寬限'}
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg border bg-background/70 p-4">
+                          <div className="text-xs text-muted-foreground">
+                            寬限期後月還款
+                          </div>
+                          <div className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
+                            {formatMoneyText(
+                              calculateResult.monthlyPaymentAfterGracePeriod
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>銀行認列月收入</Label>
-                  <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.bankRecognizedMonthlyIncome)} />
+
+                  {/* 次要對比：收入達標狀況 */}
+                  <div className="rounded-lg border bg-card p-4 space-y-3">
+                    <div className="text-base font-semibold">收入達標對比</div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">需要月收入</span>
+                      <span className="font-medium tabular-nums">
+                        {formatMoneyText(incomeTarget)}
+                      </span>
+                    </div>
+                    <div className="relative h-3 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="absolute inset-y-0 left-0 bg-muted"
+                        style={{ width: '100%' }}
+                      />
+                      <div
+                        className={`absolute inset-y-0 left-0 ${
+                          isIncomeInsufficient
+                            ? 'bg-destructive'
+                            : 'bg-green-600'
+                        }`}
+                        style={{ width: `${Math.round(incomeRatio * 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        銀行認列月收入
+                      </span>
+                      <span className="font-medium tabular-nums">
+                        {formatMoneyText(incomeActual)}
+                      </span>
+                    </div>
+                    <div className="text-sm">
+                      {decisionIncomeGap > 0 ? (
+                        <span className="text-destructive font-medium">
+                          差距：需補足 {formatMoneyText(decisionIncomeGap)}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          差距：不需補足
+                        </span>
+                      )}
+                    </div>
                   </div>
+
+                  {/* 明細（折疊） */}
+                  <Accordion type="single" collapsible defaultValue="details">
+                    <AccordionItem value="details">
+                      <AccordionTrigger>明細</AccordionTrigger>
+                      <AccordionContent>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                          <div className="rounded-lg border bg-muted/20 p-4">
+                            <div className="text-sm text-muted-foreground">
+                              需要月收入（核貸以寬限期後為準）
+                            </div>
+                            <div className="mt-1 text-lg font-semibold tabular-nums">
+                              {formatMoneyText(
+                                decisionScenario.requiredMonthlyIncome
+                              )}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border bg-muted/20 p-4">
+                            <div className="text-sm text-muted-foreground">
+                              銀行認列月收入
+                            </div>
+                            <div className="mt-1 text-lg font-semibold tabular-nums">
+                              {formatMoneyText(
+                                calculateResult.bankRecognizedMonthlyIncome
+                              )}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border bg-muted/20 p-4">
+                            <div className="text-sm text-muted-foreground">
+                              償還負債能力
+                            </div>
+                            <div className="mt-1 text-lg font-semibold tabular-nums">
+                              {formatMoneyText(
+                                calculateResult.debtRepaymentCapacity
+                              )}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border bg-muted/20 p-4">
+                            <div className="text-sm text-muted-foreground">
+                              名下貸款月付金
+                            </div>
+                            <div className="mt-1 text-lg font-semibold tabular-nums">
+                              {formatMoneyText(
+                                calculateResult.totalExistingLoanPayment
+                              )}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border bg-muted/20 p-4">
+                            <div className="text-sm text-muted-foreground">
+                              寬限期間月付（只繳利息）
+                            </div>
+                            <div className="mt-1 text-lg font-semibold tabular-nums">
+                              {hasGrace
+                                ? formatMoneyText(
+                                    calculateResult.gracePeriodMonthlyPayment
+                                  )
+                                : '無寬限'}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border bg-muted/20 p-4">
+                            <div className="text-sm text-muted-foreground">
+                              寬限期後月付（等額本息）
+                            </div>
+                            <div className="mt-1 text-lg font-semibold tabular-nums">
+                              {formatMoneyText(
+                                calculateResult.monthlyPaymentAfterGracePeriod
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </div>
-                <div className="space-y-2">
-                  <Label>償還負債能力</Label>
-                  <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.debtRepaymentCapacity)} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>寬限期後每月還款金額</Label>
-                  <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.monthlyPaymentAfterGracePeriod)} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>名下貸款月付金</Label>
-                  <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.totalExistingLoanPayment)} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>剩餘償還負債能力</Label>
-                  <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.remainingDebtRepaymentCapacity)} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>需補足月收入</Label>
-                  <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    {calculateResult.requiredAdditionalMonthlyIncome <= 0
-                      ? '不需補足'
-                      : (
-                          <span>
-                            NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.requiredAdditionalMonthlyIncome)} />
-                          </span>
-                        )
-                    }
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>是否能貸款成功</Label>
-                  <div className={`h-10 px-3 py-2 rounded-md flex items-center text-lg font-semibold ${
-                    calculateResult.canLoan
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {calculateResult.canLoan ? '可以' : '不可以'}
-                  </div>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
           </CardContent>
         </Card>
       )}
     </div>
   );
 }
-
