@@ -16,7 +16,7 @@ export async function DELETE(
     const userId = await getCurrentUserId(req);
 
     // 將 UUID 格式的 userId 轉換回整數 ID
-    const numericId = parseInt(userId.slice(-12), 10);
+    const numericId = Number.parseInt(userId.slice(-12), 10);
 
     const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
       numericId,
@@ -37,10 +37,7 @@ export async function DELETE(
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        { error: '缺少檔案 ID' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '缺少檔案 ID' }, { status: 400 });
     }
 
     // 先查詢檔案資訊，獲取 cloud_key
@@ -50,10 +47,7 @@ export async function DELETE(
     );
 
     if (fileResult.rowCount === 0) {
-      return NextResponse.json(
-        { error: '檔案不存在' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: '檔案不存在' }, { status: 404 });
     }
 
     const cloudKey = fileResult.rows[0].cloud_key;
@@ -76,21 +70,15 @@ export async function DELETE(
     );
 
     if (result.rowCount === 0) {
-      return NextResponse.json(
-        { error: '檔案不存在' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: '檔案不存在' }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      message: '檔案已成功刪除'
+      message: '檔案已成功刪除',
     });
   } catch (error) {
     console.error('Error deleting sales support document:', error);
-    return NextResponse.json(
-      { error: '刪除失敗' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '刪除失敗' }, { status: 500 });
   }
 }

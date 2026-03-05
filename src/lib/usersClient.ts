@@ -47,7 +47,14 @@ export async function createUser({
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ account, display_name, role, status, password, avatar_url }),
+    body: JSON.stringify({
+      account,
+      display_name,
+      role,
+      status,
+      password,
+      avatar_url,
+    }),
   });
   return response.json();
 }
@@ -70,12 +77,12 @@ export async function updateUser(
     },
     body: JSON.stringify(data),
   });
-  
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || '更新失敗');
   }
-  
+
   return response.json();
 }
 

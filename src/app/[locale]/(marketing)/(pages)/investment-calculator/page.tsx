@@ -23,4 +23,3 @@ export async function generateMetadata({
 export default async function InvestmentCalculatorPage() {
   return <InvestmentCalculatorClient />;
 }
-

@@ -89,12 +89,12 @@ export function ChangePasswordDialog({
     setIsLoading(true);
 
     try {
-      await updateUser(userId, { 
+      await updateUser(userId, {
         password: newPassword,
-        oldPassword: oldPassword 
+        oldPassword: oldPassword,
       });
       toast.success('密碼修改成功');
-      
+
       // 重置表單
       setOldPassword('');
       setNewPassword('');
@@ -104,7 +104,7 @@ export function ChangePasswordDialog({
       setShowOldPassword(false);
       setShowNewPassword(false);
       setShowConfirmPassword(false);
-      
+
       // 關閉對話框
       onOpenChange(false);
     } catch (error: any) {
@@ -132,7 +132,7 @@ export function ChangePasswordDialog({
     setShowOldPassword(false);
     setShowNewPassword(false);
     setShowConfirmPassword(false);
-    
+
     // 關閉對話框
     onOpenChange(false);
   };
@@ -236,11 +236,7 @@ export function ChangePasswordDialog({
           >
             取消
           </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isLoading}
-          >
+          <Button type="button" onClick={handleSubmit} disabled={isLoading}>
             {isLoading ? '修改中...' : '確定修改'}
           </Button>
         </DialogFooter>
@@ -248,4 +244,3 @@ export function ChangePasswordDialog({
     </Dialog>
   );
 }
-

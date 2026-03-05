@@ -28,10 +28,16 @@ export const LoginWrapper = ({
   const router = useLocaleRouter();
   const [mounted, setMounted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [forceChangeMode, setForceChangeMode] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleModalOpenChange = (open: boolean) => {
+    if (!open && forceChangeMode) return;
+    setIsModalOpen(open);
+  };
 
   const handleLogin = () => {
     // append callbackUrl as a query parameter if provided
@@ -50,13 +56,17 @@ export const LoginWrapper = ({
 
   if (mode === 'modal') {
     return (
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isModalOpen} onOpenChange={handleModalOpenChange}>
         <DialogTrigger asChild={asChild}>{children}</DialogTrigger>
         <DialogContent className="sm:max-w-[400px] p-0 bg-transparent border-none shadow-none">
           <DialogHeader className="hidden">
             <DialogTitle />
           </DialogHeader>
-          <LoginForm callbackUrl={callbackUrl} className="border-none" />
+          <LoginForm
+            callbackUrl={callbackUrl}
+            className="border-none"
+            setForceChangeMode={setForceChangeMode}
+          />
         </DialogContent>
       </Dialog>
     );

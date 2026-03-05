@@ -2,8 +2,11 @@ export const runtime = 'nodejs';
 
 import { getCurrentUserId } from '@/lib/auth';
 import { query } from '@/lib/db';
+import type {
+  SalesSupportQueryParams,
+  SalesSupportResponse,
+} from '@/types/sales-support';
 import { NextResponse } from 'next/server';
-import type { SalesSupportQueryParams, SalesSupportResponse } from '@/types/sales-support';
 
 export async function GET(req: Request) {
   try {
@@ -48,7 +51,10 @@ export async function GET(req: Request) {
       paramIndex++;
     }
 
-    const whereSQL = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    const whereSQL =
+      whereConditions.length > 0
+        ? `WHERE ${whereConditions.join(' AND ')}`
+        : '';
     const offset = (page - 1) * pageSize;
 
     // 查詢總數
@@ -78,7 +84,7 @@ export async function GET(req: Request) {
       [...params, pageSize, offset]
     );
 
-    const items = itemsRes.rows.map(row => ({
+    const items = itemsRes.rows.map((row) => ({
       id: row.id,
       category: row.category,
       item: row.item,
@@ -101,9 +107,6 @@ export async function GET(req: Request) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('Error fetching sales support documents:', error);
-    return NextResponse.json(
-      { error: '載入失敗' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '載入失敗' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
+import { getUserAvatarUrl } from '@/lib/avatar-cleanup';
 import { getStorageProvider } from '@/storage';
 import { StorageError } from '@/storage/types';
-import { getUserAvatarUrl } from '@/lib/avatar-cleanup';
 import { type NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
 
@@ -15,11 +15,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 400 }
+      );
     }
 
     // 獲取用戶現有的頭像 URL，用於後續清理
-    const currentAvatarUrl = await getUserAvatarUrl(parseInt(userId));
+    const currentAvatarUrl = await getUserAvatarUrl(Number.parseInt(userId));
 
     // 驗證檔案類型（只允許 jpg 和 png）
     const allowedTypes = ['image/jpeg', 'image/png'];
@@ -51,17 +54,14 @@ export async function POST(request: NextRequest) {
     const storageProvider = getStorageProvider();
 
     // 先上傳原始檔案
-    const originalResult = await (storageProvider as any).uploadFileWithCustomName(
-      buffer,
-      filename,
-      file.type,
-      'avatars'
-    );
+    const originalResult = await (
+      storageProvider as any
+    ).uploadFileWithCustomName(buffer, filename, file.type, 'avatars');
 
     // 生成多個尺寸的縮圖
     const sizes = [
       { size: 50, suffix: '_50' },
-      { size: 200, suffix: '_200' }
+      { size: 200, suffix: '_200' },
     ];
 
     const uploadResults = [];
@@ -71,13 +71,16 @@ export async function POST(request: NextRequest) {
       const processedBuffer = await sharp(buffer)
         .resize(size, size, {
           fit: 'cover',
-          position: 'center'
+          position: 'center',
         })
         .jpeg({ quality: 85 })
         .toBuffer();
 
       // 生成檔案名稱
-      const processedFilename = filename.replace(/\.(jpg|png)$/, `${suffix}.jpg`);
+      const processedFilename = filename.replace(
+        /\.(jpg|png)$/,
+        `${suffix}.jpg`
+      );
 
       // 上傳到 Cloudflare R2
       const result = await (storageProvider as any).uploadFileWithCustomName(
@@ -90,13 +93,13 @@ export async function POST(request: NextRequest) {
       uploadResults.push({
         size,
         url: result.url,
-        key: result.key
+        key: result.key,
       });
     }
 
     console.log('Avatar and thumbnails uploaded successfully:', {
       original: originalResult,
-      thumbnails: uploadResults
+      thumbnails: uploadResults,
     });
 
     // 如果用戶有舊的頭像，清理舊檔案
@@ -104,7 +107,7 @@ export async function POST(request: NextRequest) {
       console.log('檢測到新頭像上傳，清理舊檔案:', currentAvatarUrl);
       // 異步清理，不等待完成
       const { cleanupUserAvatar } = await import('@/lib/avatar-cleanup');
-      cleanupUserAvatar(currentAvatarUrl).catch(error => {
+      cleanupUserAvatar(currentAvatarUrl).catch((error) => {
         console.error('清理舊頭像檔案失敗:', error);
       });
     }
@@ -114,9 +117,8 @@ export async function POST(request: NextRequest) {
       success: true,
       avatarUrl: originalResult.url,
       key: originalResult.key,
-      thumbnails: uploadResults
+      thumbnails: uploadResults,
     });
-
   } catch (error) {
     console.error('Error uploading avatar:', error);
 
@@ -124,10 +126,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '上傳失敗' }, { status: 500 });
     }
 
-    return NextResponse.json(
-      { error: '上傳失敗' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '上傳失敗' }, { status: 500 });
   }
 }
 

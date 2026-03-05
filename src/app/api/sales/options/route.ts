@@ -1,5 +1,5 @@
 import { query } from '@/lib/db';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
     let whereSQL = '';
     const params: any[] = [];
-    let paramIndex = 1;
+    const paramIndex = 1;
 
     if (q?.trim()) {
       whereSQL = `WHERE account ILIKE $${paramIndex} OR display_name ILIKE $${paramIndex}`;

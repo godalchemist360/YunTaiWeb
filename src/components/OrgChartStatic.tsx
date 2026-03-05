@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import { Search } from 'lucide-react';
 import { SalesUserSelect } from '@/components/ui/sales-user-select';
 import { usePermissions } from '@/hooks/use-permissions';
+import { Search } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 // Dynamic import for ECharts to avoid SSR issues
 const ReactECharts = dynamic(() => import('echarts-for-react'), {
@@ -66,23 +67,22 @@ type MemberData = {
   introducer?: string | null;
 };
 
-
 /**
  * Rank colors configuration
  */
 export const RANK_COLORS = {
-  '首席策略顧問': { fill: '#B9F2FF', stroke: '#7ECFE3' },
-  '高階資產顧問': { fill: '#FFD700', stroke: '#B8860B' },
-  '資產服務經理': { fill: '#C0C0C0', stroke: '#A0A0A0' },
-  '客戶協作專員': { fill: '#CD7F32', stroke: '#99501D' },
+  首席策略顧問: { fill: '#B9F2FF', stroke: '#7ECFE3' },
+  高階資產顧問: { fill: '#FFD700', stroke: '#B8860B' },
+  資產服務經理: { fill: '#C0C0C0', stroke: '#A0A0A0' },
+  客戶協作專員: { fill: '#CD7F32', stroke: '#99501D' },
 } as const;
 
 // 卡片專用的淡色配置
 export const CARD_COLORS = {
-  '首席策略顧問': { fill: '#E6F7FF', stroke: '#7ECFE3' },
-  '高階資產顧問': { fill: '#FFF4CC', stroke: '#B8860B' },
-  '資產服務經理': { fill: '#E8E8E8', stroke: '#A0A0A0' },
-  '客戶協作專員': { fill: '#E6B885', stroke: '#99501D' },
+  首席策略顧問: { fill: '#E6F7FF', stroke: '#7ECFE3' },
+  高階資產顧問: { fill: '#FFF4CC', stroke: '#B8860B' },
+  資產服務經理: { fill: '#E8E8E8', stroke: '#A0A0A0' },
+  客戶協作專員: { fill: '#E6B885', stroke: '#99501D' },
 } as const;
 
 /**
@@ -95,7 +95,7 @@ const addColorToNode = (node: TreeNode): TreeNode => {
       color: node.rank ? RANK_COLORS[node.rank].fill : '#6B7280',
       borderColor: node.rank ? RANK_COLORS[node.rank].stroke : '#4B5563',
       borderWidth: 2,
-    }
+    },
   };
 
   if (node.children) {
@@ -124,7 +124,7 @@ const memberToTreeNode = (member: MemberData): TreeNode => {
     children: [],
     avatar_url: member.avatar_url,
     display_name: member.display_name,
-    introducer: member.introducer
+    introducer: member.introducer,
   };
 };
 
@@ -157,18 +157,21 @@ const getNodeColor = (node: TreeNode): string => {
 /**
  * Generate default avatar URL using ui-avatars.com
  */
-const getDefaultAvatarUrl = (displayName: string, size: number = 50): string => {
+const getDefaultAvatarUrl = (displayName: string, size = 50): string => {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=${size}&background=random&color=fff&bold=true`;
 };
 
 /**
  * Get avatar URL with fallback to default
  */
-const getAvatarUrl = (node: TreeNode, size: number = 50): string => {
+const getAvatarUrl = (node: TreeNode, size = 50): string => {
   if (node.avatar_url) {
     // 如果有上傳的頭像，嘗試使用對應尺寸的縮圖
     // 檢查是否已經是縮圖格式
-    if (node.avatar_url.includes('_50.jpg') || node.avatar_url.includes('_200.jpg')) {
+    if (
+      node.avatar_url.includes('_50.jpg') ||
+      node.avatar_url.includes('_200.jpg')
+    ) {
       return node.avatar_url;
     }
     // 替換檔案副檔名為縮圖格式
@@ -190,59 +193,64 @@ const buildTreeOption = (root: TreeNode): any => {
       bottom: '5%',
       left: '5%',
     },
-    series: [{
-      type: 'tree',
-      data: [root],
-      symbolSize: 16,
-      symbol: 'circle',
-      roam: true,
-      initialTreeDepth: 3,
-      animationDuration: 300,
-      animationEasing: 'cubicOut',
-      orient: 'TB',                       // 上→下
-      top: '10%', left: '8%', right: '8%', bottom: '10%',
-      expandAndCollapse: false,           // 禁用內建的展開/收起功能
-      // 標籤設定
-      label: {
-        rotate: 0,
-        position: 'left',
-        verticalAlign: 'middle',
-        align: 'right',
-        fontSize: 12,
-        fontWeight: 'normal',
-        color: '#374151',
-        formatter: (params: any) => {
-          const data = params.data;
-          return `{name|${data.name}}`;
-        },
-        rich: {
-          name: {
-            fontWeight: 'bold',
-            fontSize: 12,
-            color: '#374151',
-          },
-        },
-      },
-      leaves: {
+    series: [
+      {
+        type: 'tree',
+        data: [root],
+        symbolSize: 16,
+        symbol: 'circle',
+        roam: true,
+        initialTreeDepth: 3,
+        animationDuration: 300,
+        animationEasing: 'cubicOut',
+        orient: 'TB', // 上→下
+        top: '10%',
+        left: '8%',
+        right: '8%',
+        bottom: '10%',
+        expandAndCollapse: false, // 禁用內建的展開/收起功能
+        // 標籤設定
         label: {
           rotate: 0,
-          position: 'right',
-          align: 'left'
-        }
+          position: 'left',
+          verticalAlign: 'middle',
+          align: 'right',
+          fontSize: 12,
+          fontWeight: 'normal',
+          color: '#374151',
+          formatter: (params: any) => {
+            const data = params.data;
+            return `{name|${data.name}}`;
+          },
+          rich: {
+            name: {
+              fontWeight: 'bold',
+              fontSize: 12,
+              color: '#374151',
+            },
+          },
+        },
+        leaves: {
+          label: {
+            rotate: 0,
+            position: 'right',
+            align: 'left',
+          },
+        },
+        labelLayout: () => ({ rotate: 0 }),
+        lineStyle: {
+          width: 1,
+          color: '#D1D5DB',
+          curveness: 0.1,
+        },
+        itemStyle: {
+          borderColor: '#fff',
+          borderWidth: 2,
+          shadowBlur: 4,
+          shadowColor: 'rgba(0, 0, 0, 0.1)',
+        },
       },
-      labelLayout: () => ({ rotate: 0 }),
-      lineStyle: {
-        width: 1,
-        color: '#D1D5DB',
-        curveness: 0.1,
-      },
-      itemStyle: {
-        borderColor: '#fff',
-        borderWidth: 2,
-        shadowBlur: 4,
-        shadowColor: 'rgba(0, 0, 0, 0.1)',
-      },
-    }],
+    ],
     tooltip: {
       trigger: 'item',
       formatter: (params: any) => {
@@ -317,8 +325,11 @@ export default function OrgChartStatic(): React.JSX.Element {
           roots.map(async (root) => {
             if (root.hasChildren) {
               try {
-                const childrenResponse = await fetch(`/api/org/children?parent=${root.id}`);
-                const childrenResult: ApiResponse<MemberData[]> = await childrenResponse.json();
+                const childrenResponse = await fetch(
+                  `/api/org/children?parent=${root.id}`
+                );
+                const childrenResult: ApiResponse<MemberData[]> =
+                  await childrenResponse.json();
                 if (childrenResult.success && childrenResult.data) {
                   const children = childrenResult.data.map(memberToTreeNode);
                   return { ...root, children, _loadedChildren: true };
@@ -338,7 +349,7 @@ export default function OrgChartStatic(): React.JSX.Element {
           hasChildren: rootsWithChildren.length > 0,
           _loadedChildren: true,
           collapsed: false,
-          children: rootsWithChildren
+          children: rootsWithChildren,
         };
         setRoot(addColorToNode(virtualRoot));
       } else {
@@ -379,7 +390,7 @@ export default function OrgChartStatic(): React.JSX.Element {
     if (!editRank) {
       setToastMessage({
         type: 'error',
-        message: '請選擇職階'
+        message: '請選擇職階',
       });
       return;
     }
@@ -387,7 +398,7 @@ export default function OrgChartStatic(): React.JSX.Element {
     if (!selectedNode) {
       setToastMessage({
         type: 'error',
-        message: '找不到選中的成員'
+        message: '找不到選中的成員',
       });
       return;
     }
@@ -403,7 +414,7 @@ export default function OrgChartStatic(): React.JSX.Element {
         body: JSON.stringify({
           member_id: selectedNode.id,
           rank: editRank,
-          introducer: editIntroducer || null
+          introducer: editIntroducer || null,
         }),
       });
 
@@ -412,7 +423,7 @@ export default function OrgChartStatic(): React.JSX.Element {
       if (result.success) {
         setToastMessage({
           type: 'success',
-          message: '更新成功'
+          message: '更新成功',
         });
 
         // 關閉對話框和編輯模式
@@ -426,14 +437,14 @@ export default function OrgChartStatic(): React.JSX.Element {
       } else {
         setToastMessage({
           type: 'error',
-          message: result.error || '更新失敗'
+          message: result.error || '更新失敗',
         });
       }
     } catch (error) {
       console.error('Error updating member:', error);
       setToastMessage({
         type: 'error',
-        message: '更新失敗，請稍後再試'
+        message: '更新失敗，請稍後再試',
       });
     } finally {
       setIsUpdating(false);
@@ -445,7 +456,7 @@ export default function OrgChartStatic(): React.JSX.Element {
     if (!selectedNode) {
       setToastMessage({
         type: 'error',
-        message: '找不到選中的成員'
+        message: '找不到選中的成員',
       });
       return;
     }
@@ -459,7 +470,7 @@ export default function OrgChartStatic(): React.JSX.Element {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          member_id: selectedNode.id
+          member_id: selectedNode.id,
         }),
       });
 
@@ -468,7 +479,7 @@ export default function OrgChartStatic(): React.JSX.Element {
       if (result.success) {
         setToastMessage({
           type: 'success',
-          message: '移除成功'
+          message: '移除成功',
         });
 
         // 關閉所有對話框
@@ -480,14 +491,14 @@ export default function OrgChartStatic(): React.JSX.Element {
       } else {
         setToastMessage({
           type: 'error',
-          message: result.error || '移除失敗'
+          message: result.error || '移除失敗',
         });
       }
     } catch (error) {
       console.error('Error removing member:', error);
       setToastMessage({
         type: 'error',
-        message: '移除失敗，請稍後再試'
+        message: '移除失敗，請稍後再試',
       });
     } finally {
       setIsRemoving(false);
@@ -500,7 +511,7 @@ export default function OrgChartStatic(): React.JSX.Element {
     if (!selectedPerson || !selectedRank) {
       setToastMessage({
         type: 'error',
-        message: '請填寫所有必填欄位'
+        message: '請填寫所有必填欄位',
       });
       return;
     }
@@ -508,7 +519,7 @@ export default function OrgChartStatic(): React.JSX.Element {
     if (!selectedNode) {
       setToastMessage({
         type: 'error',
-        message: '請先選擇上線人員'
+        message: '請先選擇上線人員',
       });
       return;
     }
@@ -525,7 +536,7 @@ export default function OrgChartStatic(): React.JSX.Element {
           upline_id: selectedNode.id,
           employee_no: selectedPerson,
           rank: selectedRank,
-          introducer: referrer || null
+          introducer: referrer || null,
         }),
       });
 
@@ -534,7 +545,7 @@ export default function OrgChartStatic(): React.JSX.Element {
       if (result.success) {
         setToastMessage({
           type: 'success',
-          message: '新增下線成功'
+          message: '新增下線成功',
         });
 
         // 關閉對話框並清空表單
@@ -548,14 +559,14 @@ export default function OrgChartStatic(): React.JSX.Element {
       } else {
         setToastMessage({
           type: 'error',
-          message: result.error || '新增下線失敗'
+          message: result.error || '新增下線失敗',
         });
       }
     } catch (error) {
       console.error('Error adding downline:', error);
       setToastMessage({
         type: 'error',
-        message: '新增下線失敗，請稍後再試'
+        message: '新增下線失敗，請稍後再試',
       });
     } finally {
       setIsSubmitting(false);
@@ -577,13 +588,13 @@ export default function OrgChartStatic(): React.JSX.Element {
             return {
               ...node,
               children: children,
-              _loadedChildren: true
+              _loadedChildren: true,
             };
           }
           if (node.children) {
             return {
               ...node,
-              children: node.children.map(updateNode)
+              children: node.children.map(updateNode),
             };
           }
           return node;
@@ -618,13 +629,13 @@ export default function OrgChartStatic(): React.JSX.Element {
         if (node.id === data.id) {
           return {
             ...node,
-            collapsed: !node.collapsed
+            collapsed: !node.collapsed,
           };
         }
         if (node.children) {
           return {
             ...node,
-            children: node.children.map(updateNode)
+            children: node.children.map(updateNode),
           };
         }
         return node;
@@ -646,7 +657,6 @@ export default function OrgChartStatic(): React.JSX.Element {
     <div className="rounded-2xl shadow-sm border bg-white p-4 md:p-6">
       {/* Header Toolbar */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-
         {/* Right: Controls */}
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Search Input */}
@@ -687,7 +697,7 @@ export default function OrgChartStatic(): React.JSX.Element {
                 style={{ width: '100%', height: '100%' }}
                 opts={{ renderer: 'canvas' }}
                 onEvents={{
-                  click: handleNodeClick
+                  click: handleNodeClick,
                 }}
               />
             )}
@@ -701,9 +711,9 @@ export default function OrgChartStatic(): React.JSX.Element {
               <div>
                 <div
                   className="rounded-xl p-4 border-2 shadow-lg transition-all duration-300"
-                style={{
-                  background: selectedNode.rank ?
-                    `linear-gradient(135deg,
+                  style={{
+                    background: selectedNode.rank
+                      ? `linear-gradient(135deg,
                       ${CARD_COLORS[selectedNode.rank].fill} 0%,
                       ${CARD_COLORS[selectedNode.rank].stroke} 50%,
                       ${CARD_COLORS[selectedNode.rank].fill} 100%),
@@ -711,75 +721,84 @@ export default function OrgChartStatic(): React.JSX.Element {
                       rgba(255, 255, 255, 0.3) 0%,
                       transparent 30%,
                       transparent 70%,
-                      rgba(0, 0, 0, 0.1) 100%)` :
-                    'linear-gradient(135deg, #F3F4F6 0%, #D1D5DB 100%)',
-                  borderColor: selectedNode.rank ? CARD_COLORS[selectedNode.rank].stroke : '#D1D5DB',
-                  boxShadow: `
+                      rgba(0, 0, 0, 0.1) 100%)`
+                      : 'linear-gradient(135deg, #F3F4F6 0%, #D1D5DB 100%)',
+                    borderColor: selectedNode.rank
+                      ? CARD_COLORS[selectedNode.rank].stroke
+                      : '#D1D5DB',
+                    boxShadow: `
                     0 8px 25px -5px rgba(0, 0, 0, 0.15),
                     0 4px 10px -2px rgba(0, 0, 0, 0.1),
                     inset 0 1px 0 rgba(255, 255, 255, 0.4),
                     inset 0 -1px 0 rgba(0, 0, 0, 0.1),
                     0 0 0 1px rgba(255, 255, 255, 0.1)
                   `,
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}
-              >
-                {/* 金屬光澤效果 */}
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%)',
-                    borderRadius: 'inherit'
+                    position: 'relative',
+                    overflow: 'hidden',
                   }}
-                />
-                {/* 頭貼 + 右側資訊 */}
-                <div className="flex items-start gap-3">
-                  {/* 大頭貼 */}
-                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 overflow-hidden">
-                    <img
-                      src={getAvatarUrl(selectedNode, 200)}
-                      alt={selectedNode.display_name || selectedNode.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // 如果圖片載入失敗，使用預設頭像
-                        const target = e.target as HTMLImageElement;
-                        target.src = getDefaultAvatarUrl(selectedNode.display_name || selectedNode.name, 200);
-                      }}
-                    />
-                  </div>
-
-                  {/* 右側資訊 */}
-                  <div className="flex-1 min-w-0">
-                    {/* 第一行：姓名#員工編號 */}
-                    <div className="text-lg font-bold text-gray-900 mb-2 text-center">
-                      {selectedNode.name}#{selectedNode.employee_no || '未設定'}
-                    </div>
-
-                    {/* 第二行：職階 */}
-                    <div className="flex justify-center mb-2">
-                      <span
-                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold text-white shadow-md"
-                        style={{
-                          backgroundColor: selectedNode.rank ? RANK_COLORS[selectedNode.rank].stroke : '#6B7280',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                >
+                  {/* 金屬光澤效果 */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        'linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%)',
+                      borderRadius: 'inherit',
+                    }}
+                  />
+                  {/* 頭貼 + 右側資訊 */}
+                  <div className="flex items-start gap-3">
+                    {/* 大頭貼 */}
+                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 overflow-hidden">
+                      <img
+                        src={getAvatarUrl(selectedNode, 200)}
+                        alt={selectedNode.display_name || selectedNode.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // 如果圖片載入失敗，使用預設頭像
+                          const target = e.target as HTMLImageElement;
+                          target.src = getDefaultAvatarUrl(
+                            selectedNode.display_name || selectedNode.name,
+                            200
+                          );
                         }}
-                      >
-                        {selectedNode.rank || '無階級'}
-                      </span>
+                      />
                     </div>
 
-                    {/* 第三行：點擊查看詳情 */}
-                    <div className="text-right">
-                      <button
-                        onClick={() => setShowDetailModal(true)}
-                        className="text-xs text-blue-400 hover:text-blue-600 cursor-pointer transition-colors"
-                      >
-                        點擊查看詳情
-                      </button>
+                    {/* 右側資訊 */}
+                    <div className="flex-1 min-w-0">
+                      {/* 第一行：姓名#員工編號 */}
+                      <div className="text-lg font-bold text-gray-900 mb-2 text-center">
+                        {selectedNode.name}#
+                        {selectedNode.employee_no || '未設定'}
+                      </div>
+
+                      {/* 第二行：職階 */}
+                      <div className="flex justify-center mb-2">
+                        <span
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold text-white shadow-md"
+                          style={{
+                            backgroundColor: selectedNode.rank
+                              ? RANK_COLORS[selectedNode.rank].stroke
+                              : '#6B7280',
+                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                          }}
+                        >
+                          {selectedNode.rank || '無階級'}
+                        </span>
+                      </div>
+
+                      {/* 第三行：點擊查看詳情 */}
+                      <div className="text-right">
+                        <button
+                          onClick={() => setShowDetailModal(true)}
+                          className="text-xs text-blue-400 hover:text-blue-600 cursor-pointer transition-colors"
+                        >
+                          點擊查看詳情
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
                 </div>
 
                 {/* 操作按鈕區域 */}
@@ -806,8 +825,16 @@ export default function OrgChartStatic(): React.JSX.Element {
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                    <svg className="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    <svg
+                      className="w-10 h-10 text-gray-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                   <div className="text-gray-500 text-sm">
@@ -824,20 +851,27 @@ export default function OrgChartStatic(): React.JSX.Element {
       <div className="mt-6 pt-6 border-t border-gray-200">
         <div className="flex flex-wrap items-center gap-6">
           {/* Rank Legend */}
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-gray-700">職位：</span>
-              <div className="flex items-center gap-3">
-                {Object.entries(RANK_COLORS).map(([rank, colors]) => (
-                  <div key={rank} className="flex items-center gap-1" aria-label={`${rank}職位`}>
-                    <div
-                      className="w-3 h-3 rounded-full border-2"
-                      style={{ backgroundColor: colors.fill, borderColor: colors.stroke }}
-                    ></div>
-                    <span className="text-sm text-gray-700">{rank}</span>
-                  </div>
-                ))}
-              </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-700">職位：</span>
+            <div className="flex items-center gap-3">
+              {Object.entries(RANK_COLORS).map(([rank, colors]) => (
+                <div
+                  key={rank}
+                  className="flex items-center gap-1"
+                  aria-label={`${rank}職位`}
+                >
+                  <div
+                    className="w-3 h-3 rounded-full border-2"
+                    style={{
+                      backgroundColor: colors.fill,
+                      borderColor: colors.stroke,
+                    }}
+                  ></div>
+                  <span className="text-sm text-gray-700">{rank}</span>
+                </div>
+              ))}
             </div>
+          </div>
         </div>
       </div>
 
@@ -852,8 +886,18 @@ export default function OrgChartStatic(): React.JSX.Element {
                 onClick={() => setShowDetailModal(false)}
                 className="text-gray-400 hover:text-gray-600"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -870,7 +914,10 @@ export default function OrgChartStatic(): React.JSX.Element {
                     onError={(e) => {
                       // 如果圖片載入失敗，使用預設頭像
                       const target = e.target as HTMLImageElement;
-                      target.src = getDefaultAvatarUrl(selectedNode.display_name || selectedNode.name, 200);
+                      target.src = getDefaultAvatarUrl(
+                        selectedNode.display_name || selectedNode.name,
+                        200
+                      );
                     }}
                   />
                 </div>
@@ -879,13 +926,19 @@ export default function OrgChartStatic(): React.JSX.Element {
               {/* 姓名 */}
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm font-medium text-gray-600">姓名</span>
-                <span className="text-sm text-gray-900">{selectedNode.name}</span>
+                <span className="text-sm text-gray-900">
+                  {selectedNode.name}
+                </span>
               </div>
 
               {/* 員工編號 */}
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm font-medium text-gray-600">員工編號</span>
-                <span className="text-sm text-gray-900">#{selectedNode.employee_no || '未設定'}</span>
+                <span className="text-sm font-medium text-gray-600">
+                  員工編號
+                </span>
+                <span className="text-sm text-gray-900">
+                  #{selectedNode.employee_no || '未設定'}
+                </span>
               </div>
 
               {/* 職階 */}
@@ -908,8 +961,10 @@ export default function OrgChartStatic(): React.JSX.Element {
                   <span
                     className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold text-white shadow-sm"
                     style={{
-                      backgroundColor: selectedNode.rank ? RANK_COLORS[selectedNode.rank].stroke : '#6B7280',
-                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                      backgroundColor: selectedNode.rank
+                        ? RANK_COLORS[selectedNode.rank].stroke
+                        : '#6B7280',
+                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
                     }}
                   >
                     {selectedNode.rank || '無階級'}
@@ -919,7 +974,9 @@ export default function OrgChartStatic(): React.JSX.Element {
 
               {/* 當月業績 */}
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm font-medium text-gray-600">當月業績</span>
+                <span className="text-sm font-medium text-gray-600">
+                  當月業績
+                </span>
                 <span className="text-sm text-green-600 font-semibold">
                   ${selectedNode.sales_month?.toLocaleString() || '0'}
                 </span>
@@ -927,7 +984,9 @@ export default function OrgChartStatic(): React.JSX.Element {
 
               {/* 團隊累計業績 */}
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm font-medium text-gray-600">團隊累計業績</span>
+                <span className="text-sm font-medium text-gray-600">
+                  團隊累計業績
+                </span>
                 <span className="text-sm text-green-600 font-semibold">
                   ${selectedNode.team_sales_month?.toLocaleString() || '0'}
                 </span>
@@ -935,7 +994,9 @@ export default function OrgChartStatic(): React.JSX.Element {
 
               {/* 介紹人 */}
               <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-medium text-gray-600">介紹人</span>
+                <span className="text-sm font-medium text-gray-600">
+                  介紹人
+                </span>
                 {isEditMode ? (
                   <input
                     type="text"
@@ -971,9 +1032,25 @@ export default function OrgChartStatic(): React.JSX.Element {
                   >
                     {isUpdating ? (
                       <>
-                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin h-4 w-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         儲存中...
                       </>
@@ -1025,8 +1102,18 @@ export default function OrgChartStatic(): React.JSX.Element {
                 }}
                 className="text-gray-400 hover:text-gray-600"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -1104,9 +1191,25 @@ export default function OrgChartStatic(): React.JSX.Element {
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     處理中...
                   </>
@@ -1126,12 +1229,24 @@ export default function OrgChartStatic(): React.JSX.Element {
             {/* 對話框標題 */}
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-                <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">確認移除</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  確認移除
+                </h3>
                 <p className="text-sm text-gray-600">此操作無法復原</p>
               </div>
             </div>
@@ -1139,7 +1254,11 @@ export default function OrgChartStatic(): React.JSX.Element {
             {/* 確認訊息 */}
             <div className="mb-6">
               <p className="text-gray-700">
-                確定要移除 <span className="font-bold text-gray-900">{selectedNode.name}</span> 嗎？
+                確定要移除{' '}
+                <span className="font-bold text-gray-900">
+                  {selectedNode.name}
+                </span>{' '}
+                嗎？
               </p>
               <p className="text-sm text-gray-500 mt-2">
                 此人員的下線將會重新指派給其上線。
@@ -1162,9 +1281,25 @@ export default function OrgChartStatic(): React.JSX.Element {
               >
                 {isRemoving ? (
                   <>
-                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     移除中...
                   </>
@@ -1188,12 +1323,32 @@ export default function OrgChartStatic(): React.JSX.Element {
             }`}
           >
             {toastMessage.type === 'success' ? (
-              <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-6 h-6 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             ) : (
-              <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             )}
             <span className="font-medium">{toastMessage.message}</span>
@@ -1201,8 +1356,18 @@ export default function OrgChartStatic(): React.JSX.Element {
               onClick={() => setToastMessage(null)}
               className="ml-auto hover:opacity-80 transition-opacity"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>

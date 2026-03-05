@@ -1,13 +1,13 @@
 'use client';
 
+import { ChangePasswordDialog } from '@/components/layout/change-password-dialog';
+import { UserAvatar } from '@/components/layout/user-avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { UserAvatar } from '@/components/layout/user-avatar';
-import { ChangePasswordDialog } from '@/components/layout/change-password-dialog';
 import { KeyRound } from 'lucide-react';
 import { useState } from 'react';
 
@@ -24,10 +24,15 @@ interface CustomUserButtonProps {
 }
 
 export function CustomUserButton({ user }: CustomUserButtonProps) {
-  const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] = useState(false);
+  const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] =
+    useState(false);
 
   // 生成頭像 URL（支援不同尺寸）
-  const getAvatarUrl = (avatarUrl: string | undefined, displayName: string, size: number = 50) => {
+  const getAvatarUrl = (
+    avatarUrl: string | undefined,
+    displayName: string,
+    size = 50
+  ) => {
     if (avatarUrl) {
       // 如果有上傳的頭像，嘗試使用對應尺寸的縮圖
       // 檢查是否已經是縮圖格式

@@ -1,25 +1,31 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
+import { useState } from 'react';
+import { CartesianGrid, Legend, Line, LineChart, XAxis, YAxis } from 'recharts';
 
 export function InflationCalculator() {
   const [principal, setPrincipal] = useState<string>('1000000');
   const [inflationRate, setInflationRate] = useState<string>('2');
   const [years, setYears] = useState<string>('10');
-  const [chartData, setChartData] = useState<Array<{
-    year: string;
-    nominalPrice: number;
-    purchasingPower: number;
-  }>>([]);
+  const [chartData, setChartData] = useState<
+    Array<{
+      year: string;
+      nominalPrice: number;
+      purchasingPower: number;
+    }>
+  >([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   // 計算通膨數據
@@ -28,9 +34,9 @@ export function InflationCalculator() {
     setErrorMessage('');
 
     // 驗證輸入
-    const p = parseFloat(principal) || 0;
-    const r = (parseFloat(inflationRate) || 0) / 100;
-    const t = parseFloat(years) || 0;
+    const p = Number.parseFloat(principal) || 0;
+    const r = (Number.parseFloat(inflationRate) || 0) / 100;
+    const t = Number.parseFloat(years) || 0;
 
     // 檢查缺少的欄位
     const missingFields: string[] = [];
@@ -58,7 +64,7 @@ export function InflationCalculator() {
     for (let year = 1; year <= t; year++) {
       // 名目物價 = 本金 × (1 + 通膨率)^年數
       const nominalPrice = p * Math.pow(1 + r, year);
-      
+
       // 實際購買力 = 本金 / (1 + 通膨率)^年數
       const purchasingPower = p / Math.pow(1 + r, year);
 
@@ -173,7 +179,10 @@ export function InflationCalculator() {
                       <ChartTooltipContent
                         formatter={(value) => (
                           <span>
-                            NT$ <NumberWithSmallDecimals text={formatNumber(Number(value))} />
+                            NT${' '}
+                            <NumberWithSmallDecimals
+                              text={formatNumber(Number(value))}
+                            />
                           </span>
                         )}
                       />
@@ -213,4 +222,3 @@ export function InflationCalculator() {
     </div>
   );
 }
-

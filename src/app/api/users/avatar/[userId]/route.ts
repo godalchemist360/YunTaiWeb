@@ -32,9 +32,8 @@ export async function DELETE(
     console.log('Avatar deleted successfully:', avatarKey);
     return NextResponse.json({
       success: true,
-      message: 'Avatar deleted successfully'
+      message: 'Avatar deleted successfully',
     });
-
   } catch (error) {
     console.error('Error deleting avatar:', error);
 
@@ -42,9 +41,6 @@ export async function DELETE(
       return NextResponse.json({ error: '刪除失敗' }, { status: 500 });
     }
 
-    return NextResponse.json(
-      { error: '刪除失敗' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '刪除失敗' }, { status: 500 });
   }
 }

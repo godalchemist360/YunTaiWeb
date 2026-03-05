@@ -28,25 +28,30 @@ export async function GET(request: NextRequest) {
         'content-type': response.headers.get('content-type'),
         'content-length': response.headers.get('content-length'),
         'last-modified': response.headers.get('last-modified'),
-        'etag': response.headers.get('etag'),
+        etag: response.headers.get('etag'),
         'cache-control': response.headers.get('cache-control'),
-        'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
-        'access-control-allow-methods': response.headers.get('access-control-allow-methods'),
-        'access-control-allow-headers': response.headers.get('access-control-allow-headers'),
-      }
+        'access-control-allow-origin': response.headers.get(
+          'access-control-allow-origin'
+        ),
+        'access-control-allow-methods': response.headers.get(
+          'access-control-allow-methods'
+        ),
+        'access-control-allow-headers': response.headers.get(
+          'access-control-allow-headers'
+        ),
+      },
     };
 
     console.log('Avatar test result:', result);
 
     return NextResponse.json(result);
-
   } catch (error) {
     console.error('Error testing avatar URL:', error);
     return NextResponse.json(
       {
         error: 'Failed to test URL',
         message: error instanceof Error ? error.message : 'Unknown error',
-        url: 'Unknown URL'
+        url: 'Unknown URL',
       },
       { status: 500 }
     );

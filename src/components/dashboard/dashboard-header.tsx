@@ -63,10 +63,7 @@ export function DashboardHeader({
     <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-transparent transition-all duration-200">
       <div className="flex w-full items-center gap-2 px-4 lg:gap-3 lg:px-6">
         <SidebarTrigger className="-ml-1 cursor-pointer hover:bg-accent rounded-md p-1 transition-colors duration-200" />
-        <Separator
-          orientation="vertical"
-          className="mx-2 h-6"
-        />
+        <Separator orientation="vertical" className="mx-2 h-6" />
 
         <Breadcrumb>
           <BreadcrumbList className="text-sm font-medium">
@@ -85,9 +82,14 @@ export function DashboardHeader({
                   }
                 >
                   {item.isCurrentPage ? (
-                    <BreadcrumbPage className="text-foreground font-semibold">{item.label}</BreadcrumbPage>
+                    <BreadcrumbPage className="text-foreground font-semibold">
+                      {item.label}
+                    </BreadcrumbPage>
                   ) : item.href ? (
-                    <BreadcrumbLink href={item.href} className="text-muted-foreground hover:text-foreground transition-colors duration-200">
+                    <BreadcrumbLink
+                      href={item.href}
+                      className="text-muted-foreground hover:text-foreground transition-colors duration-200"
+                    >
                       {item.label}
                     </BreadcrumbLink>
                   ) : (

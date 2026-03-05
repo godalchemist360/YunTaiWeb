@@ -174,14 +174,20 @@ export async function PUT(
         );
       }
 
-      if (typeof meeting_count !== 'number' || !Number.isFinite(meeting_count) || meeting_count < 0) {
+      if (
+        typeof meeting_count !== 'number' ||
+        !Number.isFinite(meeting_count) ||
+        meeting_count < 0
+      ) {
         return NextResponse.json(
           { error: '會面次數格式不正確' },
           { status: 400 }
         );
       }
 
-      const stageEntries = Object.entries(meeting_record as Record<string, any>);
+      const stageEntries = Object.entries(
+        meeting_record as Record<string, any>
+      );
       const normalizedRecord: Record<string, any> = {};
       let calculatedMeetingCount = 0;
 
@@ -201,8 +207,12 @@ export async function PUT(
         }
 
         const stageData = stageValue as Record<string, any>;
-        const marketingStageRaw = stageData.marketing_stage ?? stageData.marketingStage ?? 1;
-        const marketingStageNumeric = Number.parseInt(String(marketingStageRaw), 10);
+        const marketingStageRaw =
+          stageData.marketing_stage ?? stageData.marketingStage ?? 1;
+        const marketingStageNumeric = Number.parseInt(
+          String(marketingStageRaw),
+          10
+        );
 
         if (
           Number.isNaN(marketingStageNumeric) ||
@@ -268,7 +278,9 @@ export async function PUT(
             successRateNumeric > 100
           ) {
             return NextResponse.json(
-              { error: `會面紀錄 ${stageKey}.${meetKey} 的預估成交率須為 0~100 的整數` },
+              {
+                error: `會面紀錄 ${stageKey}.${meetKey} 的預估成交率須為 0~100 的整數`,
+              },
               { status: 400 }
             );
           }
@@ -292,7 +304,10 @@ export async function PUT(
       normalizedMeetingCount = meeting_count ?? calculatedMeetingCount;
     }
 
-    if (normalizedMeetingCount !== undefined && normalizedMeetingCount !== null) {
+    if (
+      normalizedMeetingCount !== undefined &&
+      normalizedMeetingCount !== null
+    ) {
       if (
         typeof normalizedMeetingCount !== 'number' ||
         !Number.isFinite(normalizedMeetingCount) ||

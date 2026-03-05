@@ -29,7 +29,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 function MeetingRecordDropdown({
   interaction,
   index,
-  onOpenCard
+  onOpenCard,
 }: {
   interaction: CustomerInteraction;
   index: number;
@@ -283,11 +283,14 @@ export default function CustomerTrackingPage() {
   };
 
   // 輔助函數：格式化業務員顯示（ID + 姓名）
-  const formatSalesName = useCallback((userId: number | null, name: string | null): string => {
-    if (!userId || !name) return '-';
-    const paddedId = userId.toString().padStart(6, '0');
-    return `${paddedId} ${name}`;
-  }, []);
+  const formatSalesName = useCallback(
+    (userId: number | null, name: string | null): string => {
+      if (!userId || !name) return '-';
+      const paddedId = userId.toString().padStart(6, '0');
+      return `${paddedId} ${name}`;
+    },
+    []
+  );
 
   // 輔助函數：獲取名單來源的顯示樣式
   const getLeadSourceStyle = useCallback((leadSource: string) => {
@@ -383,9 +386,7 @@ export default function CustomerTrackingPage() {
                 <Search className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">
-                  客況追蹤
-                </h1>
+                <h1 className="text-3xl font-bold text-foreground">客況追蹤</h1>
                 <p className="text-muted-foreground">追蹤客戶互動和銷售機會</p>
               </div>
             </div>
@@ -404,7 +405,9 @@ export default function CustomerTrackingPage() {
                     <p className="text-2xl font-bold text-foreground">
                       {statistics.total}
                     </p>
-                    <p className="text-sm text-green-600 dark:text-green-400">+12% 較上月</p>
+                    <p className="text-sm text-green-600 dark:text-green-400">
+                      +12% 較上月
+                    </p>
                   </div>
                 </div>
               </div>
@@ -418,8 +421,12 @@ export default function CustomerTrackingPage() {
                     <p className="text-sm font-medium text-muted-foreground">
                       活躍客戶
                     </p>
-                    <p className="text-2xl font-bold text-foreground">{statistics.active}</p>
-                    <p className="text-sm text-green-600 dark:text-green-400">+8% 較上月</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {statistics.active}
+                    </p>
+                    <p className="text-sm text-green-600 dark:text-green-400">
+                      +8% 較上月
+                    </p>
                   </div>
                 </div>
               </div>
@@ -433,8 +440,12 @@ export default function CustomerTrackingPage() {
                     <p className="text-sm font-medium text-muted-foreground">
                       潛在客戶
                     </p>
-                    <p className="text-2xl font-bold text-foreground">{statistics.potential}</p>
-                    <p className="text-sm text-green-600 dark:text-green-400">+15% 較上月</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {statistics.potential}
+                    </p>
+                    <p className="text-sm text-green-600 dark:text-green-400">
+                      +15% 較上月
+                    </p>
                   </div>
                 </div>
               </div>
@@ -448,8 +459,12 @@ export default function CustomerTrackingPage() {
                     <p className="text-sm font-medium text-muted-foreground">
                       流失風險
                     </p>
-                    <p className="text-2xl font-bold text-foreground">{statistics.churnRisk}</p>
-                    <p className="text-sm text-red-600 dark:text-red-400">需要關注</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {statistics.churnRisk}
+                    </p>
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      需要關注
+                    </p>
                   </div>
                 </div>
               </div>
@@ -497,7 +512,9 @@ export default function CustomerTrackingPage() {
                   <thead className="bg-muted/50 border-b">
                     <tr>
                       <th className="pl-8 pr-6 py-3 text-center text-xs font-medium text-muted-foreground w-12 align-middle">
-                        <div className="flex items-center justify-center">業務員</div>
+                        <div className="flex items-center justify-center">
+                          業務員
+                        </div>
                       </th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground w-16">
                         名單來源
@@ -518,7 +535,9 @@ export default function CustomerTrackingPage() {
                         下一步行動及日期
                       </th>
                       <th className="pl-6 pr-8 py-3 text-center text-xs font-medium text-muted-foreground w-32 align-middle">
-                        <div className="flex items-center justify-center">會面紀錄</div>
+                        <div className="flex items-center justify-center">
+                          會面紀錄
+                        </div>
                       </th>
                     </tr>
                   </thead>
@@ -563,7 +582,10 @@ export default function CustomerTrackingPage() {
                           >
                             <td className="pl-8 pr-6 py-4 whitespace-nowrap text-sm text-foreground text-center w-12 align-middle">
                               <div className="flex items-center justify-center">
-                                {formatSalesName(interaction.sales_user_id, interaction.sales_user_name)}
+                                {formatSalesName(
+                                  interaction.sales_user_id,
+                                  interaction.sales_user_name
+                                )}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-center w-16">
@@ -572,8 +594,7 @@ export default function CustomerTrackingPage() {
                                   setLeadSourceEditor({
                                     isOpen: true,
                                     rowIndex: index,
-                                    initialLeadSource:
-                                      interaction.lead_source,
+                                    initialLeadSource: interaction.lead_source,
                                     initialCustomSource: undefined,
                                   })
                                 }
@@ -610,7 +631,8 @@ export default function CustomerTrackingPage() {
                               <div
                                 onClick={() => {
                                   // 將現有的 consultation_motives 分類為標準和自定義動機
-                                  const existingMotives = interaction.consultation_motives || [];
+                                  const existingMotives =
+                                    interaction.consultation_motives || [];
                                   const standardOptions = [
                                     '想買自住房',
                                     '貸款問題',
@@ -623,11 +645,15 @@ export default function CustomerTrackingPage() {
                                     '其他',
                                   ];
 
-                                  const standardMotives = existingMotives.filter(motive =>
-                                    standardOptions.includes(motive) && motive !== '其他'
-                                  );
-                                  const customMotives = existingMotives.filter(motive =>
-                                    !standardOptions.includes(motive)
+                                  const standardMotives =
+                                    existingMotives.filter(
+                                      (motive) =>
+                                        standardOptions.includes(motive) &&
+                                        motive !== '其他'
+                                    );
+                                  const customMotives = existingMotives.filter(
+                                    (motive) =>
+                                      !standardOptions.includes(motive)
                                   );
 
                                   setConsultationMotiveEditor({
@@ -639,16 +665,19 @@ export default function CustomerTrackingPage() {
                                 }}
                                 className="cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors flex flex-col items-center gap-1"
                               >
-                                {interaction.consultation_motives && interaction.consultation_motives.length > 0 ? (
+                                {interaction.consultation_motives &&
+                                interaction.consultation_motives.length > 0 ? (
                                   <div className="flex flex-wrap gap-1 justify-center">
-                                    {interaction.consultation_motives.map((motive: string, idx: number) => (
-                                      <span
-                                        key={`motive-${idx}`}
-                                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
-                                      >
-                                        {motive}
-                                      </span>
-                                    ))}
+                                    {interaction.consultation_motives.map(
+                                      (motive: string, idx: number) => (
+                                        <span
+                                          key={`motive-${idx}`}
+                                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
+                                        >
+                                          {motive}
+                                        </span>
+                                      )
+                                    )}
                                   </div>
                                 ) : (
                                   <span className="text-blue-600 hover:text-blue-800 font-medium text-xs">
@@ -705,22 +734,33 @@ export default function CustomerTrackingPage() {
 
                                   if (interaction.next_action_date) {
                                     try {
-                                      const date = new Date(interaction.next_action_date);
+                                      const date = new Date(
+                                        interaction.next_action_date
+                                      );
                                       if (!Number.isNaN(date.getTime())) {
                                         // 格式化為 YYYY-MM-DD 格式
-                                        formattedDate = date.toISOString().split('T')[0];
+                                        formattedDate = date
+                                          .toISOString()
+                                          .split('T')[0];
                                         // 格式化為 HH:MM 格式
-                                        formattedTime = date.toTimeString().slice(0, 5);
+                                        formattedTime = date
+                                          .toTimeString()
+                                          .slice(0, 5);
                                       }
                                     } catch (error) {
-                                      console.error('Error parsing date:', interaction.next_action_date, error);
+                                      console.error(
+                                        'Error parsing date:',
+                                        interaction.next_action_date,
+                                        error
+                                      );
                                     }
                                   }
 
                                   setNextActionEditor({
                                     isOpen: true,
                                     rowIndex: index,
-                                    initialAction: interaction.next_action_description || '',
+                                    initialAction:
+                                      interaction.next_action_description || '',
                                     initialDate: formattedDate,
                                     initialTime: formattedTime || '09:00',
                                   });
@@ -730,10 +770,12 @@ export default function CustomerTrackingPage() {
                                 {nextActionDateTime ? (
                                   <div className="text-center">
                                     <div className="text-sm text-muted-foreground">
-                                      {nextActionDateTime.date} {nextActionDateTime.time}
+                                      {nextActionDateTime.date}{' '}
+                                      {nextActionDateTime.time}
                                     </div>
                                     <div className="text-sm text-foreground">
-                                      {interaction.next_action_description || '無下一步行動'}
+                                      {interaction.next_action_description ||
+                                        '無下一步行動'}
                                     </div>
                                   </div>
                                 ) : (

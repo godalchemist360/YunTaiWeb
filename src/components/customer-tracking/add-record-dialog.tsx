@@ -1,7 +1,7 @@
 'use client';
 
-import { usePermissions } from '@/hooks/use-permissions';
 import { SalesUserSelect } from '@/components/ui/sales-user-select';
+import { usePermissions } from '@/hooks/use-permissions';
 import {
   Building,
   ChevronDown,
@@ -44,7 +44,9 @@ export function AddRecordDialog({
 }: AddRecordDialogProps) {
   const { user, isSales, isLoading } = usePermissions();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [salesOptions, setSalesOptions] = useState<Array<{ id: number; label: string }>>([]);
+  const [salesOptions, setSalesOptions] = useState<
+    Array<{ id: number; label: string }>
+  >([]);
   const [formData, setFormData] = useState({
     sales_user_id: '',
     sales_user_name: '',
@@ -89,7 +91,13 @@ export function AddRecordDialog({
     assets: Array<{ name: string; value: string }>;
     liabilities: Array<{ name: string; value: string }>;
     income: Array<{ name: string; value: string }>;
-    expenses: Array<{ category?: string; subCategory?: string; customName?: string; name?: string; value: string }>;
+    expenses: Array<{
+      category?: string;
+      subCategory?: string;
+      customName?: string;
+      name?: string;
+      value: string;
+    }>;
   }>({
     assets: [],
     liabilities: [],
@@ -366,7 +374,9 @@ export function AddRecordDialog({
   };
 
   // 支出分類的折疊狀態
-  const [expenseCollapsed, setExpenseCollapsed] = useState<{ [key: string]: boolean }>(() => {
+  const [expenseCollapsed, setExpenseCollapsed] = useState<{
+    [key: string]: boolean;
+  }>(() => {
     const collapsed: { [key: string]: boolean } = {};
     EXPENSE_CATEGORY_KEYS.forEach((key) => {
       collapsed[key] = true; // 預設全部折疊
@@ -396,7 +406,8 @@ export function AddRecordDialog({
     }
 
     const cleanValue = Number.parseFloat(input.value) || 0;
-    const itemKey = category === '其他' ? (input.customName || '') : (input.subCategory || '');
+    const itemKey =
+      category === '其他' ? input.customName || '' : input.subCategory || '';
 
     setFormData((prev) => ({
       ...prev,
@@ -436,22 +447,43 @@ export function AddRecordDialog({
 
   // 當彈出視窗開啟且是 sales 用戶時，自動填入業務員 ID 和名稱（在重置之後執行）
   useEffect(() => {
-    if (isOpen && !isLoading && user?.role === 'sales' && user?.id && salesOptions.length > 0 && !formData.sales_user_id) {
+    if (
+      isOpen &&
+      !isLoading &&
+      user?.role === 'sales' &&
+      user?.id &&
+      salesOptions.length > 0 &&
+      !formData.sales_user_id
+    ) {
       // 從選項中找到當前用戶的 label（格式為 "000011 andy"）
-      const currentUserOption = salesOptions.find(option => option.id === user.id);
+      const currentUserOption = salesOptions.find(
+        (option) => option.id === user.id
+      );
       if (currentUserOption) {
         setFormData((prev) => ({
           ...prev,
           sales_user_id: user.id.toString(),
-          sales_user_name: currentUserOption.label.split(' ').slice(1).join(' '), // 取得名稱部分（去掉 ID）
+          sales_user_name: currentUserOption.label
+            .split(' ')
+            .slice(1)
+            .join(' '), // 取得名稱部分（去掉 ID）
         }));
       }
     }
-  }, [isOpen, isLoading, user?.role, user?.id, salesOptions, formData.sales_user_id]);
+  }, [
+    isOpen,
+    isLoading,
+    user?.role,
+    user?.id,
+    salesOptions,
+    formData.sales_user_id,
+  ]);
 
   const handleSalesUserChange = (userId: string) => {
     // 從選項中找到選中的業務員
-    const selectedOption = salesOptions.find(option => option.id.toString() === userId);
+    const selectedOption = salesOptions.find(
+      (option) => option.id.toString() === userId
+    );
     if (selectedOption) {
       // 從 label 中提取名稱（格式為 "000011 andy"）
       const name = selectedOption.label.split(' ').slice(1).join(' ');
@@ -632,7 +664,9 @@ export function AddRecordDialog({
                       </span>
                     )}
                   </label>
-                  <div className={`${validationErrors.sales_user_id ? '[&>button]:border-red-500' : ''}`}>
+                  <div
+                    className={`${validationErrors.sales_user_id ? '[&>button]:border-red-500' : ''}`}
+                  >
                     <SalesUserSelect
                       value={formData.sales_user_id}
                       onChange={handleSalesUserChange}
@@ -1313,13 +1347,17 @@ export function AddRecordDialog({
                         </label>
                         <input
                           type="text"
-                          value={formData.incomeExpense.income['主業收入'] || ''}
-                          onChange={(e) => updateIncome('主業收入', e.target.value)}
+                          value={
+                            formData.incomeExpense.income['主業收入'] || ''
+                          }
+                          onChange={(e) =>
+                            updateIncome('主業收入', e.target.value)
+                          }
                           className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                           placeholder="請輸入收入"
                         />
                       </div>
-                      
+
                       {/* 預設欄位：副業收入 */}
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">
@@ -1327,8 +1365,12 @@ export function AddRecordDialog({
                         </label>
                         <input
                           type="text"
-                          value={formData.incomeExpense.income['副業收入'] || ''}
-                          onChange={(e) => updateIncome('副業收入', e.target.value)}
+                          value={
+                            formData.incomeExpense.income['副業收入'] || ''
+                          }
+                          onChange={(e) =>
+                            updateIncome('副業收入', e.target.value)
+                          }
                           className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                           placeholder="請輸入收入"
                         />
@@ -1336,7 +1378,9 @@ export function AddRecordDialog({
 
                       {/* 其他收入項目 */}
                       {Object.keys(formData.incomeExpense.income)
-                        .filter((key) => key !== '主業收入' && key !== '副業收入')
+                        .filter(
+                          (key) => key !== '主業收入' && key !== '副業收入'
+                        )
                         .map((key) => {
                           const value = formData.incomeExpense.income[key];
                           return (
@@ -1349,7 +1393,9 @@ export function AddRecordDialog({
                                   <input
                                     type="text"
                                     value={value}
-                                    onChange={(e) => updateIncome(key, e.target.value)}
+                                    onChange={(e) =>
+                                      updateIncome(key, e.target.value)
+                                    }
                                     className="w-28 px-3 py-2 text-sm border border-blue-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     placeholder="0"
                                   />
@@ -1357,7 +1403,9 @@ export function AddRecordDialog({
                                     type="button"
                                     onClick={() => {
                                       setFormData((prev) => {
-                                        const newIncome = { ...prev.incomeExpense.income };
+                                        const newIncome = {
+                                          ...prev.incomeExpense.income,
+                                        };
                                         delete newIncome[key];
                                         return {
                                           ...prev,
@@ -1377,7 +1425,7 @@ export function AddRecordDialog({
                             </div>
                           );
                         })}
-                      
+
                       {/* 動態新增的收入項目 */}
                       {newItemInputs.income.map((item, index) => (
                         <div key={index} className="col-span-full">
@@ -1390,7 +1438,12 @@ export function AddRecordDialog({
                                 type="text"
                                 value={item.name}
                                 onChange={(e) =>
-                                  updateNewItem('income', index, 'name', e.target.value)
+                                  updateNewItem(
+                                    'income',
+                                    index,
+                                    'name',
+                                    e.target.value
+                                  )
                                 }
                                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                                 placeholder="請輸入項目名稱"
@@ -1404,7 +1457,12 @@ export function AddRecordDialog({
                                 type="text"
                                 value={item.value}
                                 onChange={(e) =>
-                                  updateNewItem('income', index, 'value', e.target.value)
+                                  updateNewItem(
+                                    'income',
+                                    index,
+                                    'value',
+                                    e.target.value
+                                  )
                                 }
                                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                                 placeholder="請輸入收入"
@@ -1418,7 +1476,9 @@ export function AddRecordDialog({
                                     updateIncome(item.name, item.value);
                                     setNewItemInputs((prev) => ({
                                       ...prev,
-                                      income: prev.income.filter((_, i) => i !== index),
+                                      income: prev.income.filter(
+                                        (_, i) => i !== index
+                                      ),
                                     }));
                                   } else {
                                     removeNewItem('income', index);
@@ -1441,7 +1501,7 @@ export function AddRecordDialog({
                           </div>
                         </div>
                       ))}
-                      
+
                       {/* 新增按鈕 */}
                       <div className="col-span-full">
                         <button
@@ -1463,12 +1523,18 @@ export function AddRecordDialog({
                     </h4>
                     <div className="space-y-2">
                       {EXPENSE_CATEGORY_KEYS.map((categoryKey) => {
-                        const categoryItems = formData.incomeExpense.expense[categoryKey] || {};
+                        const categoryItems =
+                          formData.incomeExpense.expense[categoryKey] || {};
                         const hasItems = Object.keys(categoryItems).length > 0;
                         const isCollapsed = expenseCollapsed[categoryKey];
 
                         // 沒有項目就不顯示
-                        if (!hasItems && !newItemInputs.expenses.some(item => item.category === categoryKey)) {
+                        if (
+                          !hasItems &&
+                          !newItemInputs.expenses.some(
+                            (item) => item.category === categoryKey
+                          )
+                        ) {
                           return null;
                         }
 
@@ -1509,14 +1575,23 @@ export function AddRecordDialog({
                                           type="text"
                                           value={value || ''}
                                           onChange={(e) =>
-                                            updateExpense(categoryKey, itemKey, e.target.value)
+                                            updateExpense(
+                                              categoryKey,
+                                              itemKey,
+                                              e.target.value
+                                            )
                                           }
                                           className="w-24 px-2 py-1 text-sm border border-purple-300 rounded text-right focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                                           placeholder="0"
                                         />
                                         <button
                                           type="button"
-                                          onClick={() => removeExpenseItem(categoryKey, itemKey)}
+                                          onClick={() =>
+                                            removeExpenseItem(
+                                              categoryKey,
+                                              itemKey
+                                            )
+                                          }
                                           className="p-1 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
                                         >
                                           <X className="h-3 w-3" />
@@ -1529,12 +1604,17 @@ export function AddRecordDialog({
                                 {/* 新增支出項目輸入框 */}
                                 {newItemInputs.expenses
                                   .map((input, idx) => {
-                                    if (input.category !== categoryKey) return null;
-                                    
-                                    const showSubCategory = categoryKey && categoryKey !== '其他';
-                                    const showCustomName = categoryKey === '其他';
+                                    if (input.category !== categoryKey)
+                                      return null;
+
+                                    const showSubCategory =
+                                      categoryKey && categoryKey !== '其他';
+                                    const showCustomName =
+                                      categoryKey === '其他';
                                     const subCategories = categoryKey
-                                      ? EXPENSE_CATEGORIES[categoryKey as keyof typeof EXPENSE_CATEGORIES] || []
+                                      ? EXPENSE_CATEGORIES[
+                                          categoryKey as keyof typeof EXPENSE_CATEGORIES
+                                        ] || []
                                       : [];
 
                                     return (
@@ -1560,7 +1640,9 @@ export function AddRecordDialog({
                                                 }
                                                 className="w-full px-2 py-1 text-sm border border-purple-300 rounded focus:ring-1 focus:ring-purple-500"
                                               >
-                                                <option value="">請選擇子分類</option>
+                                                <option value="">
+                                                  請選擇子分類
+                                                </option>
                                                 {subCategories.map((sub) => (
                                                   <option key={sub} value={sub}>
                                                     {sub}
@@ -1613,14 +1695,21 @@ export function AddRecordDialog({
                                               />
                                               <button
                                                 type="button"
-                                                onClick={() => addExpenseItem(categoryKey, idx)}
+                                                onClick={() =>
+                                                  addExpenseItem(
+                                                    categoryKey,
+                                                    idx
+                                                  )
+                                                }
                                                 className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
                                               >
                                                 新增
                                               </button>
                                               <button
                                                 type="button"
-                                                onClick={() => removeNewItem('expenses', idx)}
+                                                onClick={() =>
+                                                  removeNewItem('expenses', idx)
+                                                }
                                                 className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                                               >
                                                 取消
@@ -1638,7 +1727,7 @@ export function AddRecordDialog({
                         );
                       })}
                     </div>
-                    
+
                     {/* 新增支出項目按鈕 - 移到外面 */}
                     <div className="mt-4">
                       <select
@@ -1683,26 +1772,36 @@ export function AddRecordDialog({
                       <div className="px-3 py-2 text-sm border border-gray-300 rounded bg-gray-50 text-gray-700">
                         {(() => {
                           // 計算總收入
-                          const totalIncome = Object.values(formData.incomeExpense.income).reduce(
-                            (sum, value) => sum + (Number.parseFloat(value.toString()) || 0),
+                          const totalIncome = Object.values(
+                            formData.incomeExpense.income
+                          ).reduce(
+                            (sum, value) =>
+                              sum + (Number.parseFloat(value.toString()) || 0),
                             0
                           );
 
                           // 計算總支出（兩層級結構）
-                          const totalExpenses = Object.keys(formData.incomeExpense.expense).reduce(
-                            (sum, category) => {
-                              const categoryData = formData.incomeExpense.expense[category];
-                              if (typeof categoryData === 'object' && categoryData !== null) {
-                                const categoryTotal = Object.values(categoryData).reduce(
-                                  (catSum, value) => catSum + (Number.parseFloat(value.toString()) || 0),
-                                  0
-                                );
-                                return sum + categoryTotal;
-                              }
-                              return sum;
-                            },
-                            0
-                          );
+                          const totalExpenses = Object.keys(
+                            formData.incomeExpense.expense
+                          ).reduce((sum, category) => {
+                            const categoryData =
+                              formData.incomeExpense.expense[category];
+                            if (
+                              typeof categoryData === 'object' &&
+                              categoryData !== null
+                            ) {
+                              const categoryTotal = Object.values(
+                                categoryData
+                              ).reduce(
+                                (catSum, value) =>
+                                  catSum +
+                                  (Number.parseFloat(value.toString()) || 0),
+                                0
+                              );
+                              return sum + categoryTotal;
+                            }
+                            return sum;
+                          }, 0);
 
                           // 計算月結餘
                           const monthlyBalance = totalIncome - totalExpenses;

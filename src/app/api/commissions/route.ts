@@ -1,7 +1,7 @@
-import { db, query } from '@/lib/db';
 import { getCurrentUserInfo } from '@/lib/auth';
+import { db, query } from '@/lib/db';
 import { sql } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
@@ -120,7 +120,14 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // 驗證必填欄位
-    if (!sales_user_id || !customer_name || !product_type || !contract_date || !contract_amount || !commission_amount) {
+    if (
+      !sales_user_id ||
+      !customer_name ||
+      !product_type ||
+      !contract_date ||
+      !contract_amount ||
+      !commission_amount
+    ) {
       return NextResponse.json(
         { success: false, error: '所有欄位都是必填的' },
         { status: 400 }
@@ -167,11 +174,21 @@ export async function POST(request: NextRequest) {
     `;
 
     const result = await db.execute(
-      sql.raw(insertSQL.replace(/\$\d+/g, (match) => {
-        const index = parseInt(match.substring(1)) - 1;
-        const values = [sales_user_id, sales_user_name, customer_name, product_type, contract_date, contract_amount, commission_amount];
-        return `'${values[index]}'`;
-      }))
+      sql.raw(
+        insertSQL.replace(/\$\d+/g, (match) => {
+          const index = Number.parseInt(match.substring(1)) - 1;
+          const values = [
+            sales_user_id,
+            sales_user_name,
+            customer_name,
+            product_type,
+            contract_date,
+            contract_amount,
+            commission_amount,
+          ];
+          return `'${values[index]}'`;
+        })
+      )
     );
 
     return NextResponse.json({

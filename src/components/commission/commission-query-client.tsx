@@ -1,25 +1,62 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Search, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, Trash2, X, Edit } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SalesUserSelect } from '@/components/ui/sales-user-select';
-import { ToastManager } from '@/components/ui/toast';
 import {
   CommissionCreateGate,
-  CommissionEditGate,
   CommissionDeleteGate,
+  CommissionEditGate,
 } from '@/components/permission-gate';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { SalesUserSelect } from '@/components/ui/sales-user-select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { ToastManager } from '@/components/ui/toast';
 import {
   extractPermissionError,
   showPermissionError,
 } from '@/lib/permission-utils';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Edit,
+  Loader2,
+  Plus,
+  Search,
+  Trash2,
+  X,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface CommissionData {
   id: string;
@@ -66,19 +103,21 @@ export default function CommissionQueryClient() {
     ytdRevenue: 0,
   });
   const [kpiLoading, setKpiLoading] = useState(true);
-  const [toasts, setToasts] = useState<Array<{
-    id: string;
-    type: 'success' | 'error';
-    title: string;
-    description?: string;
-  }>>([]);
+  const [toasts, setToasts] = useState<
+    Array<{
+      id: string;
+      type: 'success' | 'error';
+      title: string;
+      description?: string;
+    }>
+  >([]);
   const [formData, setFormData] = useState({
     salesperson: '',
     customerName: '',
     productType: '',
     contractDate: '',
     contractAmount: '',
-    commissionAmount: ''
+    commissionAmount: '',
   });
 
   // 格式化金額
@@ -98,7 +137,7 @@ export default function CommissionQueryClient() {
     return date.toLocaleDateString('zh-TW', {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit'
+      day: '2-digit',
     });
   };
 
@@ -188,9 +227,9 @@ export default function CommissionQueryClient() {
 
   // 處理表單輸入
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -198,9 +237,9 @@ export default function CommissionQueryClient() {
   const handleNumberInput = (field: string, value: string) => {
     // 只允許數字和小數點
     const numericValue = value.replace(/[^\d.]/g, '');
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: numericValue
+      [field]: numericValue,
     }));
   };
 
@@ -212,19 +251,23 @@ export default function CommissionQueryClient() {
       productType: '',
       contractDate: '',
       contractAmount: '',
-      commissionAmount: ''
+      commissionAmount: '',
     });
   };
 
   // 顯示 Toast 通知
-  const showToast = (type: 'success' | 'error', title: string, description?: string) => {
+  const showToast = (
+    type: 'success' | 'error',
+    title: string,
+    description?: string
+  ) => {
     const id = Date.now().toString();
-    setToasts(prev => [...prev, { id, type, title, description }]);
+    setToasts((prev) => [...prev, { id, type, title, description }]);
   };
 
   // 移除 Toast 通知
   const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
   // 處理編輯記錄
@@ -236,7 +279,7 @@ export default function CommissionQueryClient() {
       productType: item.productType,
       contractDate: item.contractDate,
       contractAmount: item.contractAmount.toString(),
-      commissionAmount: item.commissionAmount.toString()
+      commissionAmount: item.commissionAmount.toString(),
     });
     setIsEditDialogOpen(true);
   };
@@ -294,8 +337,14 @@ export default function CommissionQueryClient() {
     if (!editingItem) return;
 
     // 前端驗證
-    if (!formData.salesperson || !formData.customerName || !formData.productType ||
-        !formData.contractDate || !formData.contractAmount || !formData.commissionAmount) {
+    if (
+      !formData.salesperson ||
+      !formData.customerName ||
+      !formData.productType ||
+      !formData.contractDate ||
+      !formData.contractAmount ||
+      !formData.commissionAmount
+    ) {
       showToast('error', '修改失敗', '請填寫所有必填欄位');
       return;
     }
@@ -363,8 +412,14 @@ export default function CommissionQueryClient() {
   // 處理新增記錄
   const handleAddRecord = async () => {
     // 前端驗證
-    if (!formData.salesperson || !formData.customerName || !formData.productType ||
-        !formData.contractDate || !formData.contractAmount || !formData.commissionAmount) {
+    if (
+      !formData.salesperson ||
+      !formData.customerName ||
+      !formData.productType ||
+      !formData.contractDate ||
+      !formData.contractAmount ||
+      !formData.commissionAmount
+    ) {
       showToast('error', '新增失敗', '請填寫所有必填欄位');
       return;
     }
@@ -428,7 +483,6 @@ export default function CommissionQueryClient() {
     }
   };
 
-
   return (
     <div className="space-y-6">
       {/* 統計卡片區域 */}
@@ -438,11 +492,15 @@ export default function CommissionQueryClient() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">本月業績</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  本月業績
+                </p>
                 {kpiLoading ? (
                   <div className="flex items-center space-x-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600" />
-                    <span className="text-sm text-muted-foreground">載入中...</span>
+                    <span className="text-sm text-muted-foreground">
+                      載入中...
+                    </span>
                   </div>
                 ) : (
                   <p className="text-2xl font-bold text-green-600">
@@ -462,11 +520,15 @@ export default function CommissionQueryClient() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">本月傭金</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  本月傭金
+                </p>
                 {kpiLoading ? (
                   <div className="flex items-center space-x-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
-                    <span className="text-sm text-muted-foreground">載入中...</span>
+                    <span className="text-sm text-muted-foreground">
+                      載入中...
+                    </span>
                   </div>
                 ) : (
                   <p className="text-2xl font-bold text-blue-600">
@@ -486,11 +548,15 @@ export default function CommissionQueryClient() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">年度累積業績</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  年度累積業績
+                </p>
                 {kpiLoading ? (
                   <div className="flex items-center space-x-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600" />
-                    <span className="text-sm text-muted-foreground">載入中...</span>
+                    <span className="text-sm text-muted-foreground">
+                      載入中...
+                    </span>
                   </div>
                 ) : (
                   <p className="text-2xl font-bold text-purple-600">
@@ -527,124 +593,154 @@ export default function CommissionQueryClient() {
                 新增紀錄
               </Button>
             </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>新增傭金記錄</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              {/* 業務員 */}
-              <div className="flex items-center gap-4">
-                <Label htmlFor="salesperson" className="w-24 text-center justify-center">
-                  業務員
-                </Label>
-                <SalesUserSelect
-                  value={formData.salesperson}
-                  onChange={(value) => handleInputChange('salesperson', value)}
-                  placeholder="選擇業務員"
-                  className="flex-1"
-                />
-              </div>
-
-              {/* 客戶名稱 */}
-              <div className="flex items-center gap-4">
-                <Label htmlFor="customerName" className="w-24 text-center justify-center">
-                  客戶名稱
-                </Label>
-                <Input
-                  id="customerName"
-                  value={formData.customerName}
-                  onChange={(e) => handleInputChange('customerName', e.target.value)}
-                  className="flex-1"
-                  placeholder="輸入客戶名稱"
-                />
-              </div>
-
-              {/* 產品類型 */}
-              <div className="flex items-center gap-4">
-                <Label htmlFor="productType" className="w-24 text-center justify-center">
-                  產品類型
-                </Label>
-                <Select value={formData.productType} onValueChange={(value) => handleInputChange('productType', value)}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="選擇產品類型" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="房地產">房地產</SelectItem>
-                    <SelectItem value="保險">保險</SelectItem>
-                    <SelectItem value="諮詢">諮詢</SelectItem>
-                    <SelectItem value="顧問費">顧問費</SelectItem>
-                    <SelectItem value="基金">基金</SelectItem>
-                    <SelectItem value="行銷">行銷</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 成交日期 */}
-              <div className="flex items-center gap-4">
-                <Label htmlFor="contractDate" className="w-24 text-center justify-center">
-                  成交日期
-                </Label>
-                <input
-                  id="contractDate"
-                  type="date"
-                  value={formData.contractDate}
-                  onChange={(e) => handleInputChange('contractDate', e.target.value)}
-                  className="flex-1 h-10 px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  style={{ textAlign: 'center' }}
-                />
-              </div>
-
-              {/* 業績 */}
-              <div className="flex items-center gap-4">
-                <Label htmlFor="contractAmount" className="w-24 text-center justify-center">
-                  業績
-                </Label>
-                <Input
-                  id="contractAmount"
-                  value={formData.contractAmount}
-                  onChange={(e) => handleNumberInput('contractAmount', e.target.value)}
-                  className="flex-1"
-                  placeholder="輸入業績金額"
-                />
-              </div>
-
-              {/* 實拿金額 */}
-              <div className="flex items-center gap-4">
-                <Label htmlFor="commissionAmount" className="w-24 text-center justify-center">
-                  實拿金額
-                </Label>
-                <Input
-                  id="commissionAmount"
-                  value={formData.commissionAmount}
-                  onChange={(e) => handleNumberInput('commissionAmount', e.target.value)}
-                  className="flex-1"
-                  placeholder="輸入實拿金額"
-                />
-              </div>
-            </div>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsAddDialogOpen(false)}
-                    disabled={isSubmitting}
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>新增傭金記錄</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                {/* 業務員 */}
+                <div className="flex items-center gap-4">
+                  <Label
+                    htmlFor="salesperson"
+                    className="w-24 text-center justify-center"
                   >
-                    取消
-                  </Button>
-                  <Button
-                    onClick={handleAddRecord}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        新增中...
-                      </>
-                    ) : (
-                      '新增'
-                    )}
-                  </Button>
+                    業務員
+                  </Label>
+                  <SalesUserSelect
+                    value={formData.salesperson}
+                    onChange={(value) =>
+                      handleInputChange('salesperson', value)
+                    }
+                    placeholder="選擇業務員"
+                    className="flex-1"
+                  />
                 </div>
-          </DialogContent>
+
+                {/* 客戶名稱 */}
+                <div className="flex items-center gap-4">
+                  <Label
+                    htmlFor="customerName"
+                    className="w-24 text-center justify-center"
+                  >
+                    客戶名稱
+                  </Label>
+                  <Input
+                    id="customerName"
+                    value={formData.customerName}
+                    onChange={(e) =>
+                      handleInputChange('customerName', e.target.value)
+                    }
+                    className="flex-1"
+                    placeholder="輸入客戶名稱"
+                  />
+                </div>
+
+                {/* 產品類型 */}
+                <div className="flex items-center gap-4">
+                  <Label
+                    htmlFor="productType"
+                    className="w-24 text-center justify-center"
+                  >
+                    產品類型
+                  </Label>
+                  <Select
+                    value={formData.productType}
+                    onValueChange={(value) =>
+                      handleInputChange('productType', value)
+                    }
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="選擇產品類型" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="房地產">房地產</SelectItem>
+                      <SelectItem value="保險">保險</SelectItem>
+                      <SelectItem value="諮詢">諮詢</SelectItem>
+                      <SelectItem value="顧問費">顧問費</SelectItem>
+                      <SelectItem value="基金">基金</SelectItem>
+                      <SelectItem value="行銷">行銷</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* 成交日期 */}
+                <div className="flex items-center gap-4">
+                  <Label
+                    htmlFor="contractDate"
+                    className="w-24 text-center justify-center"
+                  >
+                    成交日期
+                  </Label>
+                  <input
+                    id="contractDate"
+                    type="date"
+                    value={formData.contractDate}
+                    onChange={(e) =>
+                      handleInputChange('contractDate', e.target.value)
+                    }
+                    className="flex-1 h-10 px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    style={{ textAlign: 'center' }}
+                  />
+                </div>
+
+                {/* 業績 */}
+                <div className="flex items-center gap-4">
+                  <Label
+                    htmlFor="contractAmount"
+                    className="w-24 text-center justify-center"
+                  >
+                    業績
+                  </Label>
+                  <Input
+                    id="contractAmount"
+                    value={formData.contractAmount}
+                    onChange={(e) =>
+                      handleNumberInput('contractAmount', e.target.value)
+                    }
+                    className="flex-1"
+                    placeholder="輸入業績金額"
+                  />
+                </div>
+
+                {/* 實拿金額 */}
+                <div className="flex items-center gap-4">
+                  <Label
+                    htmlFor="commissionAmount"
+                    className="w-24 text-center justify-center"
+                  >
+                    實拿金額
+                  </Label>
+                  <Input
+                    id="commissionAmount"
+                    value={formData.commissionAmount}
+                    onChange={(e) =>
+                      handleNumberInput('commissionAmount', e.target.value)
+                    }
+                    className="flex-1"
+                    placeholder="輸入實拿金額"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddDialogOpen(false)}
+                  disabled={isSubmitting}
+                >
+                  取消
+                </Button>
+                <Button onClick={handleAddRecord} disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      新增中...
+                    </>
+                  ) : (
+                    '新增'
+                  )}
+                </Button>
+              </div>
+            </DialogContent>
           </Dialog>
         </CommissionCreateGate>
 
@@ -657,7 +753,10 @@ export default function CommissionQueryClient() {
             <div className="space-y-4 py-4">
               {/* 業務員 */}
               <div className="flex items-center gap-4">
-                <Label htmlFor="edit-salesperson" className="w-24 text-center justify-center">
+                <Label
+                  htmlFor="edit-salesperson"
+                  className="w-24 text-center justify-center"
+                >
                   業務員
                 </Label>
                 <SalesUserSelect
@@ -670,13 +769,18 @@ export default function CommissionQueryClient() {
 
               {/* 客戶名稱 */}
               <div className="flex items-center gap-4">
-                <Label htmlFor="edit-customerName" className="w-24 text-center justify-center">
+                <Label
+                  htmlFor="edit-customerName"
+                  className="w-24 text-center justify-center"
+                >
                   客戶名稱
                 </Label>
                 <Input
                   id="edit-customerName"
                   value={formData.customerName}
-                  onChange={(e) => handleInputChange('customerName', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange('customerName', e.target.value)
+                  }
                   className="flex-1"
                   placeholder="輸入客戶名稱"
                 />
@@ -684,10 +788,18 @@ export default function CommissionQueryClient() {
 
               {/* 產品類型 */}
               <div className="flex items-center gap-4">
-                <Label htmlFor="edit-productType" className="w-24 text-center justify-center">
+                <Label
+                  htmlFor="edit-productType"
+                  className="w-24 text-center justify-center"
+                >
                   產品類型
                 </Label>
-                <Select value={formData.productType} onValueChange={(value) => handleInputChange('productType', value)}>
+                <Select
+                  value={formData.productType}
+                  onValueChange={(value) =>
+                    handleInputChange('productType', value)
+                  }
+                >
                   <SelectTrigger className="flex-1">
                     <SelectValue placeholder="選擇產品類型" />
                   </SelectTrigger>
@@ -704,14 +816,19 @@ export default function CommissionQueryClient() {
 
               {/* 成交日期 */}
               <div className="flex items-center gap-4">
-                <Label htmlFor="edit-contractDate" className="w-24 text-center justify-center">
+                <Label
+                  htmlFor="edit-contractDate"
+                  className="w-24 text-center justify-center"
+                >
                   成交日期
                 </Label>
                 <input
                   id="edit-contractDate"
                   type="date"
                   value={formData.contractDate}
-                  onChange={(e) => handleInputChange('contractDate', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange('contractDate', e.target.value)
+                  }
                   className="flex-1 h-10 px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   style={{ textAlign: 'center' }}
                 />
@@ -719,13 +836,18 @@ export default function CommissionQueryClient() {
 
               {/* 業績 */}
               <div className="flex items-center gap-4">
-                <Label htmlFor="edit-contractAmount" className="w-24 text-center justify-center">
+                <Label
+                  htmlFor="edit-contractAmount"
+                  className="w-24 text-center justify-center"
+                >
                   業績
                 </Label>
                 <Input
                   id="edit-contractAmount"
                   value={formData.contractAmount}
-                  onChange={(e) => handleNumberInput('contractAmount', e.target.value)}
+                  onChange={(e) =>
+                    handleNumberInput('contractAmount', e.target.value)
+                  }
                   className="flex-1"
                   placeholder="輸入業績金額"
                 />
@@ -733,13 +855,18 @@ export default function CommissionQueryClient() {
 
               {/* 實拿金額 */}
               <div className="flex items-center gap-4">
-                <Label htmlFor="edit-commissionAmount" className="w-24 text-center justify-center">
+                <Label
+                  htmlFor="edit-commissionAmount"
+                  className="w-24 text-center justify-center"
+                >
                   實拿金額
                 </Label>
                 <Input
                   id="edit-commissionAmount"
                   value={formData.commissionAmount}
-                  onChange={(e) => handleNumberInput('commissionAmount', e.target.value)}
+                  onChange={(e) =>
+                    handleNumberInput('commissionAmount', e.target.value)
+                  }
                   className="flex-1"
                   placeholder="輸入實拿金額"
                 />
@@ -753,10 +880,7 @@ export default function CommissionQueryClient() {
               >
                 取消
               </Button>
-              <Button
-                onClick={handleUpdateRecord}
-                disabled={isUpdating}
-              >
+              <Button onClick={handleUpdateRecord} disabled={isUpdating}>
                 {isUpdating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -776,214 +900,225 @@ export default function CommissionQueryClient() {
           <CardTitle className="text-xl">傭金明細</CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
-
-        {/* 表格區域 */}
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-center">業務員</TableHead>
-              <TableHead className="text-center">客戶</TableHead>
-              <TableHead className="text-center">產品類型</TableHead>
-              <TableHead className="text-center">成交日期</TableHead>
-              <TableHead className="text-center">業績</TableHead>
-              <TableHead className="text-center">實拿金額</TableHead>
-              <TableHead className="text-center w-16"></TableHead>
-              <TableHead className="text-center w-16"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+          {/* 表格區域 */}
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-                    <span className="ml-2">載入中...</span>
-                  </div>
-                </TableCell>
+                <TableHead className="text-center">業務員</TableHead>
+                <TableHead className="text-center">客戶</TableHead>
+                <TableHead className="text-center">產品類型</TableHead>
+                <TableHead className="text-center">成交日期</TableHead>
+                <TableHead className="text-center">業績</TableHead>
+                <TableHead className="text-center">實拿金額</TableHead>
+                <TableHead className="text-center w-16"></TableHead>
+                <TableHead className="text-center w-16"></TableHead>
               </TableRow>
-            ) : data.length === 0 ? (
-              <TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                      <span className="ml-2">載入中...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : data.length === 0 ? (
+                <TableRow>
                   <TableCell
                     colSpan={8}
                     className="text-center py-8 text-muted-foreground"
                   >
-                  暫無傭金記錄
-                </TableCell>
-              </TableRow>
-            ) : (
-              data.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="text-center font-medium py-3">
-                    {formatSalesName(item.salesUserId, item.salesName)}
-                  </TableCell>
-                  <TableCell className="text-center py-3">{item.customerName}</TableCell>
-                  <TableCell className="text-center py-3">{item.productType}</TableCell>
-                  <TableCell className="text-center py-3">{formatDate(item.contractDate)}</TableCell>
-                  <TableCell className="text-center py-3">{formatCurrency(item.contractAmount)}</TableCell>
-                  <TableCell className="text-center font-bold text-green-600 py-3">
-                    {formatCurrency(item.commissionAmount)}
-                  </TableCell>
-                  <TableCell className="text-center py-3 w-16">
-                    <CommissionEditGate showFallback fallback={<div className="w-9 h-9" />}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-blue-600 hover:text-blue-700"
-                        onClick={() => handleEditClick(item)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </CommissionEditGate>
-                  </TableCell>
-                  <TableCell className="text-center py-3 w-16">
-                    <CommissionDeleteGate showFallback fallback={<div className="w-9 h-9" />}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => handleDeleteClick(item.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </CommissionDeleteGate>
+                    暫無傭金記錄
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-
-        {/* 分頁控制元件 */}
-        {total > 0 && (
-          <div className="flex items-center justify-between px-0 py-4 border-t">
-            <div className="flex items-center space-x-2">
-              <p className="text-sm text-muted-foreground">
-                每頁顯示
-              </p>
-              <select
-                value={pageSize}
-                onChange={(e) => handlePageSizeChange(e.target.value)}
-                className="h-8 w-16 rounded border border-input bg-background px-2 text-sm"
-              >
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-              </select>
-              <p className="text-sm text-muted-foreground">
-                筆，共 {total} 筆資料
-              </p>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <p className="text-sm text-muted-foreground">
-                第 {page} 頁，共 {totalPages} 頁
-              </p>
-
-              <div className="flex items-center space-x-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(1)}
-                  disabled={page === 1 || loading}
-                >
-                  <ChevronsLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1 || loading}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-
-                {/* 頁碼按鈕 */}
-                {Array.from(
-                  {
-                    length: Math.min(5, totalPages),
-                  },
-                  (_, i) => {
-                    const startPage = Math.max(1, page - 2);
-                    const pageNum = startPage + i;
-                    if (pageNum > totalPages) return null;
-
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={pageNum === page ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => handlePageChange(pageNum)}
-                        disabled={loading}
-                        className="w-8 h-8 p-0"
+              ) : (
+                data.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="text-center font-medium py-3">
+                      {formatSalesName(item.salesUserId, item.salesName)}
+                    </TableCell>
+                    <TableCell className="text-center py-3">
+                      {item.customerName}
+                    </TableCell>
+                    <TableCell className="text-center py-3">
+                      {item.productType}
+                    </TableCell>
+                    <TableCell className="text-center py-3">
+                      {formatDate(item.contractDate)}
+                    </TableCell>
+                    <TableCell className="text-center py-3">
+                      {formatCurrency(item.contractAmount)}
+                    </TableCell>
+                    <TableCell className="text-center font-bold text-green-600 py-3">
+                      {formatCurrency(item.commissionAmount)}
+                    </TableCell>
+                    <TableCell className="text-center py-3 w-16">
+                      <CommissionEditGate
+                        showFallback
+                        fallback={<div className="w-9 h-9" />}
                       >
-                        {pageNum}
-                      </Button>
-                    );
-                  }
-                )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-blue-600 hover:text-blue-700"
+                          onClick={() => handleEditClick(item)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </CommissionEditGate>
+                    </TableCell>
+                    <TableCell className="text-center py-3 w-16">
+                      <CommissionDeleteGate
+                        showFallback
+                        fallback={<div className="w-9 h-9" />}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => handleDeleteClick(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </CommissionDeleteGate>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page >= totalPages || loading}
+          {/* 分頁控制元件 */}
+          {total > 0 && (
+            <div className="flex items-center justify-between px-0 py-4 border-t">
+              <div className="flex items-center space-x-2">
+                <p className="text-sm text-muted-foreground">每頁顯示</p>
+                <select
+                  value={pageSize}
+                  onChange={(e) => handlePageSizeChange(e.target.value)}
+                  className="h-8 w-16 rounded border border-input bg-background px-2 text-sm"
                 >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={page >= totalPages || loading}
-                >
-                  <ChevronsRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-            </CardContent>
-          </Card>
-
-          {/* 刪除確認對話框 */}
-          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>確認刪除</DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                </select>
                 <p className="text-sm text-muted-foreground">
-                  確定要刪除這筆傭金記錄嗎？此操作無法復原。
+                  筆，共 {total} 筆資料
                 </p>
               </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={handleDeleteCancel}
-                  disabled={isDeleting}
-                >
-                  取消
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteConfirm}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      刪除中...
-                    </>
-                  ) : (
-                    '確認刪除'
-                  )}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
 
-          {/* Toast 通知 */}
-          <ToastManager toasts={toasts} onRemove={removeToast} />
-        </div>
-      );
-    }
+              <div className="flex items-center space-x-2">
+                <p className="text-sm text-muted-foreground">
+                  第 {page} 頁，共 {totalPages} 頁
+                </p>
+
+                <div className="flex items-center space-x-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(1)}
+                    disabled={page === 1 || loading}
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 1 || loading}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  {/* 頁碼按鈕 */}
+                  {Array.from(
+                    {
+                      length: Math.min(5, totalPages),
+                    },
+                    (_, i) => {
+                      const startPage = Math.max(1, page - 2);
+                      const pageNum = startPage + i;
+                      if (pageNum > totalPages) return null;
+
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={pageNum === page ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => handlePageChange(pageNum)}
+                          disabled={loading}
+                          className="w-8 h-8 p-0"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    }
+                  )}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page >= totalPages || loading}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(totalPages)}
+                    disabled={page >= totalPages || loading}
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 刪除確認對話框 */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>確認刪除</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              確定要刪除這筆傭金記錄嗎？此操作無法復原。
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleDeleteCancel}
+              disabled={isDeleting}
+            >
+              取消
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  刪除中...
+                </>
+              ) : (
+                '確認刪除'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Toast 通知 */}
+      <ToastManager toasts={toasts} onRemove={removeToast} />
+    </div>
+  );
+}

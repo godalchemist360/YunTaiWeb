@@ -99,7 +99,7 @@ export async function DELETE(
     // 將 UUID 格式的 userId 轉換回整數 ID
     // UUID 格式：00000000-0000-0000-0000-000000000001
     // 最後 12 位就是原始的整數 ID
-    const numericId = parseInt(userId.slice(-12), 10);
+    const numericId = Number.parseInt(userId.slice(-12), 10);
 
     const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
       numericId,

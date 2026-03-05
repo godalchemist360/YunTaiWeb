@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
 
 export const runtime = 'nodejs';
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Parent ID is required'
+          error: 'Parent ID is required',
         },
         { status: 400 }
       );
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const client = await pool.connect();
 
     try {
-          const query = `
+      const query = `
             SELECT m.id, m.employee_no, m.name, m.rank, m.active, m.sales_total, m.sales_month, m.team_sales_month,
                    EXISTS(SELECT 1 FROM members c WHERE c.upline_id = m.id) AS "hasChildren",
                    u.avatar_url, u.display_name, m.introducer
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        data: result.rows
+        data: result.rows,
       });
     } finally {
       client.release();
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to fetch organization children'
+        error: 'Failed to fetch organization children',
       },
       { status: 500 }
     );

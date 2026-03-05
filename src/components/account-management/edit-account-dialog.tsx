@@ -1,6 +1,9 @@
 'use client';
 
-import { AvatarUpload, type AvatarUploadRef } from '@/components/account-management/avatar-upload';
+import {
+  AvatarUpload,
+  type AvatarUploadRef,
+} from '@/components/account-management/avatar-upload';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -339,7 +342,9 @@ export function EditAccountDialog({
             <AvatarUpload
               ref={avatarUploadRef}
               currentAvatarUrl={formData.avatar_url}
-              onAvatarChange={(avatarUrl) => setFormData(prev => ({ ...prev, avatar_url: avatarUrl }))}
+              onAvatarChange={(avatarUrl) =>
+                setFormData((prev) => ({ ...prev, avatar_url: avatarUrl }))
+              }
               userId={account?.id || 0}
               mode="deferred" // 使用延遲上傳模式
             />

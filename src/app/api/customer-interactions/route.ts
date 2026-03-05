@@ -219,7 +219,13 @@ export async function POST(req: Request) {
     // 動態新增的支出項目（如果有舊格式的動態新增，轉換為新格式）
     if (newItemInputs?.expenses) {
       newItemInputs.expenses.forEach(
-        (item: { name: string; value: string; category?: string; subCategory?: string; customName?: string }) => {
+        (item: {
+          name: string;
+          value: string;
+          category?: string;
+          subCategory?: string;
+          customName?: string;
+        }) => {
           if (item.name && item.value) {
             const numValue = Number.parseFloat(item.value) || 0;
             if (numValue > 0) {
@@ -228,7 +234,10 @@ export async function POST(req: Request) {
                 if (!expenseData[item.category]) {
                   expenseData[item.category] = {};
                 }
-                const itemKey = item.category === '其他' ? (item.customName || item.name) : (item.subCategory || item.name);
+                const itemKey =
+                  item.category === '其他'
+                    ? item.customName || item.name
+                    : item.subCategory || item.name;
                 expenseData[item.category][itemKey] = numValue;
               } else {
                 // 否則放在"其他"分類下
@@ -243,7 +252,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const incomeExpenseData: { income: { [key: string]: number }; expense: { [key: string]: { [key: string]: number } } } = {
+    const incomeExpenseData: {
+      income: { [key: string]: number };
+      expense: { [key: string]: { [key: string]: number } };
+    } = {
       income: incomeData,
       expense: expenseData,
     };

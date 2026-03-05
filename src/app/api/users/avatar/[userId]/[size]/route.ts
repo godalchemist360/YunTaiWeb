@@ -33,15 +33,17 @@ export async function GET(
     const response = NextResponse.json({
       url: thumbnailUrl,
       originalUrl: avatarUrl,
-      size: parseInt(size)
+      size: Number.parseInt(size),
     });
 
     // 設定 30 天快取
-    response.headers.set('Cache-Control', 'public, max-age=2592000, s-maxage=2592000');
+    response.headers.set(
+      'Cache-Control',
+      'public, max-age=2592000, s-maxage=2592000'
+    );
     response.headers.set('ETag', `"${userId}-${size}-${Date.now()}"`);
 
     return response;
-
   } catch (error) {
     console.error('Error getting avatar:', error);
     return NextResponse.json(

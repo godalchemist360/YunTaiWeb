@@ -189,9 +189,7 @@ export function canViewCustomerTracking(
  * @param userRole 用戶角色
  * @returns 是否可以創建銷售支援文件
  */
-export function canCreateSalesSupport(
-  userRole: UserRole | undefined
-): boolean {
+export function canCreateSalesSupport(userRole: UserRole | undefined): boolean {
   return hasPermission(userRole, 'sales-support.create');
 }
 
@@ -200,9 +198,7 @@ export function canCreateSalesSupport(
  * @param userRole 用戶角色
  * @returns 是否可以刪除銷售支援文件
  */
-export function canDeleteSalesSupport(
-  userRole: UserRole | undefined
-): boolean {
+export function canDeleteSalesSupport(userRole: UserRole | undefined): boolean {
   return hasPermission(userRole, 'sales-support.delete');
 }
 
@@ -211,9 +207,7 @@ export function canDeleteSalesSupport(
  * @param userRole 用戶角色
  * @returns 是否可以查看銷售支援文件
  */
-export function canViewSalesSupport(
-  userRole: UserRole | undefined
-): boolean {
+export function canViewSalesSupport(userRole: UserRole | undefined): boolean {
   return hasPermission(userRole, 'sales-support.view');
 }
 
@@ -222,9 +216,7 @@ export function canViewSalesSupport(
  * @param userRole 用戶角色
  * @returns 是否可以創建佣金記錄
  */
-export function canCreateCommission(
-  userRole: UserRole | undefined
-): boolean {
+export function canCreateCommission(userRole: UserRole | undefined): boolean {
   return hasPermission(userRole, 'commission.create');
 }
 
@@ -233,9 +225,7 @@ export function canCreateCommission(
  * @param userRole 用戶角色
  * @returns 是否可以編輯佣金記錄
  */
-export function canEditCommission(
-  userRole: UserRole | undefined
-): boolean {
+export function canEditCommission(userRole: UserRole | undefined): boolean {
   return hasPermission(userRole, 'commission.edit');
 }
 
@@ -244,9 +234,7 @@ export function canEditCommission(
  * @param userRole 用戶角色
  * @returns 是否可以刪除佣金記錄
  */
-export function canDeleteCommission(
-  userRole: UserRole | undefined
-): boolean {
+export function canDeleteCommission(userRole: UserRole | undefined): boolean {
   return hasPermission(userRole, 'commission.delete');
 }
 
@@ -255,9 +243,7 @@ export function canDeleteCommission(
  * @param userRole 用戶角色
  * @returns 是否可以查看佣金記錄
  */
-export function canViewCommission(
-  userRole: UserRole | undefined
-): boolean {
+export function canViewCommission(userRole: UserRole | undefined): boolean {
   return hasPermission(userRole, 'commission.view');
 }
 

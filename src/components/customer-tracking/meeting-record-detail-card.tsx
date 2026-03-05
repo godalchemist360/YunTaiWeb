@@ -1,5 +1,9 @@
 'use client';
 
+import type {
+  MeetingRecordEntry,
+  MeetingRecordStage,
+} from '@/types/customer-interactions';
 import {
   Calendar,
   Edit,
@@ -13,10 +17,6 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type {
-  MeetingRecordEntry,
-  MeetingRecordStage,
-} from '@/types/customer-interactions';
 
 interface MeetingRecordDetailCardProps {
   isOpen: boolean;
@@ -66,12 +66,13 @@ export function MeetingRecordDetailCard({
   const [stageMarketingStage, setStageMarketingStage] = useState<number>(
     MARKETING_STAGE_DEFAULT
   );
-  const [meetingForms, setMeetingForms] = useState<Record<
-    string,
-    MeetingRecordEntry
-  >>({});
+  const [meetingForms, setMeetingForms] = useState<
+    Record<string, MeetingRecordEntry>
+  >({});
   const [isStageEditing, setIsStageEditing] = useState(false);
-  const [editingMeetings, setEditingMeetings] = useState<Record<string, boolean>>({});
+  const [editingMeetings, setEditingMeetings] = useState<
+    Record<string, boolean>
+  >({});
 
   // 行銷階段選項
   const marketingStages: Array<{ value: number; label: string }> = [
@@ -87,9 +88,7 @@ export function MeetingRecordDetailCard({
 
   const marketingStageValues = marketingStages.map((stage) => stage.value);
 
-  const parseMarketingStageValue = (
-     value?: number | string | null
-   ): number => {
+  const parseMarketingStageValue = (value?: number | string | null): number => {
     if (typeof value === 'number') {
       return marketingStageValues.includes(value)
         ? value
@@ -217,8 +216,10 @@ export function MeetingRecordDetailCard({
   useEffect(() => {
     if (!data) return;
 
-    const meetingRecord =
-      (data.meeting_record || {}) as Record<string, MeetingRecordStage>;
+    const meetingRecord = (data.meeting_record || {}) as Record<
+      string,
+      MeetingRecordStage
+    >;
     meetingRecordRef.current = meetingRecord;
 
     if (data.isNew) {
@@ -262,7 +263,9 @@ export function MeetingRecordDetailCard({
 
       if (field === 'success_rate') {
         const numericValue =
-          typeof value === 'number' ? value : Number.parseInt(String(value), 10);
+          typeof value === 'number'
+            ? value
+            : Number.parseInt(String(value), 10);
         nextValue = Number.isNaN(numericValue)
           ? 0
           : Math.max(0, Math.min(100, numericValue));
@@ -286,8 +289,7 @@ export function MeetingRecordDetailCard({
   const resetFormsFromData = () => {
     const meetingIndex = data?.meetingIndex || '1';
     const meetingRecord = meetingRecordRef.current || {};
-    const stageData =
-      (meetingRecord[meetingIndex] as MeetingRecordStage) || {};
+    const stageData = (meetingRecord[meetingIndex] as MeetingRecordStage) || {};
 
     setStageMarketingStage(parseMarketingStageValue(stageData.marketing_stage));
     setMeetingForms(buildMeetingFormsFromStage(stageData));
@@ -570,10 +572,7 @@ export function MeetingRecordDetailCard({
             return false;
           }
 
-          const meetIndex = Number.parseInt(
-            meetKey.replace(/^\D+/u, ''),
-            10
-          );
+          const meetIndex = Number.parseInt(meetKey.replace(/^\D+/u, ''), 10);
 
           if (!entry.appointment_date) {
             setValidationError(`第${meetIndex}次會面請填寫約訪日期`);
@@ -606,8 +605,7 @@ export function MeetingRecordDetailCard({
         }
       }
 
-      const currentMeetingRecord =
-        meetingRecordRef.current || {};
+      const currentMeetingRecord = meetingRecordRef.current || {};
       let meetingIndex: string;
 
       if (data?.isNew) {
@@ -646,13 +644,16 @@ export function MeetingRecordDetailCard({
 
       requestBody.meeting_count = Object.keys(updatedMeetingRecord).length;
 
-      const response = await fetch(`/api/customer-interactions/${interactionId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await fetch(
+        `/api/customer-interactions/${interactionId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       const result = await response.json();
 
@@ -728,7 +729,9 @@ export function MeetingRecordDetailCard({
               </svg>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-red-600">請補齊必填欄位</p>
+              <p className="text-sm font-semibold text-red-600">
+                請補齊必填欄位
+              </p>
               <p className="mt-1 text-sm text-red-500">{validationError}</p>
             </div>
             <button
@@ -860,8 +863,9 @@ export function MeetingRecordDetailCard({
               const isMeetingEditing = isNewMode || !!editingMeetings[meetKey];
               const meetingIndexKey = data?.meetingIndex || '1';
               const persistedStage =
-                (meetingRecordRef.current?.[meetingIndexKey] as
-                  MeetingRecordStage) || {};
+                (meetingRecordRef.current?.[
+                  meetingIndexKey
+                ] as MeetingRecordStage) || {};
               const isNewMeeting = !(meetKey in persistedStage);
 
               return (
@@ -887,7 +891,9 @@ export function MeetingRecordDetailCard({
                           type="button"
                           onClick={() => toggleMeetingEditing(meetKey)}
                           className={`rounded-full p-2 transition-colors ${isMeetingEditing ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600'}`}
-                          title={isMeetingEditing ? '關閉會面編輯' : '編輯會面內容'}
+                          title={
+                            isMeetingEditing ? '關閉會面編輯' : '編輯會面內容'
+                          }
                         >
                           <Edit className="h-4 w-4" />
                         </button>
@@ -991,7 +997,9 @@ export function MeetingRecordDetailCard({
                               }
                               className="w-24 px-3 py-2 border border-gray-300 rounded text-sm text-right focus:outline-none focus:ring-1 focus:ring-blue-500"
                             />
-                            <span className="text-sm font-medium text-gray-500">%</span>
+                            <span className="text-sm font-medium text-gray-500">
+                              %
+                            </span>
                           </div>
                         </div>
                       </div>

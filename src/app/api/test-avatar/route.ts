@@ -33,20 +33,19 @@ export async function GET(request: NextRequest) {
       original: {
         url: avatarUrl,
         status: originalStatus,
-        ok: originalOk
+        ok: originalOk,
       },
       thumbnail50: {
         url: thumbnail50Url,
         status: thumbnail50Status,
-        ok: thumbnail50Ok
+        ok: thumbnail50Ok,
       },
       thumbnail200: {
         url: thumbnail200Url,
         status: thumbnail200Status,
-        ok: thumbnail200Ok
-      }
+        ok: thumbnail200Ok,
+      },
     });
-
   } catch (error) {
     console.error('Error testing avatar URLs:', error);
     return NextResponse.json(

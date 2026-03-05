@@ -1,6 +1,12 @@
 'use client';
 
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   ChevronDown,
   ChevronRight,
   DollarSign,
@@ -15,19 +21,13 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  PieChart,
-  Pie,
   Cell,
-  ResponsiveContainer,
-  Tooltip,
   Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
   Sector,
+  Tooltip,
 } from 'recharts';
 
 interface EconomicStatusDetailCardProps {
@@ -75,7 +75,10 @@ const prepareIncomePieData = (incomeData: any) => {
   return Object.keys(incomeData)
     .filter((key) => cleanValue(incomeData[key]) > 0)
     .map((key) => ({
-      name: PREDEFINED_FIELDS.income[key as keyof typeof PREDEFINED_FIELDS.income] || key,
+      name:
+        PREDEFINED_FIELDS.income[
+          key as keyof typeof PREDEFINED_FIELDS.income
+        ] || key,
       value: cleanValue(incomeData[key]),
     }));
 };
@@ -87,7 +90,10 @@ const prepareAssetsPieData = (assetsData: any) => {
   return Object.keys(assetsData)
     .filter((key) => cleanValue(assetsData[key]) > 0)
     .map((key) => ({
-      name: PREDEFINED_FIELDS.assets[key as keyof typeof PREDEFINED_FIELDS.assets] || key,
+      name:
+        PREDEFINED_FIELDS.assets[
+          key as keyof typeof PREDEFINED_FIELDS.assets
+        ] || key,
       value: cleanValue(assetsData[key]),
     }));
 };
@@ -128,7 +134,10 @@ const prepareLiabilitiesPieData = (liabilitiesData: any) => {
   return Object.keys(liabilitiesData)
     .filter((key) => cleanValue(liabilitiesData[key]) > 0)
     .map((key) => ({
-      name: PREDEFINED_FIELDS.liabilities[key as keyof typeof PREDEFINED_FIELDS.liabilities] || key,
+      name:
+        PREDEFINED_FIELDS.liabilities[
+          key as keyof typeof PREDEFINED_FIELDS.liabilities
+        ] || key,
       value: cleanValue(liabilitiesData[key]),
     }));
 };
@@ -437,7 +446,9 @@ export function EconomicStatusDetailCard({
     };
   }>({});
   // 支出分類的折疊狀態
-  const [expenseCollapsed, setExpenseCollapsed] = useState<{ [key: string]: boolean }>(() => {
+  const [expenseCollapsed, setExpenseCollapsed] = useState<{
+    [key: string]: boolean;
+  }>(() => {
     const collapsed: { [key: string]: boolean } = {};
     EXPENSE_CATEGORY_KEYS.forEach((key) => {
       collapsed[key] = true; // 預設全部折疊
@@ -447,12 +458,21 @@ export function EconomicStatusDetailCard({
   // 圓餅圖 Dialog 狀態
   const [isIncomePieChartOpen, setIsIncomePieChartOpen] = useState(false);
   const [isAssetsPieChartOpen, setIsAssetsPieChartOpen] = useState(false);
-  const [isLiabilitiesPieChartOpen, setIsLiabilitiesPieChartOpen] = useState(false);
+  const [isLiabilitiesPieChartOpen, setIsLiabilitiesPieChartOpen] =
+    useState(false);
   const [isExpensePieChartOpen, setIsExpensePieChartOpen] = useState(false);
-  const [activeIncomeIndex, setActiveIncomeIndex] = useState<number | undefined>(undefined);
-  const [activeAssetsIndex, setActiveAssetsIndex] = useState<number | undefined>(undefined);
-  const [activeLiabilitiesIndex, setActiveLiabilitiesIndex] = useState<number | undefined>(undefined);
-  const [activeExpenseIndex, setActiveExpenseIndex] = useState<number | undefined>(undefined);
+  const [activeIncomeIndex, setActiveIncomeIndex] = useState<
+    number | undefined
+  >(undefined);
+  const [activeAssetsIndex, setActiveAssetsIndex] = useState<
+    number | undefined
+  >(undefined);
+  const [activeLiabilitiesIndex, setActiveLiabilitiesIndex] = useState<
+    number | undefined
+  >(undefined);
+  const [activeExpenseIndex, setActiveExpenseIndex] = useState<
+    number | undefined
+  >(undefined);
 
   // 當卡片關閉時重置編輯狀態
   useEffect(() => {
@@ -638,7 +658,9 @@ export function EconomicStatusDetailCard({
 
           if (PREDEFINED_FIELDS.assets.hasOwnProperty(key)) {
             assetLiabilityData[
-              PREDEFINED_FIELDS.assets[key as keyof typeof PREDEFINED_FIELDS.assets]
+              PREDEFINED_FIELDS.assets[
+                key as keyof typeof PREDEFINED_FIELDS.assets
+              ]
             ] = cleanedValue;
           } else {
             assetLiabilityData[`資產_${key}`] = cleanedValue;
@@ -653,7 +675,9 @@ export function EconomicStatusDetailCard({
 
           if (PREDEFINED_FIELDS.liabilities.hasOwnProperty(key)) {
             assetLiabilityData[
-              PREDEFINED_FIELDS.liabilities[key as keyof typeof PREDEFINED_FIELDS.liabilities]
+              PREDEFINED_FIELDS.liabilities[
+                key as keyof typeof PREDEFINED_FIELDS.liabilities
+              ]
             ] = cleanedValue;
           } else {
             assetLiabilityData[`負債_${key}`] = cleanedValue;
@@ -684,8 +708,10 @@ export function EconomicStatusDetailCard({
       // 更新本地數據為保存後的數據，確保立即顯示最新內容
       const updatedData = {
         ...data,
-        income_expense_data: result?.data?.income_expense_data || incomeExpenseData,
-        asset_liability_data: result?.data?.asset_liability_data || assetLiabilityData,
+        income_expense_data:
+          result?.data?.income_expense_data || incomeExpenseData,
+        asset_liability_data:
+          result?.data?.asset_liability_data || assetLiabilityData,
       };
       const updatedTransformedData = transformToEditFormat(updatedData);
       setEditData(updatedTransformedData);
@@ -716,7 +742,7 @@ export function EconomicStatusDetailCard({
 
   // 編輯模式使用 editData，非編輯模式使用 editData（保存後已更新）或 transformedData
   // 這樣保存後可以立即顯示最新數據
-  const currentData = isEditing ? editData : (editData || transformedData);
+  const currentData = isEditing ? editData : editData || transformedData;
   const monthlyBalance = calculateMonthlyBalance(
     currentData.income || {},
     currentData.expense || {}
@@ -756,7 +782,9 @@ export function EconomicStatusDetailCard({
                       <div className="p-2 bg-green-800 bg-opacity-30 rounded-lg">
                         <TrendingUp className="h-5 w-5 text-white" />
                       </div>
-                      <h4 className="text-lg font-bold text-white">收入 (月)</h4>
+                      <h4 className="text-lg font-bold text-white">
+                        收入 (月)
+                      </h4>
                     </div>
                     <button
                       type="button"
@@ -815,9 +843,7 @@ export function EconomicStatusDetailCard({
                               )}
                               {isEditing && (
                                 <button
-                                  onClick={() =>
-                                    removeItem('income', key)
-                                  }
+                                  onClick={() => removeItem('income', key)}
                                   className="p-1.5 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
                                 >
                                   <X className="h-4 w-4" />
@@ -1146,7 +1172,9 @@ export function EconomicStatusDetailCard({
                       <div className="p-2 bg-purple-800 bg-opacity-30 rounded-lg">
                         <TrendingDown className="h-5 w-5 text-white" />
                       </div>
-                      <h4 className="text-lg font-bold text-white">支出 (月)</h4>
+                      <h4 className="text-lg font-bold text-white">
+                        支出 (月)
+                      </h4>
                     </div>
                     <button
                       type="button"
@@ -1167,10 +1195,12 @@ export function EconomicStatusDetailCard({
                       const organized = organizeExpenseData(expenseData);
 
                       // 檢查是否有任何數據
-                      const hasAnyData = EXPENSE_CATEGORY_KEYS.some((categoryKey) => {
-                        const categoryItems = organized[categoryKey] || {};
-                        return Object.keys(categoryItems).length > 0;
-                      });
+                      const hasAnyData = EXPENSE_CATEGORY_KEYS.some(
+                        (categoryKey) => {
+                          const categoryItems = organized[categoryKey] || {};
+                          return Object.keys(categoryItems).length > 0;
+                        }
+                      );
 
                       // 如果沒有任何數據，顯示提示
                       if (!hasAnyData) {
@@ -1215,7 +1245,9 @@ export function EconomicStatusDetailCard({
                             {!isCollapsed && (
                               <div className="p-2 space-y-1 bg-white">
                                 {Object.keys(categoryItems).map((itemKey) => {
-                                  const value = formatValue(categoryItems[itemKey]);
+                                  const value = formatValue(
+                                    categoryItems[itemKey]
+                                  );
                                   return (
                                     <div
                                       key={itemKey}
@@ -1233,10 +1265,15 @@ export function EconomicStatusDetailCard({
                                               // 新格式：直接更新嵌套結構
                                               setEditData((prev: any) => {
                                                 const newData = { ...prev };
-                                                if (!newData.expense[categoryKey]) {
-                                                  newData.expense[categoryKey] = {};
+                                                if (
+                                                  !newData.expense[categoryKey]
+                                                ) {
+                                                  newData.expense[categoryKey] =
+                                                    {};
                                                 }
-                                                newData.expense[categoryKey][itemKey] = e.target.value;
+                                                newData.expense[categoryKey][
+                                                  itemKey
+                                                ] = e.target.value;
                                                 return newData;
                                               });
                                             }}
@@ -1251,7 +1288,10 @@ export function EconomicStatusDetailCard({
                                         {isEditing && (
                                           <button
                                             onClick={() =>
-                                              removeExpenseItem(categoryKey, itemKey)
+                                              removeExpenseItem(
+                                                categoryKey,
+                                                itemKey
+                                              )
                                             }
                                             className="p-1 hover:bg-red-100 rounded-full text-red-600 transition-colors flex-shrink-0"
                                           >
@@ -1278,7 +1318,12 @@ export function EconomicStatusDetailCard({
                           const inputKey = `expense-${Date.now()}`;
                           setNewItemInputs((prev) => ({
                             ...prev,
-                            [inputKey]: { category: '', subCategory: '', customName: '', value: '' },
+                            [inputKey]: {
+                              category: '',
+                              subCategory: '',
+                              customName: '',
+                              value: '',
+                            },
                           }));
                         }}
                         className="flex items-center gap-2 text-purple-600 hover:text-purple-700 text-sm font-medium bg-purple-50 hover:bg-purple-100 px-4 py-2 rounded-lg border border-purple-200 transition-colors"
@@ -1293,10 +1338,13 @@ export function EconomicStatusDetailCard({
                         .map((inputKey) => {
                           const input = newItemInputs[inputKey];
                           const selectedCategory = input?.category || '';
-                          const showSubCategory = selectedCategory && selectedCategory !== '其他';
+                          const showSubCategory =
+                            selectedCategory && selectedCategory !== '其他';
                           const showCustomName = selectedCategory === '其他';
                           const subCategories = selectedCategory
-                            ? EXPENSE_CATEGORIES[selectedCategory as keyof typeof EXPENSE_CATEGORIES] || []
+                            ? EXPENSE_CATEGORIES[
+                                selectedCategory as keyof typeof EXPENSE_CATEGORIES
+                              ] || []
                             : [];
 
                           return (
@@ -1410,7 +1458,9 @@ export function EconomicStatusDetailCard({
                               </div>
                               <div className="flex gap-3 mt-4">
                                 <button
-                                  onClick={() => addNewItem('expense', inputKey)}
+                                  onClick={() =>
+                                    addNewItem('expense', inputKey)
+                                  }
                                   className="flex items-center gap-2 text-purple-600 hover:text-purple-700 text-sm font-medium bg-purple-100 hover:bg-purple-200 px-4 py-2 rounded-lg border border-purple-300 transition-colors"
                                 >
                                   <Plus className="h-4 w-4" />
@@ -1738,7 +1788,10 @@ export function EconomicStatusDetailCard({
       </div>
 
       {/* 收入圓餅圖 Dialog */}
-      <Dialog open={isIncomePieChartOpen} onOpenChange={setIsIncomePieChartOpen}>
+      <Dialog
+        open={isIncomePieChartOpen}
+        onOpenChange={setIsIncomePieChartOpen}
+      >
         <DialogContent className="!max-w-4xl sm:!max-w-4xl w-[85vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>收入圓餅圖</DialogTitle>
@@ -1757,20 +1810,30 @@ export function EconomicStatusDetailCard({
               }
 
               return (
-                <ResponsiveContainer width="100%" height={500} className="[&_svg]:outline-none [&_svg]:focus:outline-none">
-                  <PieChart margin={{ top: 20, right: 80, bottom: 20, left: 80 }}>
+                <ResponsiveContainer
+                  width="100%"
+                  height={500}
+                  className="[&_svg]:outline-none [&_svg]:focus:outline-none"
+                >
+                  <PieChart
+                    margin={{ top: 20, right: 80, bottom: 20, left: 80 }}
+                  >
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={activeIncomeIndex !== undefined ? (props: any) => {
-                        const { name, percent, index } = props;
-                        if (activeIncomeIndex === index) {
-                          return `${name}: ${(percent * 100).toFixed(1)}%`;
-                        }
-                        return null;
-                      } : false}
+                      label={
+                        activeIncomeIndex !== undefined
+                          ? (props: any) => {
+                              const { name, percent, index } = props;
+                              if (activeIncomeIndex === index) {
+                                return `${name}: ${(percent * 100).toFixed(1)}%`;
+                              }
+                              return null;
+                            }
+                          : false
+                      }
                       outerRadius={120}
                       fill="#8884d8"
                       dataKey="value"
@@ -1778,7 +1841,15 @@ export function EconomicStatusDetailCard({
                       onMouseEnter={(_, index) => setActiveIncomeIndex(index)}
                       onMouseLeave={() => setActiveIncomeIndex(undefined)}
                       activeShape={(props: any) => {
-                        const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+                        const {
+                          cx,
+                          cy,
+                          innerRadius,
+                          outerRadius,
+                          startAngle,
+                          endAngle,
+                          fill,
+                        } = props;
                         return (
                           <Sector
                             cx={cx}
@@ -1793,7 +1864,10 @@ export function EconomicStatusDetailCard({
                       }}
                     >
                       {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
                       ))}
                     </Pie>
                     <Legend
@@ -1810,7 +1884,10 @@ export function EconomicStatusDetailCard({
       </Dialog>
 
       {/* 資產圓餅圖 Dialog */}
-      <Dialog open={isAssetsPieChartOpen} onOpenChange={setIsAssetsPieChartOpen}>
+      <Dialog
+        open={isAssetsPieChartOpen}
+        onOpenChange={setIsAssetsPieChartOpen}
+      >
         <DialogContent className="!max-w-4xl sm:!max-w-4xl w-[85vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>資產圓餅圖</DialogTitle>
@@ -1829,20 +1906,30 @@ export function EconomicStatusDetailCard({
               }
 
               return (
-                <ResponsiveContainer width="100%" height={500} className="[&_svg]:outline-none [&_svg]:focus:outline-none">
-                  <PieChart margin={{ top: 20, right: 80, bottom: 20, left: 80 }}>
+                <ResponsiveContainer
+                  width="100%"
+                  height={500}
+                  className="[&_svg]:outline-none [&_svg]:focus:outline-none"
+                >
+                  <PieChart
+                    margin={{ top: 20, right: 80, bottom: 20, left: 80 }}
+                  >
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={activeAssetsIndex !== undefined ? (props: any) => {
-                        const { name, percent, index } = props;
-                        if (activeAssetsIndex === index) {
-                          return `${name}: ${(percent * 100).toFixed(1)}%`;
-                        }
-                        return null;
-                      } : false}
+                      label={
+                        activeAssetsIndex !== undefined
+                          ? (props: any) => {
+                              const { name, percent, index } = props;
+                              if (activeAssetsIndex === index) {
+                                return `${name}: ${(percent * 100).toFixed(1)}%`;
+                              }
+                              return null;
+                            }
+                          : false
+                      }
                       outerRadius={120}
                       fill="#8884d8"
                       dataKey="value"
@@ -1850,7 +1937,15 @@ export function EconomicStatusDetailCard({
                       onMouseEnter={(_, index) => setActiveAssetsIndex(index)}
                       onMouseLeave={() => setActiveAssetsIndex(undefined)}
                       activeShape={(props: any) => {
-                        const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+                        const {
+                          cx,
+                          cy,
+                          innerRadius,
+                          outerRadius,
+                          startAngle,
+                          endAngle,
+                          fill,
+                        } = props;
                         return (
                           <Sector
                             cx={cx}
@@ -1865,7 +1960,10 @@ export function EconomicStatusDetailCard({
                       }}
                     >
                       {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
                       ))}
                     </Pie>
                     <Legend
@@ -1882,7 +1980,10 @@ export function EconomicStatusDetailCard({
       </Dialog>
 
       {/* 負債圓餅圖 Dialog */}
-      <Dialog open={isLiabilitiesPieChartOpen} onOpenChange={setIsLiabilitiesPieChartOpen}>
+      <Dialog
+        open={isLiabilitiesPieChartOpen}
+        onOpenChange={setIsLiabilitiesPieChartOpen}
+      >
         <DialogContent className="!max-w-4xl sm:!max-w-4xl w-[85vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>負債圓餅圖</DialogTitle>
@@ -1901,28 +2002,48 @@ export function EconomicStatusDetailCard({
               }
 
               return (
-                <ResponsiveContainer width="100%" height={500} className="[&_svg]:outline-none [&_svg]:focus:outline-none">
-                  <PieChart margin={{ top: 20, right: 80, bottom: 20, left: 80 }}>
+                <ResponsiveContainer
+                  width="100%"
+                  height={500}
+                  className="[&_svg]:outline-none [&_svg]:focus:outline-none"
+                >
+                  <PieChart
+                    margin={{ top: 20, right: 80, bottom: 20, left: 80 }}
+                  >
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={activeLiabilitiesIndex !== undefined ? (props: any) => {
-                        const { name, percent, index } = props;
-                        if (activeLiabilitiesIndex === index) {
-                          return `${name}: ${(percent * 100).toFixed(1)}%`;
-                        }
-                        return null;
-                      } : false}
+                      label={
+                        activeLiabilitiesIndex !== undefined
+                          ? (props: any) => {
+                              const { name, percent, index } = props;
+                              if (activeLiabilitiesIndex === index) {
+                                return `${name}: ${(percent * 100).toFixed(1)}%`;
+                              }
+                              return null;
+                            }
+                          : false
+                      }
                       outerRadius={120}
                       fill="#8884d8"
                       dataKey="value"
                       activeIndex={activeLiabilitiesIndex}
-                      onMouseEnter={(_, index) => setActiveLiabilitiesIndex(index)}
+                      onMouseEnter={(_, index) =>
+                        setActiveLiabilitiesIndex(index)
+                      }
                       onMouseLeave={() => setActiveLiabilitiesIndex(undefined)}
                       activeShape={(props: any) => {
-                        const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+                        const {
+                          cx,
+                          cy,
+                          innerRadius,
+                          outerRadius,
+                          startAngle,
+                          endAngle,
+                          fill,
+                        } = props;
                         return (
                           <Sector
                             cx={cx}
@@ -1937,7 +2058,10 @@ export function EconomicStatusDetailCard({
                       }}
                     >
                       {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
                       ))}
                     </Pie>
                     <Legend
@@ -1954,7 +2078,10 @@ export function EconomicStatusDetailCard({
       </Dialog>
 
       {/* 支出圓餅圖 Dialog */}
-      <Dialog open={isExpensePieChartOpen} onOpenChange={setIsExpensePieChartOpen}>
+      <Dialog
+        open={isExpensePieChartOpen}
+        onOpenChange={setIsExpensePieChartOpen}
+      >
         <DialogContent className="!max-w-4xl sm:!max-w-4xl w-[85vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>支出圓餅圖</DialogTitle>
@@ -1973,20 +2100,30 @@ export function EconomicStatusDetailCard({
               }
 
               return (
-                <ResponsiveContainer width="100%" height={500} className="[&_svg]:outline-none [&_svg]:focus:outline-none">
-                  <PieChart margin={{ top: 20, right: 80, bottom: 20, left: 80 }}>
+                <ResponsiveContainer
+                  width="100%"
+                  height={500}
+                  className="[&_svg]:outline-none [&_svg]:focus:outline-none"
+                >
+                  <PieChart
+                    margin={{ top: 20, right: 80, bottom: 20, left: 80 }}
+                  >
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={activeExpenseIndex !== undefined ? (props: any) => {
-                        const { name, percent, index } = props;
-                        if (activeExpenseIndex === index) {
-                          return `${name}: ${(percent * 100).toFixed(1)}%`;
-                        }
-                        return null;
-                      } : false}
+                      label={
+                        activeExpenseIndex !== undefined
+                          ? (props: any) => {
+                              const { name, percent, index } = props;
+                              if (activeExpenseIndex === index) {
+                                return `${name}: ${(percent * 100).toFixed(1)}%`;
+                              }
+                              return null;
+                            }
+                          : false
+                      }
                       outerRadius={120}
                       fill="#8884d8"
                       dataKey="value"
@@ -1994,7 +2131,15 @@ export function EconomicStatusDetailCard({
                       onMouseEnter={(_, index) => setActiveExpenseIndex(index)}
                       onMouseLeave={() => setActiveExpenseIndex(undefined)}
                       activeShape={(props: any) => {
-                        const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+                        const {
+                          cx,
+                          cy,
+                          innerRadius,
+                          outerRadius,
+                          startAngle,
+                          endAngle,
+                          fill,
+                        } = props;
                         return (
                           <Sector
                             cx={cx}
@@ -2009,7 +2154,10 @@ export function EconomicStatusDetailCard({
                       }}
                     >
                       {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
                       ))}
                     </Pie>
                     <Legend

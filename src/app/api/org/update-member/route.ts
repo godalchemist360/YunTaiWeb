@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
 
 export const runtime = 'nodejs';
@@ -17,7 +17,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: '請填寫所有必填欄位'
+          error: '請填寫所有必填欄位',
         },
         { status: 400 }
       );
@@ -40,7 +40,7 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: '找不到該成員'
+            error: '找不到該成員',
           },
           { status: 404 }
         );
@@ -57,7 +57,7 @@ export async function PUT(request: NextRequest) {
       const updateResult = await client.query(updateQuery, [
         rank,
         introducer || null,
-        member_id
+        member_id,
       ]);
 
       // 提交交易
@@ -66,25 +66,22 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({
         success: true,
         data: updateResult.rows[0],
-        message: '更新成功'
+        message: '更新成功',
       });
-
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
     } finally {
       client.release();
     }
-
   } catch (error) {
     console.error('Error updating member:', error);
     return NextResponse.json(
       {
         success: false,
-        error: '更新失敗，請稍後再試'
+        error: '更新失敗，請稍後再試',
       },
       { status: 500 }
     );
   }
 }
-

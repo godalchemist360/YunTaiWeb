@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
-import { NextResponse, NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 /**
  * 用戶完整資訊緩存（用於 /api/users/current）
@@ -66,10 +66,7 @@ export async function GET(request?: NextRequest) {
     `);
 
     if (result.rows.length === 0) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const user = result.rows[0] as any;

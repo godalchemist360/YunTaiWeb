@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const userId = await getCurrentUserId(request);
 
     // 將 UUID 格式的 userId 轉換回整數 ID
-    const numericId = parseInt(userId.slice(-12), 10);
+    const numericId = Number.parseInt(userId.slice(-12), 10);
 
     const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
       numericId,
@@ -38,9 +38,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (!category || !item || !classification) {
-      return NextResponse.json({
-        error: 'Missing required parameters: category, item, classification'
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'Missing required parameters: category, item, classification',
+        },
+        { status: 400 }
+      );
     }
 
     // 支援的檔案格式清單
@@ -98,7 +101,8 @@ export async function POST(request: NextRequest) {
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         {
-          error: 'File type not supported. Please upload images, audio, video, documents, or other supported file types.',
+          error:
+            'File type not supported. Please upload images, audio, video, documents, or other supported file types.',
         },
         { status: 400 }
       );
@@ -136,12 +140,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
 
     // Upload to storage
-    const result = await uploadFile(
-      buffer,
-      file.name,
-      file.type,
-      folderPath
-    );
+    const result = await uploadFile(buffer, file.name, file.type, folderPath);
 
     console.log('Sales Support file upload result:', result);
 
@@ -155,7 +154,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error uploading sales support file:', error);
 
-    const message = error instanceof Error ? error.message : 'Unknown error occurred';
+    const message =
+      error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
       { error: 'Upload failed', details: message },
       { status: 500 }

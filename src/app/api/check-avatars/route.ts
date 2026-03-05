@@ -20,15 +20,14 @@ export async function GET() {
       id: user.id,
       displayName: user.display_name,
       avatarUrl: user.avatar_url,
-      createdAt: user.created_at
+      createdAt: user.created_at,
     }));
 
     return NextResponse.json({
       success: true,
       count: users.length,
-      users
+      users,
     });
-
   } catch (error) {
     console.error('Error checking avatars:', error);
     return NextResponse.json(

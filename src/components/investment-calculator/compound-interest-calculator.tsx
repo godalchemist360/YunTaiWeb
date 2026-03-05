@@ -1,7 +1,10 @@
 'use client';
 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
 import {
   Select,
   SelectContent,
@@ -9,23 +12,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
-import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
+import { useMemo, useState } from 'react';
 
 export function CompoundInterestCalculator() {
   const [principal, setPrincipal] = useState<string>('100000');
   const [annualRate, setAnnualRate] = useState<string>('5');
   const [years, setYears] = useState<string>('10');
-  const [compoundingFrequency, setCompoundingFrequency] = useState<string>('12');
+  const [compoundingFrequency, setCompoundingFrequency] =
+    useState<string>('12');
 
   // 計算複利
   const calculationResult = useMemo(() => {
-    const p = parseFloat(principal) || 0;
-    const r = (parseFloat(annualRate) || 0) / 100; // 轉換為小數
-    const t = parseFloat(years) || 0;
-    const n = parseFloat(compoundingFrequency) || 1;
+    const p = Number.parseFloat(principal) || 0;
+    const r = (Number.parseFloat(annualRate) || 0) / 100; // 轉換為小數
+    const t = Number.parseFloat(years) || 0;
+    const n = Number.parseFloat(compoundingFrequency) || 1;
 
     if (p <= 0 || r <= 0 || t <= 0 || n <= 0) {
       return {
@@ -135,29 +136,40 @@ export function CompoundInterestCalculator() {
             <div className="space-y-2">
               <Label className="text-muted-foreground">最終金額</Label>
               <div className="text-3xl font-bold text-primary">
-                NT$ <NumberWithSmallDecimals text={formatNumber(calculationResult.futureValue)} />
+                NT${' '}
+                <NumberWithSmallDecimals
+                  text={formatNumber(calculationResult.futureValue)}
+                />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label className="text-muted-foreground">總利息收益</Label>
               <div className="text-2xl font-semibold text-green-600">
-                NT$ <NumberWithSmallDecimals text={formatNumber(calculationResult.totalInterest)} />
+                NT${' '}
+                <NumberWithSmallDecimals
+                  text={formatNumber(calculationResult.totalInterest)}
+                />
               </div>
             </div>
 
             <div className="pt-4 border-t">
               <div className="text-sm text-muted-foreground space-y-1">
                 <div>
-                  本金：NT$ <NumberWithSmallDecimals text={formatNumber(parseFloat(principal) || 0)} />
+                  本金：NT${' '}
+                  <NumberWithSmallDecimals
+                    text={formatNumber(Number.parseFloat(principal) || 0)}
+                  />
                 </div>
                 <div>
                   投資報酬率：
                   <NumberWithSmallDecimals
                     text={
-                      principal && parseFloat(principal) > 0
+                      principal && Number.parseFloat(principal) > 0
                         ? (
-                            ((calculationResult.futureValue - parseFloat(principal)) / parseFloat(principal)) *
+                            ((calculationResult.futureValue -
+                              Number.parseFloat(principal)) /
+                              Number.parseFloat(principal)) *
                             100
                           ).toFixed(2)
                         : '0.00'
@@ -176,9 +188,7 @@ export function CompoundInterestCalculator() {
         <CardContent className="pt-6">
           <div className="text-sm text-muted-foreground space-y-2">
             <p className="font-medium">計算公式說明：</p>
-            <p>
-              最終金額 = 本金 × (1 + 年利率/複利頻率)^(複利頻率 × 投資年數)
-            </p>
+            <p>最終金額 = 本金 × (1 + 年利率/複利頻率)^(複利頻率 × 投資年數)</p>
             <p className="text-xs mt-2">
               複利頻率越高，最終收益越多。例如：每月複利比每年複利能獲得更多收益。
             </p>
@@ -188,4 +198,3 @@ export function CompoundInterestCalculator() {
     </div>
   );
 }
-

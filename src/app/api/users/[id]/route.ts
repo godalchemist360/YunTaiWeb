@@ -1,5 +1,5 @@
-import { db, query } from '@/lib/db';
 import { cleanupUserAvatar, getUserAvatarUrl } from '@/lib/avatar-cleanup';
+import { db, query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -18,7 +18,8 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { display_name, role, status, password, oldPassword, avatar_url } = body;
+    const { display_name, role, status, password, oldPassword, avatar_url } =
+      body;
 
     // 檢查用戶是否存在，並獲取現有的頭像 URL 和密碼 hash
     const checkResult = await db.execute(
@@ -30,15 +31,20 @@ export async function PUT(
     }
 
     const currentAvatarUrl = checkResult.rows[0].avatar_url as string | null;
-    const currentPasswordHash = checkResult.rows[0].password_hash as string | null;
+    const currentPasswordHash = checkResult.rows[0].password_hash as
+      | string
+      | null;
 
     // 如果要更新密碼且提供了舊密碼，則驗證舊密碼
     if (password !== undefined && oldPassword !== undefined) {
       if (!currentPasswordHash) {
         return NextResponse.json({ error: '舊密碼錯誤' }, { status: 400 });
       }
-      
-      const isOldPasswordCorrect = await bcrypt.compare(oldPassword, currentPasswordHash);
+
+      const isOldPasswordCorrect = await bcrypt.compare(
+        oldPassword,
+        currentPasswordHash
+      );
       if (!isOldPasswordCorrect) {
         return NextResponse.json({ error: '舊密碼錯誤' }, { status: 400 });
       }
@@ -99,10 +105,14 @@ export async function PUT(
     const result = await query(updateQuery, queryParams);
 
     // 如果更新了頭像，清理舊的頭像檔案
-    if (avatar_url !== undefined && currentAvatarUrl && currentAvatarUrl !== avatar_url) {
+    if (
+      avatar_url !== undefined &&
+      currentAvatarUrl &&
+      currentAvatarUrl !== avatar_url
+    ) {
       console.log('檢測到頭像更新，清理舊檔案:', currentAvatarUrl);
       // 異步清理，不等待完成
-      cleanupUserAvatar(currentAvatarUrl).catch(error => {
+      cleanupUserAvatar(currentAvatarUrl).catch((error) => {
         console.error('清理舊頭像檔案失敗:', error);
       });
     }
@@ -148,7 +158,7 @@ export async function DELETE(
     if (avatarUrl) {
       console.log('刪除用戶，清理頭像檔案:', avatarUrl);
       // 異步清理，不等待完成
-      cleanupUserAvatar(avatarUrl).catch(error => {
+      cleanupUserAvatar(avatarUrl).catch((error) => {
         console.error('清理用戶頭像檔案失敗:', error);
       });
     }

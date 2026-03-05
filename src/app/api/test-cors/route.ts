@@ -6,10 +6,7 @@ export async function GET(request: NextRequest) {
     const testUrl = searchParams.get('url');
 
     if (!testUrl) {
-      return NextResponse.json(
-        { error: 'URL is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
     // 嘗試獲取圖片
@@ -21,15 +18,14 @@ export async function GET(request: NextRequest) {
       ok: response.ok,
       headers: Object.fromEntries(response.headers.entries()),
       contentType: response.headers.get('content-type'),
-      contentLength: response.headers.get('content-length')
+      contentLength: response.headers.get('content-length'),
     });
-
   } catch (error) {
     console.error('Error testing URL:', error);
     return NextResponse.json(
       {
         error: 'Failed to fetch URL',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

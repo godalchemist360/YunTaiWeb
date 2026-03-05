@@ -1,5 +1,5 @@
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import CommissionQueryClient from '@/components/commission/commission-query-client';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { Calculator } from 'lucide-react';
 
 export default async function CommissionQueryPage() {

@@ -1,18 +1,27 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import type { ChartConfig } from '@/components/ui/chart';
+import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
-import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import type { ChartConfig } from '@/components/ui/chart';
+import { Bar, BarChart, CartesianGrid, Legend, XAxis, YAxis } from 'recharts';
 
-type CalculationTarget = 'final-amount' | 'principal' | 'time' | 'rate' | 'regular-amount';
+type CalculationTarget =
+  | 'final-amount'
+  | 'principal'
+  | 'time'
+  | 'rate'
+  | 'regular-amount';
 
 export function FlexibleCalculator() {
   const [target, setTarget] = useState<CalculationTarget>('final-amount');
@@ -22,34 +31,39 @@ export function FlexibleCalculator() {
   const [regularAmount, setRegularAmount] = useState<string>('10000');
   const [annualRate, setAnnualRate] = useState<string>('6');
   const [finalAmount, setFinalAmount] = useState<string>('149716');
-  const [calculateResult, setCalculateResult] = useState<{ value: number; isValid: boolean }>({
+  const [calculateResult, setCalculateResult] = useState<{
+    value: number;
+    isValid: boolean;
+  }>({
     value: 0,
     isValid: false,
   });
-  const [chartData, setChartData] = useState<Array<{ year: string; value: number }>>([]);
+  const [chartData, setChartData] = useState<
+    Array<{ year: string; value: number }>
+  >([]);
   const [stats, setStats] = useState<{
     totalInvestment: number;
     totalProfit: number;
     finalValue: number;
   } | null>(null);
-  const [scheduleRows, setScheduleRows] = useState<
-    | {
-        periodsPerYear: number;
-        totalPeriods: number;
-        paymentPeriods: number;
-        rows: Array<{
-          period: number; // 1-based
-          principal: number; // 該期期初金額（含當期扣款後）
-          profit: number; // 該期收益（利息）
-          final: number; // 該期期末金額
-        }>;
-      }
-    | null
-  >(null);
+  const [scheduleRows, setScheduleRows] = useState<{
+    periodsPerYear: number;
+    totalPeriods: number;
+    paymentPeriods: number;
+    rows: Array<{
+      period: number; // 1-based
+      principal: number; // 該期期初金額（含當期扣款後）
+      profit: number; // 該期收益（利息）
+      final: number; // 該期期末金額
+    }>;
+  } | null>(null);
   const [scheduleView, setScheduleView] = useState<'period' | 'year'>('period');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const getEffectiveRatePerPeriod = (annualEffectiveRate: number, periodsPerYear: number) => {
+  const getEffectiveRatePerPeriod = (
+    annualEffectiveRate: number,
+    periodsPerYear: number
+  ) => {
     // B) 利率換算（年化有效 -> 期利率有效）
     // i = (1 + r)^(1/n) - 1
     if (!isFinite(annualEffectiveRate) || annualEffectiveRate <= 0) return 0;
@@ -99,7 +113,10 @@ export function FlexibleCalculator() {
     if (!isFinite(t) || t <= 0) return 0;
     if (!isFinite(n) || n <= 0) return 0;
 
-    const { isMonthly, totalPeriods, paymentPeriods } = getPeriodDefinition(t, n);
+    const { isMonthly, totalPeriods, paymentPeriods } = getPeriodDefinition(
+      t,
+      n
+    );
     const i = getEffectiveRatePerPeriod(r, n);
 
     // 3) 0% 報酬率例外
@@ -117,7 +134,7 @@ export function FlexibleCalculator() {
       //   => FV(contrib) = PMT * [((1+i)^totalPeriods - 1)/i - 1]
       // - 其他頻率：維持原本期末投入（ordinary annuity）
       const annuityFV = isMonthly
-        ? pmt * (((Math.pow(1 + i, totalPeriods) - 1) / i) - 1)
+        ? pmt * ((Math.pow(1 + i, totalPeriods) - 1) / i - 1)
         : pmt * ((Math.pow(1 + i, paymentPeriods) - 1) / i);
       return principalFV + annuityFV;
     }
@@ -131,15 +148,15 @@ export function FlexibleCalculator() {
     setErrorMessage('');
 
     // 驗證輸入
-    const p = parseFloat(principal) || 0;
-    const pmt = parseFloat(regularAmount) || 0;
-    const r = (parseFloat(annualRate) || 0) / 100;
-    const t = parseFloat(years) || 0;
-    const n = parseFloat(frequency) || 1;
-    const fv = parseFloat(finalAmount) || 0;
+    const p = Number.parseFloat(principal) || 0;
+    const pmt = Number.parseFloat(regularAmount) || 0;
+    const r = (Number.parseFloat(annualRate) || 0) / 100;
+    const t = Number.parseFloat(years) || 0;
+    const n = Number.parseFloat(frequency) || 1;
+    const fv = Number.parseFloat(finalAmount) || 0;
 
     // 根據計算目標驗證必需的欄位
-    let missingFields: string[] = [];
+    const missingFields: string[] = [];
 
     switch (target) {
       case 'final-amount': {
@@ -187,8 +204,8 @@ export function FlexibleCalculator() {
         {
           const { paymentPeriods } = getPeriodDefinition(t, n);
           if (fv <= p + pmt * paymentPeriods) {
-          setErrorMessage('終值必須大於總投入金額');
-          return;
+            setErrorMessage('終值必須大於總投入金額');
+            return;
           }
         }
         break;
@@ -230,14 +247,18 @@ export function FlexibleCalculator() {
             Math.abs(n - 12) < 1e-9;
 
           if (isAuditCase) {
-            const { n: periodsPerYear, totalPeriods, paymentPeriods } = getPeriodDefinition(t, n);
+            const {
+              n: periodsPerYear,
+              totalPeriods,
+              paymentPeriods,
+            } = getPeriodDefinition(t, n);
             const i = getEffectiveRatePerPeriod(r, periodsPerYear);
 
             const principal = i === 0 ? p : p * Math.pow(1 + i, totalPeriods);
             const annuity =
               i === 0
                 ? pmt * paymentPeriods
-                : pmt * (((Math.pow(1 + i, totalPeriods) - 1) / i) - 1);
+                : pmt * ((Math.pow(1 + i, totalPeriods) - 1) / i - 1);
             const fvDebug = principal + annuity;
 
             // eslint-disable-next-line no-console
@@ -263,29 +284,38 @@ export function FlexibleCalculator() {
           break;
         }
 
-        const { isMonthly, totalPeriods, paymentPeriods } = getPeriodDefinition(t, n);
+        const { isMonthly, totalPeriods, paymentPeriods } = getPeriodDefinition(
+          t,
+          n
+        );
         const i = getEffectiveRatePerPeriod(r, n);
 
         // 3) 0% 報酬率例外
         if (r === 0 || i === 0) {
           const requiredPrincipal = fv - pmt * paymentPeriods;
-          result = { value: Math.max(0, requiredPrincipal), isValid: requiredPrincipal >= 0 };
+          result = {
+            value: Math.max(0, requiredPrincipal),
+            isValid: requiredPrincipal >= 0,
+          };
           break;
         }
 
         // 計算定期定額部分的未來價值（期末投入）
         const annuityFV =
           pmt > 0
-            ? (isMonthly
-                ? pmt * (((Math.pow(1 + i, totalPeriods) - 1) / i) - 1)
-                : pmt * ((Math.pow(1 + i, paymentPeriods) - 1) / i))
+            ? isMonthly
+              ? pmt * ((Math.pow(1 + i, totalPeriods) - 1) / i - 1)
+              : pmt * ((Math.pow(1 + i, paymentPeriods) - 1) / i)
             : 0;
 
         // 反推本金（PV）
         const principalFV = fv - annuityFV;
         const requiredPrincipal = principalFV / Math.pow(1 + i, totalPeriods);
 
-        result = { value: Math.max(0, requiredPrincipal), isValid: requiredPrincipal >= 0 };
+        result = {
+          value: Math.max(0, requiredPrincipal),
+          isValid: requiredPrincipal >= 0,
+        };
         break;
       }
 
@@ -363,7 +393,10 @@ export function FlexibleCalculator() {
           break;
         }
 
-        const { isMonthly, totalPeriods, paymentPeriods } = getPeriodDefinition(t, n);
+        const { isMonthly, totalPeriods, paymentPeriods } = getPeriodDefinition(
+          t,
+          n
+        );
         const i = getEffectiveRatePerPeriod(r, n);
 
         // 3) 0% 報酬率例外
@@ -373,7 +406,10 @@ export function FlexibleCalculator() {
             break;
           }
           const requiredPMT = (fv - p) / paymentPeriods;
-          result = { value: Math.max(0, requiredPMT), isValid: requiredPMT >= 0 };
+          result = {
+            value: Math.max(0, requiredPMT),
+            isValid: requiredPMT >= 0,
+          };
           break;
         }
 
@@ -392,7 +428,7 @@ export function FlexibleCalculator() {
         // - 每月延後 1 期：FV(contrib) = PMT * [((1+i)^totalPeriods - 1)/i - 1]
         // - 其他頻率：FV(contrib) = PMT * [((1+i)^paymentPeriods - 1)/i]
         const annuityFactor = isMonthly
-          ? (((Math.pow(1 + i, totalPeriods) - 1) / i) - 1)
+          ? (Math.pow(1 + i, totalPeriods) - 1) / i - 1
           : (Math.pow(1 + i, paymentPeriods) - 1) / i;
         if (annuityFactor <= 0) {
           result = { value: 0, isValid: false };
@@ -480,7 +516,13 @@ export function FlexibleCalculator() {
       setChartData(data);
 
       // 統計欄位：總投資額 / 總收益 / 最終金額
-      const finalValue = calculateFutureValue(chartP, chartPmt, chartR, chartT, n);
+      const finalValue = calculateFutureValue(
+        chartP,
+        chartPmt,
+        chartR,
+        chartT,
+        n
+      );
       const { paymentPeriods } = getPeriodDefinition(chartT, n);
       const totalInvestment = chartP + chartPmt * paymentPeriods;
       const totalProfit = finalValue - totalInvestment;
@@ -488,9 +530,14 @@ export function FlexibleCalculator() {
 
       // 明細表（僅投入頻率=每月，且年數可轉為整數月）
       {
-        const { isMonthly, totalPeriods, paymentPeriods: schedulePaymentPeriods } = getPeriodDefinition(chartT, n);
+        const {
+          isMonthly,
+          totalPeriods,
+          paymentPeriods: schedulePaymentPeriods,
+        } = getPeriodDefinition(chartT, n);
         const totalPeriodsInt = Math.round(totalPeriods);
-        const isIntegerTotalPeriods = Math.abs(totalPeriods - totalPeriodsInt) < 1e-9;
+        const isIntegerTotalPeriods =
+          Math.abs(totalPeriods - totalPeriodsInt) < 1e-9;
 
         if (isIntegerTotalPeriods && totalPeriodsInt > 0) {
           const i = getEffectiveRatePerPeriod(chartR, n);
@@ -543,7 +590,7 @@ export function FlexibleCalculator() {
   };
 
   // 格式化數字
-  const formatNumber = (num: number, decimals: number = 0) => {
+  const formatNumber = (num: number, decimals = 0) => {
     if (!isFinite(num) || num < 0) return '0';
     return new Intl.NumberFormat('zh-TW', {
       minimumFractionDigits: decimals,
@@ -557,7 +604,6 @@ export function FlexibleCalculator() {
     { value: '2', label: '每半年' },
     { value: '1', label: '每年' },
   ];
-
 
   const chartConfig: ChartConfig = {
     value: {
@@ -628,7 +674,10 @@ export function FlexibleCalculator() {
                 <Label htmlFor="principal">本金（最初投入）</Label>
                 {target === 'principal' ? (
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.value)} />
+                    NT${' '}
+                    <NumberWithSmallDecimals
+                      text={formatNumber(calculateResult.value)}
+                    />
                   </div>
                 ) : (
                   <FormattedNumberInput
@@ -646,7 +695,10 @@ export function FlexibleCalculator() {
                 <Label htmlFor="years">時間（投資幾年）</Label>
                 {target === 'time' ? (
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    <NumberWithSmallDecimals text={formatNumber(calculateResult.value, 1)} /> 年
+                    <NumberWithSmallDecimals
+                      text={formatNumber(calculateResult.value, 1)}
+                    />{' '}
+                    年
                   </div>
                 ) : (
                   <FormattedNumberInput
@@ -666,11 +718,24 @@ export function FlexibleCalculator() {
               <div className="space-y-2">
                 <Label>定期（投入頻率）</Label>
                 <div className="h-10 flex items-center">
-                  <RadioGroup value={frequency} onValueChange={setFrequency} className="flex flex-wrap gap-4">
+                  <RadioGroup
+                    value={frequency}
+                    onValueChange={setFrequency}
+                    className="flex flex-wrap gap-4"
+                  >
                     {frequencyOptions.map((option) => (
-                      <div key={option.value} className="flex items-center space-x-2">
-                        <RadioGroupItem value={option.value} id={`frequency-${option.value}`} />
-                        <Label htmlFor={`frequency-${option.value}`} className="cursor-pointer">
+                      <div
+                        key={option.value}
+                        className="flex items-center space-x-2"
+                      >
+                        <RadioGroupItem
+                          value={option.value}
+                          id={`frequency-${option.value}`}
+                        />
+                        <Label
+                          htmlFor={`frequency-${option.value}`}
+                          className="cursor-pointer"
+                        >
                           {option.label}
                         </Label>
                       </div>
@@ -684,7 +749,10 @@ export function FlexibleCalculator() {
                 <Label htmlFor="regularAmount">定額（投入資金）</Label>
                 {target === 'regular-amount' ? (
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.value)} />
+                    NT${' '}
+                    <NumberWithSmallDecimals
+                      text={formatNumber(calculateResult.value)}
+                    />
                   </div>
                 ) : (
                   <FormattedNumberInput
@@ -705,7 +773,10 @@ export function FlexibleCalculator() {
                 <Label htmlFor="annualRate">年化報酬率（%）</Label>
                 {target === 'rate' ? (
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    <NumberWithSmallDecimals text={formatNumber(calculateResult.value, 2)} />%
+                    <NumberWithSmallDecimals
+                      text={formatNumber(calculateResult.value, 2)}
+                    />
+                    %
                   </div>
                 ) : (
                   <FormattedNumberInput
@@ -723,7 +794,10 @@ export function FlexibleCalculator() {
                 <Label htmlFor="finalAmount">終值（最終金額）</Label>
                 {target === 'final-amount' ? (
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.value)} />
+                    NT${' '}
+                    <NumberWithSmallDecimals
+                      text={formatNumber(calculateResult.value)}
+                    />
                   </div>
                 ) : (
                   <FormattedNumberInput
@@ -757,25 +831,40 @@ export function FlexibleCalculator() {
           {calculateResult.isValid && stats && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
               <div className="space-y-1">
-                <Label className="text-muted-foreground text-sm">總投資額</Label>
+                <Label className="text-muted-foreground text-sm">
+                  總投資額
+                </Label>
                 <div className="text-xl font-semibold">
-                  NT$ <NumberWithSmallDecimals text={formatNumber(stats.totalInvestment)} />
+                  NT${' '}
+                  <NumberWithSmallDecimals
+                    text={formatNumber(stats.totalInvestment)}
+                  />
                 </div>
               </div>
               <div className="space-y-1">
                 <Label className="text-muted-foreground text-sm">總收益</Label>
                 <div
                   className={`text-xl font-semibold ${
-                    stats.totalProfit >= 0 ? 'text-orange-600' : 'text-destructive'
+                    stats.totalProfit >= 0
+                      ? 'text-orange-600'
+                      : 'text-destructive'
                   }`}
                 >
-                  NT$ <NumberWithSmallDecimals text={formatNumber(stats.totalProfit)} />
+                  NT${' '}
+                  <NumberWithSmallDecimals
+                    text={formatNumber(stats.totalProfit)}
+                  />
                 </div>
               </div>
               <div className="space-y-1">
-                <Label className="text-muted-foreground text-sm">最終金額</Label>
+                <Label className="text-muted-foreground text-sm">
+                  最終金額
+                </Label>
                 <div className="text-xl font-semibold">
-                  NT$ <NumberWithSmallDecimals text={formatNumber(stats.finalValue)} />
+                  NT${' '}
+                  <NumberWithSmallDecimals
+                    text={formatNumber(stats.finalValue)}
+                  />
                 </div>
               </div>
             </div>
@@ -789,7 +878,9 @@ export function FlexibleCalculator() {
                 {scheduleRows.periodsPerYear === 1 ? null : (
                   <RadioGroup
                     value={scheduleView}
-                    onValueChange={(v) => setScheduleView(v as 'period' | 'year')}
+                    onValueChange={(v) =>
+                      setScheduleView(v as 'period' | 'year')
+                    }
                     className="flex items-center gap-4"
                   >
                     <div className="flex items-center space-x-2">
@@ -800,7 +891,10 @@ export function FlexibleCalculator() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="period" id="schedule-period" />
-                      <Label htmlFor="schedule-period" className="cursor-pointer">
+                      <Label
+                        htmlFor="schedule-period"
+                        className="cursor-pointer"
+                      >
                         {getPeriodLabel(scheduleRows.periodsPerYear)}
                       </Label>
                     </div>
@@ -812,7 +906,11 @@ export function FlexibleCalculator() {
                 <table className="w-full text-sm">
                   <thead className="bg-muted sticky top-0 z-10">
                     <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-left [&>th]:font-semibold">
-                      <th>{scheduleView === 'period' ? getPeriodLabel(scheduleRows.periodsPerYear) : '年'}</th>
+                      <th>
+                        {scheduleView === 'period'
+                          ? getPeriodLabel(scheduleRows.periodsPerYear)
+                          : '年'}
+                      </th>
                       <th>本金（元）</th>
                       <th>收益（元）</th>
                       <th>最終金額（元）</th>
@@ -828,9 +926,14 @@ export function FlexibleCalculator() {
                           final: row.final,
                         }))
                       : (() => {
-                          const periodsPerYear = scheduleRows.periodsPerYear > 0 ? scheduleRows.periodsPerYear : 1;
+                          const periodsPerYear =
+                            scheduleRows.periodsPerYear > 0
+                              ? scheduleRows.periodsPerYear
+                              : 1;
                           const groupSize = periodsPerYear; // 一年包含多少期（每月=12、每季=4、每半年=2、每年=1）
-                          const yearsCount = Math.ceil(scheduleRows.totalPeriods / groupSize);
+                          const yearsCount = Math.ceil(
+                            scheduleRows.totalPeriods / groupSize
+                          );
                           const yearRows: Array<{
                             key: string;
                             label: string;
@@ -840,11 +943,21 @@ export function FlexibleCalculator() {
                           }> = [];
                           for (let y = 1; y <= yearsCount; y++) {
                             const startIdx = (y - 1) * groupSize;
-                            const endIdx = Math.min(y * groupSize, scheduleRows.totalPeriods) - 1;
-                            const slice = scheduleRows.rows.slice(startIdx, endIdx + 1);
+                            const endIdx =
+                              Math.min(
+                                y * groupSize,
+                                scheduleRows.totalPeriods
+                              ) - 1;
+                            const slice = scheduleRows.rows.slice(
+                              startIdx,
+                              endIdx + 1
+                            );
                             if (slice.length === 0) continue;
                             const principal = slice[0]?.principal ?? 0;
-                            const profit = slice.reduce((sum, r) => sum + r.profit, 0);
+                            const profit = slice.reduce(
+                              (sum, r) => sum + r.profit,
+                              0
+                            );
                             const final = slice[slice.length - 1]?.final ?? 0;
                             yearRows.push({
                               key: `y-${y}`,
@@ -863,8 +976,12 @@ export function FlexibleCalculator() {
                       >
                         <td className="font-medium">{row.label}</td>
                         <td>{formatNumber(row.principal, 0)}</td>
-                        <td className="text-green-600 font-semibold">+{formatNumber(row.profit, 0)}</td>
-                        <td className="text-red-600">{formatNumber(row.final, 0)}</td>
+                        <td className="text-green-600 font-semibold">
+                          +{formatNumber(row.profit, 0)}
+                        </td>
+                        <td className="text-red-600">
+                          {formatNumber(row.final, 0)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -886,7 +1003,10 @@ export function FlexibleCalculator() {
         <Card>
           <CardContent className="pt-6 pb-8">
             <ChartContainer config={chartConfig} className="h-[400px] w-full">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <BarChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
                   dataKey="year"
@@ -913,7 +1033,10 @@ export function FlexibleCalculator() {
                     <ChartTooltipContent
                       formatter={(value) => (
                         <span>
-                          NT$ <NumberWithSmallDecimals text={formatNumber(Number(value))} />
+                          NT${' '}
+                          <NumberWithSmallDecimals
+                            text={formatNumber(Number(value))}
+                          />
                         </span>
                       )}
                     />
@@ -936,4 +1059,3 @@ export function FlexibleCalculator() {
     </div>
   );
 }
-

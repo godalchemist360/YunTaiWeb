@@ -1,20 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import OrgChartStatic from '@/components/OrgChartStatic';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import {
-  Network,
-  Users,
-  TrendingUp,
-  Phone,
-  Mail,
+  Award,
   Calendar,
   Crown,
+  Mail,
+  Network,
+  Phone,
   Star,
-  Award,
+  TrendingUp,
+  Users,
   X,
 } from 'lucide-react';
+import { useState } from 'react';
 
 // 模擬人員資料
 const mockPeople = [
@@ -195,24 +195,33 @@ export default function OrganizationChartPage() {
     },
   ];
 
-
   const getLevelColor = (level: number) => {
     switch (level) {
-      case 1: return 'bg-gradient-to-br from-yellow-400 to-yellow-600 border-yellow-300';
-      case 2: return 'bg-gradient-to-br from-purple-400 to-purple-600 border-purple-300';
-      case 3: return 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-300';
-      case 4: return 'bg-gradient-to-br from-green-400 to-green-600 border-green-300';
-      default: return 'bg-gradient-to-br from-gray-400 to-gray-600 border-gray-300';
+      case 1:
+        return 'bg-gradient-to-br from-yellow-400 to-yellow-600 border-yellow-300';
+      case 2:
+        return 'bg-gradient-to-br from-purple-400 to-purple-600 border-purple-300';
+      case 3:
+        return 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-300';
+      case 4:
+        return 'bg-gradient-to-br from-green-400 to-green-600 border-green-300';
+      default:
+        return 'bg-gradient-to-br from-gray-400 to-gray-600 border-gray-300';
     }
   };
 
   const getLevelIcon = (level: number) => {
     switch (level) {
-      case 1: return <Crown className="h-4 w-4" />;
-      case 2: return <Star className="h-4 w-4" />;
-      case 3: return <Award className="h-4 w-4" />;
-      case 4: return <Users className="h-4 w-4" />;
-      default: return <Users className="h-4 w-4" />;
+      case 1:
+        return <Crown className="h-4 w-4" />;
+      case 2:
+        return <Star className="h-4 w-4" />;
+      case 3:
+        return <Award className="h-4 w-4" />;
+      case 4:
+        return <Users className="h-4 w-4" />;
+      default:
+        return <Users className="h-4 w-4" />;
     }
   };
 
@@ -231,9 +240,7 @@ export default function OrganizationChartPage() {
                     <Network className="h-6 w-6" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">
-                      組織圖
-                    </h1>
+                    <h1 className="text-3xl font-bold text-gray-900">組織圖</h1>
                     <p className="text-gray-600">傳銷組織結構與人員管理</p>
                   </div>
                 </div>
@@ -280,7 +287,10 @@ export default function OrganizationChartPage() {
                           活躍成員
                         </p>
                         <p className="text-2xl font-bold text-gray-900">
-                          {mockPeople.filter(p => p.status === 'active').length}
+                          {
+                            mockPeople.filter((p) => p.status === 'active')
+                              .length
+                          }
                         </p>
                       </div>
                     </div>
@@ -300,8 +310,6 @@ export default function OrganizationChartPage() {
                     </div>
                   </div>
                 </div>
-
-
 
                 {/* Organization Chart */}
                 <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
@@ -326,7 +334,9 @@ export default function OrganizationChartPage() {
                     <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                       <div className="p-6">
                         <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-xl font-bold text-gray-900">人員詳細資料</h3>
+                          <h3 className="text-xl font-bold text-gray-900">
+                            人員詳細資料
+                          </h3>
                           <button
                             onClick={() => setSelectedPerson(null)}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -337,11 +347,19 @@ export default function OrganizationChartPage() {
 
                         <div className="space-y-4">
                           <div className="flex items-center gap-4">
-                            <div className="text-4xl">{selectedPerson.avatar}</div>
+                            <div className="text-4xl">
+                              {selectedPerson.avatar}
+                            </div>
                             <div>
-                              <h4 className="text-lg font-bold text-gray-900">{selectedPerson.name}</h4>
-                              <p className="text-gray-600">{selectedPerson.position}</p>
-                              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(selectedPerson.level)} text-white`}>
+                              <h4 className="text-lg font-bold text-gray-900">
+                                {selectedPerson.name}
+                              </h4>
+                              <p className="text-gray-600">
+                                {selectedPerson.position}
+                              </p>
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(selectedPerson.level)} text-white`}
+                              >
                                 {getLevelIcon(selectedPerson.level)}
                                 {selectedPerson.rank}
                               </span>
@@ -368,13 +386,19 @@ export default function OrganizationChartPage() {
                           </div>
 
                           <div className="pt-4 border-t">
-                            <h5 className="font-semibold text-gray-900 mb-2">組織關係</h5>
+                            <h5 className="font-semibold text-gray-900 mb-2">
+                              組織關係
+                            </h5>
                             <div className="space-y-2 text-sm">
                               {selectedPerson.upline && (
                                 <div>
                                   <span className="text-gray-600">上線：</span>
                                   <span className="font-medium">
-                                    {mockPeople.find(p => p.id === selectedPerson.upline)?.name}
+                                    {
+                                      mockPeople.find(
+                                        (p) => p.id === selectedPerson.upline
+                                      )?.name
+                                    }
                                   </span>
                                 </div>
                               )}
@@ -382,14 +406,21 @@ export default function OrganizationChartPage() {
                                 <div>
                                   <span className="text-gray-600">下線：</span>
                                   <div className="mt-1">
-                                    {selectedPerson.downlines.map(downlineId => {
-                                      const downline = mockPeople.find(p => p.id === downlineId);
-                                      return downline ? (
-                                        <span key={downlineId} className="inline-block bg-gray-100 px-2 py-1 rounded text-xs mr-1 mb-1">
-                                          {downline.name}
-                                        </span>
-                                      ) : null;
-                                    })}
+                                    {selectedPerson.downlines.map(
+                                      (downlineId) => {
+                                        const downline = mockPeople.find(
+                                          (p) => p.id === downlineId
+                                        );
+                                        return downline ? (
+                                          <span
+                                            key={downlineId}
+                                            className="inline-block bg-gray-100 px-2 py-1 rounded text-xs mr-1 mb-1"
+                                          >
+                                            {downline.name}
+                                          </span>
+                                        ) : null;
+                                      }
+                                    )}
                                   </div>
                                 </div>
                               )}

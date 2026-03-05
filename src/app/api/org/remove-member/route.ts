@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
 
 export const runtime = 'nodejs';
@@ -17,7 +17,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: '缺少成員 ID'
+          error: '缺少成員 ID',
         },
         { status: 400 }
       );
@@ -42,7 +42,7 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: '找不到該成員'
+            error: '找不到該成員',
           },
           { status: 404 }
         );
@@ -79,10 +79,14 @@ export async function DELETE(request: NextRequest) {
             // 下線的上線改為被移除成員的上線
             // 從 child.path 中移除被移除成員的部分
             // 例如：/ROOT/A/B/C 移除 B 後變成 /ROOT/A/C
-            const pathSegments = child.path.split('/').filter(seg => seg !== '');
+            const pathSegments = child.path
+              .split('/')
+              .filter((seg) => seg !== '');
             // 找到被移除成員在路徑中的位置並移除
             const memberIdInPath = member_id;
-            const newSegments = pathSegments.filter(seg => seg !== memberIdInPath);
+            const newSegments = pathSegments.filter(
+              (seg) => seg !== memberIdInPath
+            );
             newPath = '/' + newSegments.join('/');
             newDepth = child.depth - 1;
           }
@@ -93,7 +97,12 @@ export async function DELETE(request: NextRequest) {
             SET upline_id = $1, path = $2, depth = $3
             WHERE id = $4
           `;
-          await client.query(updateChildQuery, [newUplineId, newPath, newDepth, child.id]);
+          await client.query(updateChildQuery, [
+            newUplineId,
+            newPath,
+            newDepth,
+            child.id,
+          ]);
 
           // 如果下線還有更深層的子孫，也需要遞迴更新他們的 path 和 depth
           await updateDescendants(client, child.id, -1, member_id);
@@ -114,24 +123,22 @@ export async function DELETE(request: NextRequest) {
         success: true,
         data: {
           name: deleteResult.rows[0].name,
-          childrenCount: children.length
+          childrenCount: children.length,
         },
-        message: '移除成功'
+        message: '移除成功',
       });
-
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
     } finally {
       client.release();
     }
-
   } catch (error) {
     console.error('Error removing member:', error);
     return NextResponse.json(
       {
         success: false,
-        error: '移除失敗，請稍後再試'
+        error: '移除失敗，請稍後再試',
       },
       { status: 500 }
     );
@@ -162,8 +169,8 @@ async function updateDescendants(
 
   for (const descendant of descendants) {
     // 更新 path：移除被移除成員的 UUID
-    const pathSegments = descendant.path.split('/').filter(seg => seg !== '');
-    const newSegments = pathSegments.filter(seg => seg !== removedMemberId);
+    const pathSegments = descendant.path.split('/').filter((seg) => seg !== '');
+    const newSegments = pathSegments.filter((seg) => seg !== removedMemberId);
     const newPath = '/' + newSegments.join('/');
     const newDepth = descendant.depth + depthChange;
 
@@ -176,7 +183,11 @@ async function updateDescendants(
     await client.query(updateQuery, [newPath, newDepth, descendant.id]);
 
     // 遞迴更新更深層的子孫
-    await updateDescendants(client, descendant.id, depthChange, removedMemberId);
+    await updateDescendants(
+      client,
+      descendant.id,
+      depthChange,
+      removedMemberId
+    );
   }
 }
-

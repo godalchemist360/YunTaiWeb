@@ -1,5 +1,6 @@
 'use client';
 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -9,12 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useMemo, useState } from 'react';
 
 export function RegularInvestmentCalculator() {
-  const [calculationMode, setCalculationMode] = useState<'forward' | 'reverse'>('forward');
+  const [calculationMode, setCalculationMode] = useState<'forward' | 'reverse'>(
+    'forward'
+  );
   const [monthlyAmount, setMonthlyAmount] = useState<string>('5000');
   const [annualRate, setAnnualRate] = useState<string>('5');
   const [years, setYears] = useState<string>('10');
@@ -29,11 +31,11 @@ export function RegularInvestmentCalculator() {
     n: number
   ): number => {
     if (pmt <= 0 || r <= 0 || t <= 0 || n <= 0) return 0;
-    
+
     const ratePerPeriod = r / n;
     const totalPeriods = n * t;
     const compoundFactor = Math.pow(1 + ratePerPeriod, totalPeriods);
-    
+
     // 定期定額投資公式（期初投入）：
     // FV = PMT × [((1 + r/n)^(n×t) - 1) / (r/n)] × (1 + r/n)
     return pmt * ((compoundFactor - 1) / ratePerPeriod) * (1 + ratePerPeriod);
@@ -41,10 +43,10 @@ export function RegularInvestmentCalculator() {
 
   // 使用二分法反推年利率
   const calculateRequiredRate = useMemo(() => {
-    const pmt = parseFloat(monthlyAmount) || 0;
-    const target = parseFloat(targetAmount) || 0;
-    const t = parseFloat(years) || 0;
-    const n = parseFloat(investmentFrequency) || 1;
+    const pmt = Number.parseFloat(monthlyAmount) || 0;
+    const target = Number.parseFloat(targetAmount) || 0;
+    const t = Number.parseFloat(years) || 0;
+    const n = Number.parseFloat(investmentFrequency) || 1;
 
     if (pmt <= 0 || target <= 0 || t <= 0 || n <= 0) {
       return null;
@@ -52,7 +54,7 @@ export function RegularInvestmentCalculator() {
 
     // 計算總投入本金
     const totalPrincipal = pmt * n * t;
-    
+
     // 如果目標金額小於總投入本金，無解
     if (target < totalPrincipal) {
       return null;
@@ -67,11 +69,11 @@ export function RegularInvestmentCalculator() {
     for (let i = 0; i < maxIterations; i++) {
       const mid = (low + high) / 2;
       const fv = calculateFutureValue(pmt, mid, t, n);
-      
+
       if (Math.abs(fv - target) < tolerance) {
         return mid * 100; // 轉換為百分比
       }
-      
+
       if (fv < target) {
         low = mid;
       } else {
@@ -85,10 +87,10 @@ export function RegularInvestmentCalculator() {
 
   // 正向計算：根據年利率計算最終金額
   const forwardCalculation = useMemo(() => {
-    const pmt = parseFloat(monthlyAmount) || 0;
-    const r = (parseFloat(annualRate) || 0) / 100;
-    const t = parseFloat(years) || 0;
-    const n = parseFloat(investmentFrequency) || 1;
+    const pmt = Number.parseFloat(monthlyAmount) || 0;
+    const r = (Number.parseFloat(annualRate) || 0) / 100;
+    const t = Number.parseFloat(years) || 0;
+    const n = Number.parseFloat(investmentFrequency) || 1;
 
     if (pmt <= 0 || r <= 0 || t <= 0 || n <= 0) {
       return {
@@ -111,10 +113,10 @@ export function RegularInvestmentCalculator() {
 
   // 反向計算：根據目標金額計算所需年利率
   const reverseCalculation = useMemo(() => {
-    const pmt = parseFloat(monthlyAmount) || 0;
-    const target = parseFloat(targetAmount) || 0;
-    const t = parseFloat(years) || 0;
-    const n = parseFloat(investmentFrequency) || 1;
+    const pmt = Number.parseFloat(monthlyAmount) || 0;
+    const target = Number.parseFloat(targetAmount) || 0;
+    const t = Number.parseFloat(years) || 0;
+    const n = Number.parseFloat(investmentFrequency) || 1;
 
     if (pmt <= 0 || target <= 0 || t <= 0 || n <= 0) {
       return {
@@ -133,7 +135,13 @@ export function RegularInvestmentCalculator() {
       totalPrincipal,
       totalInterest,
     };
-  }, [monthlyAmount, targetAmount, years, investmentFrequency, calculateRequiredRate]);
+  }, [
+    monthlyAmount,
+    targetAmount,
+    years,
+    investmentFrequency,
+    calculateRequiredRate,
+  ]);
 
   // 格式化數字（千分位）
   const formatNumber = (num: number) => {
@@ -160,7 +168,10 @@ export function RegularInvestmentCalculator() {
   return (
     <div className="space-y-6">
       {/* 計算模式切換 */}
-      <Tabs value={calculationMode} onValueChange={(v) => setCalculationMode(v as 'forward' | 'reverse')}>
+      <Tabs
+        value={calculationMode}
+        onValueChange={(v) => setCalculationMode(v as 'forward' | 'reverse')}
+      >
         <TabsList>
           <TabsTrigger value="forward">正向計算（已知年利率）</TabsTrigger>
           <TabsTrigger value="reverse">反向計算（已知目標金額）</TabsTrigger>
@@ -268,7 +279,9 @@ export function RegularInvestmentCalculator() {
                 <div className="pt-4 border-t">
                   <div className="text-sm text-muted-foreground space-y-1">
                     <div>
-                      每期投入：NT$ {formatNumber(parseFloat(monthlyAmount) || 0)} / {getFrequencyLabel()}
+                      每期投入：NT${' '}
+                      {formatNumber(Number.parseFloat(monthlyAmount) || 0)} /{' '}
+                      {getFrequencyLabel()}
                     </div>
                     <div>
                       投資報酬率：
@@ -282,8 +295,10 @@ export function RegularInvestmentCalculator() {
                       %
                     </div>
                     <div>
-                      總投入次數：{investmentFrequency && years
-                        ? parseFloat(investmentFrequency) * parseFloat(years)
+                      總投入次數：
+                      {investmentFrequency && years
+                        ? Number.parseFloat(investmentFrequency) *
+                          Number.parseFloat(years)
                         : 0}{' '}
                       次
                     </div>
@@ -304,7 +319,9 @@ export function RegularInvestmentCalculator() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="monthlyAmountReverse">每期投入金額（新台幣）</Label>
+                  <Label htmlFor="monthlyAmountReverse">
+                    每期投入金額（新台幣）
+                  </Label>
                   <Input
                     id="monthlyAmountReverse"
                     type="number"
@@ -405,14 +422,19 @@ export function RegularInvestmentCalculator() {
                 <div className="pt-4 border-t">
                   <div className="text-sm text-muted-foreground space-y-1">
                     <div>
-                      每期投入：NT$ {formatNumber(parseFloat(monthlyAmount) || 0)} / {getFrequencyLabel()}
+                      每期投入：NT${' '}
+                      {formatNumber(Number.parseFloat(monthlyAmount) || 0)} /{' '}
+                      {getFrequencyLabel()}
                     </div>
                     <div>
-                      目標金額：NT$ {formatNumber(parseFloat(targetAmount) || 0)}
+                      目標金額：NT${' '}
+                      {formatNumber(Number.parseFloat(targetAmount) || 0)}
                     </div>
                     <div>
-                      總投入次數：{investmentFrequency && years
-                        ? parseFloat(investmentFrequency) * parseFloat(years)
+                      總投入次數：
+                      {investmentFrequency && years
+                        ? Number.parseFloat(investmentFrequency) *
+                          Number.parseFloat(years)
                         : 0}{' '}
                       次
                     </div>
@@ -430,10 +452,12 @@ export function RegularInvestmentCalculator() {
           <div className="text-sm text-muted-foreground space-y-2">
             <p className="font-medium">計算公式說明：</p>
             <p>
-              最終金額 = 每期投入 × [((1 + 年利率/投入頻率)^(投入頻率×年數) - 1) / (年利率/投入頻率)] × (1 + 年利率/投入頻率)
+              最終金額 = 每期投入 × [((1 + 年利率/投入頻率)^(投入頻率×年數) - 1)
+              / (年利率/投入頻率)] × (1 + 年利率/投入頻率)
             </p>
             <p className="text-xs mt-2">
-              <strong>期初投入</strong>：假設每期開始時投入，因此每筆投入都能獲得完整的複利效果。
+              <strong>期初投入</strong>
+              ：假設每期開始時投入，因此每筆投入都能獲得完整的複利效果。
             </p>
             <p className="text-xs">
               例如：每月投入 5,000 元，年利率 5%，投資 10 年，每月複利一次。
@@ -444,4 +468,3 @@ export function RegularInvestmentCalculator() {
     </div>
   );
 }
-

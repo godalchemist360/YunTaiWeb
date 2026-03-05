@@ -236,7 +236,9 @@ const CACHE_TTL = 30 * 1000; // 30秒緩存
 /**
  * 從 cookie 中提取用戶帳號（內部輔助函數）
  */
-async function extractUserAccountFromCookie(req?: Request): Promise<string | null> {
+async function extractUserAccountFromCookie(
+  req?: Request
+): Promise<string | null> {
   try {
     let cookieHeader: string | null = null;
 
@@ -287,9 +289,7 @@ async function extractUserAccountFromCookie(req?: Request): Promise<string | nul
  * @param req 可選的 Request 物件，用於從特定請求中獲取 cookie
  * @returns 用戶資訊物件，包含 id (UUID格式), numericId (數字ID), role, account
  */
-export async function getCurrentUserInfo(
-  req?: Request
-): Promise<{
+export async function getCurrentUserInfo(req?: Request): Promise<{
   id: string;
   numericId: number;
   role: string | null;

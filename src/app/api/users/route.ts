@@ -103,7 +103,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { account, display_name, role, status = 'active', password, avatar_url } = body;
+    const {
+      account,
+      display_name,
+      role,
+      status = 'active',
+      password,
+      avatar_url,
+    } = body;
 
     if (!account || !display_name || !role || !password) {
       return NextResponse.json(
@@ -120,7 +127,14 @@ export async function POST(request: NextRequest) {
       RETURNING id, account, display_name, role, status, avatar_url, to_char(created_at, 'YYYY-MM-DD') as created_date
     `;
 
-    const result = await query(insertQuery, [account, display_name, role, status, password_hash, avatar_url || null]);
+    const result = await query(insertQuery, [
+      account,
+      display_name,
+      role,
+      status,
+      password_hash,
+      avatar_url || null,
+    ]);
 
     return NextResponse.json(result.rows[0]);
   } catch (error) {

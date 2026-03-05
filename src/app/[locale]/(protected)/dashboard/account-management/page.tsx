@@ -373,11 +373,14 @@ export default function AccountManagementPage() {
   };
 
   // 獲取頭像 URL
-  const getAvatarUrl = (account: any, size: number = 50) => {
+  const getAvatarUrl = (account: any, size = 50) => {
     if (account.avatar_url) {
       // 如果有上傳的頭像，嘗試使用對應尺寸的縮圖
       // 檢查是否已經是縮圖格式
-      if (account.avatar_url.includes('_50.jpg') || account.avatar_url.includes('_200.jpg')) {
+      if (
+        account.avatar_url.includes('_50.jpg') ||
+        account.avatar_url.includes('_200.jpg')
+      ) {
         // 如果已經是縮圖，直接返回
         return account.avatar_url;
       }

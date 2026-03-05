@@ -1,6 +1,6 @@
 import { db, query } from '@/lib/db';
 import { sql } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 

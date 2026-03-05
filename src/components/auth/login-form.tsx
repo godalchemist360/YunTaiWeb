@@ -1,7 +1,7 @@
 'use client';
 
-import { validateCaptchaAction } from '@/actions/validate-captcha';
 import { AuthCard } from '@/components/auth/auth-card';
+import { ForceChangePasswordForm } from '@/components/auth/force-change-password-form';
 import { FormError } from '@/components/shared/form-error';
 import { FormSuccess } from '@/components/shared/form-success';
 import { Button } from '@/components/ui/button';
@@ -15,14 +15,12 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { websiteConfig } from '@/config/website';
-import { LocaleLink, useLocaleRouter } from '@/i18n/navigation';
-import { authClient } from '@/lib/auth-client';
 import { getUrlWithLocaleInCallbackUrl } from '@/lib/urls/urls';
 import { cn } from '@/lib/utils';
 import { DEFAULT_LOGIN_REDIRECT, Routes } from '@/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
@@ -33,18 +31,18 @@ import { SocialLoginButton } from './social-login-button';
 export interface LoginFormProps {
   className?: string;
   callbackUrl?: string;
+  /** 當進入/離開強制修改密碼模式時呼叫，用於禁止關閉 Dialog */
+  setForceChangeMode?: (isActive: boolean) => void;
 }
 
 export const LoginForm = ({
   className,
   callbackUrl: propCallbackUrl,
+  setForceChangeMode,
 }: LoginFormProps) => {
-  const t = useTranslations('AuthPage.login');
-  const router = useLocaleRouter();
   const searchParams = useSearchParams();
   const urlError = searchParams.get('error');
   const paramCallbackUrl = searchParams.get('callbackUrl');
-  // Use prop callback URL or param callback URL if provided, otherwise use the default login redirect
   const locale = useLocale();
   const defaultCallbackUrl = getUrlWithLocaleInCallbackUrl(
     DEFAULT_LOGIN_REDIRECT,
@@ -56,6 +54,9 @@ export const LoginForm = ({
   const [success, setSuccess] = useState<string | undefined>('');
   const [isPending, setIsPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForceChangePassword, setShowForceChangePassword] = useState(false);
+  const [forceChangeAccount, setForceChangeAccount] = useState('');
+  const [forceChangePassword, setForceChangePassword] = useState('');
 
   // Check if credential login is enabled
   const credentialLoginEnabled = websiteConfig.auth.enableCredentialLogin;
@@ -113,6 +114,16 @@ export const LoginForm = ({
       setIsPending(false);
 
       if (res.ok && data.ok) {
+        // 若帳號與密碼相同，強制使用者先修改密碼
+        if (values.account === values.password) {
+          setForceChangeAccount(values.account);
+          setForceChangePassword(values.password);
+          setShowForceChangePassword(true);
+          setForceChangeMode?.(true);
+          setError('');
+          return;
+        }
+
         // 登入成功後，設置 session 並跳轉
         try {
           const sessionRes = await fetch('/api/login-success', {
@@ -127,15 +138,12 @@ export const LoginForm = ({
           const sessionData = await sessionRes.json();
 
           if (sessionRes.ok && sessionData.ok) {
-            // 設置 session 成功，跳轉到目標頁面
             window.location.href = sessionData.redirectUrl;
           } else {
-            // 設置 session 失敗，但仍然跳轉（用戶可能需要重新登入）
             window.location.href = callbackUrl;
           }
         } catch (sessionErr) {
           console.error('設置 session 異常:', sessionErr);
-          // 即使設置 session 失敗，也跳轉到目標頁面
           window.location.href = callbackUrl;
         }
       } else {
@@ -205,6 +213,25 @@ export const LoginForm = ({
     setShowPassword((prev) => !prev);
   };
 
+  const handleForceChangeSuccess = () => {
+    setShowForceChangePassword(false);
+    setForceChangeAccount('');
+    setForceChangePassword('');
+    setForceChangeMode?.(false);
+    form.reset({ account: '', password: '', captchaToken: '' });
+  };
+
+  if (showForceChangePassword && forceChangeAccount && forceChangePassword) {
+    return (
+      <ForceChangePasswordForm
+        account={forceChangeAccount}
+        currentPassword={forceChangePassword}
+        onSuccess={handleForceChangeSuccess}
+        className={className}
+      />
+    );
+  }
+
   return (
     <AuthCard
       headerLabel="歡迎回來"
@@ -227,7 +254,9 @@ export const LoginForm = ({
                 name="account"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">帳號</FormLabel>
+                    <FormLabel className="text-gray-700 font-medium">
+                      帳號
+                    </FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -246,7 +275,9 @@ export const LoginForm = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">密碼</FormLabel>
+                    <FormLabel className="text-gray-700 font-medium">
+                      密碼
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input

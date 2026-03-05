@@ -4,7 +4,9 @@ import { deleteFile } from '@/storage';
  * 清理用戶的頭像檔案
  * @param avatarUrl 用戶的頭像 URL
  */
-export async function cleanupUserAvatar(avatarUrl: string | null | undefined): Promise<void> {
+export async function cleanupUserAvatar(
+  avatarUrl: string | null | undefined
+): Promise<void> {
   if (!avatarUrl) {
     return;
   }
@@ -22,10 +24,10 @@ export async function cleanupUserAvatar(avatarUrl: string | null | undefined): P
 
     // 刪除所有相關的檔案
     const filesToDelete = [
-      `${folder}/${baseFilename}.jpg`,      // 原始檔案
-      `${folder}/${baseFilename}.png`,      // 原始檔案 (如果是 png)
-      `${folder}/${baseFilename}_50.jpg`,   // 50px 縮圖
-      `${folder}/${baseFilename}_200.jpg`,  // 200px 縮圖
+      `${folder}/${baseFilename}.jpg`, // 原始檔案
+      `${folder}/${baseFilename}.png`, // 原始檔案 (如果是 png)
+      `${folder}/${baseFilename}_50.jpg`, // 50px 縮圖
+      `${folder}/${baseFilename}_200.jpg`, // 200px 縮圖
     ];
 
     console.log('清理頭像檔案:', filesToDelete);
@@ -63,7 +65,7 @@ export async function getUserAvatarUrl(userId: number): Promise<string | null> {
       sql`SELECT avatar_url FROM app_users WHERE id = ${userId} LIMIT 1`
     );
 
-    return result.rows[0]?.avatar_url as string | null || null;
+    return (result.rows[0]?.avatar_url as string | null) || null;
   } catch (error) {
     console.error('獲取用戶頭像 URL 時發生錯誤:', error);
     return null;

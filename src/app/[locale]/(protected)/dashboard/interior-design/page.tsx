@@ -1,8 +1,14 @@
 'use client';
 
+import {
+  createSalesSupportRecord,
+  getClassificationOptions,
+} from '@/actions/sales-support';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { Notification } from '@/components/ui/notification';
-import { Button } from '@/components/ui/button';
+import {
+  SalesSupportCreateGate,
+  SalesSupportDeleteGate,
+} from '@/components/permission-gate';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,32 +19,32 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  SalesSupportCreateGate,
-  SalesSupportDeleteGate,
-} from '@/components/permission-gate';
-import { createSalesSupportRecord, getClassificationOptions } from '@/actions/sales-support';
+import { Button } from '@/components/ui/button';
+import { Notification } from '@/components/ui/notification';
 import {
   extractPermissionError,
   showPermissionError,
 } from '@/lib/permission-utils';
+import type {
+  SalesSupportDocument,
+  SalesSupportResponse,
+} from '@/types/sales-support';
 import {
   ArrowLeft,
-  Paintbrush,
-  Search,
-  Filter,
-  Plus,
-  Paperclip,
-  X,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Filter,
+  Paintbrush,
+  Paperclip,
+  Plus,
+  Search,
   Trash2,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import type { SalesSupportDocument, SalesSupportResponse } from '@/types/sales-support';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function InteriorDesignPage() {
   const breadcrumbs = [
@@ -53,7 +59,9 @@ export default function InteriorDesignPage() {
   ];
 
   // 卡片選中狀態管理
-  const [selectedCard, setSelectedCard] = useState<'design' | 'construction' | 'material' | 'consultation'>('design');
+  const [selectedCard, setSelectedCard] = useState<
+    'design' | 'construction' | 'material' | 'consultation'
+  >('design');
 
   // 搜尋和篩選狀態
   const [searchQuery, setSearchQuery] = useState('');
@@ -101,7 +109,9 @@ export default function InteriorDesignPage() {
   ];
 
   // 檔案類別選項狀態
-  const [classificationOptions, setClassificationOptions] = useState<string[]>([]);
+  const [classificationOptions, setClassificationOptions] = useState<string[]>(
+    []
+  );
 
   // 防抖動計時器
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -116,15 +126,15 @@ export default function InteriorDesignPage() {
   // 取得當前選中卡片的檔案類別選項
   const updateClassificationOptions = async () => {
     const itemMap = {
-      'design': '設計方案',
-      'construction': '施工管理',
-      'material': '材料選擇',
-      'consultation': '諮詢服務',
+      design: '設計方案',
+      construction: '施工管理',
+      material: '材料選擇',
+      consultation: '諮詢服務',
     };
     const options = await getClassificationOptions(itemMap[selectedCard]);
     setClassificationOptions(options);
     // 重置檔案類別選擇
-    setFormData(prev => ({ ...prev, classification: '' }));
+    setFormData((prev) => ({ ...prev, classification: '' }));
   };
 
   // 載入文件資料
@@ -134,10 +144,10 @@ export default function InteriorDesignPage() {
 
     try {
       const itemMap = {
-        'design': '設計方案',
-        'construction': '施工管理',
-        'material': '材料選擇',
-        'consultation': '諮詢服務',
+        design: '設計方案',
+        construction: '施工管理',
+        material: '材料選擇',
+        consultation: '諮詢服務',
       };
 
       const params = new URLSearchParams({
@@ -174,7 +184,13 @@ export default function InteriorDesignPage() {
     } finally {
       setIsLoadingDocuments(false);
     }
-  }, [selectedCard, searchQuery, selectedClassification, currentPage, pageSize]);
+  }, [
+    selectedCard,
+    searchQuery,
+    selectedClassification,
+    currentPage,
+    pageSize,
+  ]);
 
   // 處理搜尋輸入變化（帶防抖動）
   const handleSearchChange = (value: string) => {
@@ -221,7 +237,13 @@ export default function InteriorDesignPage() {
   // 當搜尋、篩選、分頁改變時，重新載入文件
   useEffect(() => {
     loadDocuments();
-  }, [selectedCard, searchQuery, selectedClassification, currentPage, pageSize]);
+  }, [
+    selectedCard,
+    searchQuery,
+    selectedClassification,
+    currentPage,
+    pageSize,
+  ]);
 
   // 顯示通知
   const showNotification = (type: 'success' | 'error', message: string) => {
@@ -234,7 +256,7 @@ export default function InteriorDesignPage() {
 
   // 關閉通知
   const closeNotification = () => {
-    setNotification(prev => ({ ...prev, isVisible: false }));
+    setNotification((prev) => ({ ...prev, isVisible: false }));
   };
 
   // 重置表單
@@ -249,7 +271,12 @@ export default function InteriorDesignPage() {
 
   // 處理表單提交
   const handleSubmit = async () => {
-    if (!formData.classification || !formData.fileName || !formData.description || !formData.file) {
+    if (
+      !formData.classification ||
+      !formData.fileName ||
+      !formData.description ||
+      !formData.file
+    ) {
       showNotification('error', '請填寫所有必填欄位並選擇檔案');
       return;
     }
@@ -261,7 +288,10 @@ export default function InteriorDesignPage() {
       const uploadFormData = new FormData();
       uploadFormData.append('file', formData.file);
       uploadFormData.append('category', 'interior-decoration');
-      uploadFormData.append('item', cards.find(c => c.id === selectedCard)?.title || '');
+      uploadFormData.append(
+        'item',
+        cards.find((c) => c.id === selectedCard)?.title || ''
+      );
       uploadFormData.append('classification', formData.classification);
 
       const uploadResponse = await fetch('/api/sales-support/upload', {
@@ -288,7 +318,7 @@ export default function InteriorDesignPage() {
       // 2. 儲存資料庫記錄
       const result = await createSalesSupportRecord({
         category: 'interior-decoration',
-        item: cards.find(c => c.id === selectedCard)?.title || '',
+        item: cards.find((c) => c.id === selectedCard)?.title || '',
         classification: formData.classification,
         fileName: formData.fileName,
         description: formData.description,
@@ -333,7 +363,6 @@ export default function InteriorDesignPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
     } catch (error) {
       console.error('Download error:', error);
       showNotification('error', '下載失敗');
@@ -393,7 +422,10 @@ export default function InteriorDesignPage() {
       await loadDocuments();
     } catch (error) {
       console.error('Delete error:', error);
-      showNotification('error', error instanceof Error ? error.message : '刪除失敗');
+      showNotification(
+        'error',
+        error instanceof Error ? error.message : '刪除失敗'
+      );
     } finally {
       setDeleteDialogOpen(false);
       setDeleteTarget(null);
@@ -445,9 +477,13 @@ export default function InteriorDesignPage() {
                       }`}
                     >
                       <div className="flex items-center justify-center h-full">
-                        <h3 className={`text-lg font-semibold ${
-                          selectedCard === card.id ? 'text-pink-900' : 'text-gray-900'
-                        }`}>
+                        <h3
+                          className={`text-lg font-semibold ${
+                            selectedCard === card.id
+                              ? 'text-pink-900'
+                              : 'text-gray-900'
+                          }`}
+                        >
                           {card.title}
                         </h3>
                       </div>
@@ -477,7 +513,9 @@ export default function InteriorDesignPage() {
                       <Filter className="h-4 w-4 text-gray-600" />
                       <select
                         value={selectedClassification}
-                        onChange={(e) => handleClassificationChange(e.target.value)}
+                        onChange={(e) =>
+                          handleClassificationChange(e.target.value)
+                        }
                         className="text-gray-700 bg-transparent outline-none cursor-pointer"
                       >
                         <option value="全部">全部類別</option>
@@ -528,25 +566,43 @@ export default function InteriorDesignPage() {
                       <table className="w-full border-collapse">
                         <thead>
                           <tr className="border-b border-gray-200 bg-gray-50">
-                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">上傳日期</th>
-                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">檔案類別</th>
-                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-48">檔案名稱</th>
-                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-24">檔案大小</th>
-                            <th className="text-left py-3 px-4 font-semibold text-gray-900">內容簡述</th>
-                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">資源下載</th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">
+                              上傳日期
+                            </th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">
+                              檔案類別
+                            </th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-48">
+                              檔案名稱
+                            </th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-24">
+                              檔案大小
+                            </th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                              內容簡述
+                            </th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-900 w-32">
+                              資源下載
+                            </th>
                             <th className="text-center py-3 px-4 font-semibold text-gray-900 w-12"></th>
                           </tr>
                         </thead>
                         <tbody>
                           {documents.length === 0 ? (
                             <tr>
-                              <td colSpan={7} className="py-8 text-center text-gray-500">
+                              <td
+                                colSpan={7}
+                                className="py-8 text-center text-gray-500"
+                              >
                                 暫無資料
                               </td>
                             </tr>
                           ) : (
                             documents.map((document) => (
-                              <tr key={document.id} className="border-b border-gray-100 hover:bg-gray-50">
+                              <tr
+                                key={document.id}
+                                className="border-b border-gray-100 hover:bg-gray-50"
+                              >
                                 <td className="py-3 px-4 text-gray-700 text-sm">
                                   {formatDate(document.created_at)}
                                 </td>
@@ -568,11 +624,26 @@ export default function InteriorDesignPage() {
                                 </td>
                                 <td className="py-3 px-4 text-gray-700 text-sm">
                                   <button
-                                    onClick={() => handleDownload(document.file_url, document.file_name)}
+                                    onClick={() =>
+                                      handleDownload(
+                                        document.file_url,
+                                        document.file_name
+                                      )
+                                    }
                                     className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-md hover:bg-green-200 transition-colors text-xs"
                                   >
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    <svg
+                                      className="w-3 h-3"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                      />
                                     </svg>
                                     下載
                                   </button>
@@ -580,7 +651,12 @@ export default function InteriorDesignPage() {
                                 <td className="py-3 px-4 text-center">
                                   <SalesSupportDeleteGate>
                                     <button
-                                      onClick={() => handleDeleteDocument(document.id, document.file_name)}
+                                      onClick={() =>
+                                        handleDeleteDocument(
+                                          document.id,
+                                          document.file_name
+                                        )
+                                      }
                                       className="inline-flex items-center justify-center p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
                                       title="刪除"
                                     >
@@ -605,7 +681,9 @@ export default function InteriorDesignPage() {
                         </p>
                         <select
                           value={pageSize}
-                          onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            handlePageSizeChange(Number(e.target.value))
+                          }
                           className="h-8 w-16 rounded border border-input bg-background px-2 text-sm"
                         >
                           <option value={5}>5</option>
@@ -653,7 +731,9 @@ export default function InteriorDesignPage() {
                               (_, i) => {
                                 const startPage = Math.max(1, currentPage - 2);
                                 const pageNum = startPage + i;
-                                if (pageNum > Math.ceil(totalDocuments / pageSize))
+                                if (
+                                  pageNum > Math.ceil(totalDocuments / pageSize)
+                                )
                                   return null;
 
                                 return (
@@ -680,7 +760,8 @@ export default function InteriorDesignPage() {
                               size="sm"
                               onClick={() => handlePageChange(currentPage + 1)}
                               disabled={
-                                currentPage >= Math.ceil(totalDocuments / pageSize) ||
+                                currentPage >=
+                                  Math.ceil(totalDocuments / pageSize) ||
                                 isLoadingDocuments
                               }
                             >
@@ -690,10 +771,13 @@ export default function InteriorDesignPage() {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                handlePageChange(Math.ceil(totalDocuments / pageSize))
+                                handlePageChange(
+                                  Math.ceil(totalDocuments / pageSize)
+                                )
                               }
                               disabled={
-                                currentPage >= Math.ceil(totalDocuments / pageSize) ||
+                                currentPage >=
+                                  Math.ceil(totalDocuments / pageSize) ||
                                 isLoadingDocuments
                               }
                             >
@@ -738,7 +822,10 @@ export default function InteriorDesignPage() {
                   <select
                     value={formData.classification}
                     onChange={(e) =>
-                      setFormData({ ...formData, classification: e.target.value })
+                      setFormData({
+                        ...formData,
+                        classification: e.target.value,
+                      })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                     required
@@ -795,7 +882,9 @@ export default function InteriorDesignPage() {
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => document.getElementById('file-upload')?.click()}
+                      onClick={() =>
+                        document.getElementById('file-upload')?.click()
+                      }
                       className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <Paperclip className="h-4 w-4 text-gray-600" />
@@ -820,7 +909,9 @@ export default function InteriorDesignPage() {
                   {/* 已選擇的檔案 */}
                   {formData.file && (
                     <div className="space-y-2">
-                      <div className="text-sm font-medium text-gray-700">已選擇的檔案：</div>
+                      <div className="text-sm font-medium text-gray-700">
+                        已選擇的檔案：
+                      </div>
                       <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-3">
                           <Paperclip className="h-4 w-4 text-gray-500" />
@@ -835,7 +926,9 @@ export default function InteriorDesignPage() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => setFormData({ ...formData, file: null })}
+                          onClick={() =>
+                            setFormData({ ...formData, file: null })
+                          }
                           className="text-gray-400 hover:text-gray-600"
                         >
                           <X className="h-4 w-4" />

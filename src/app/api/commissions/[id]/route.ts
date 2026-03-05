@@ -1,7 +1,7 @@
 import { getCurrentUserId } from '@/lib/auth';
 import { db, query } from '@/lib/db';
 import { sql } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
@@ -15,14 +15,17 @@ export async function PUT(
     const userId = await getCurrentUserId(request);
 
     // 將 UUID 格式的 userId 轉換回整數 ID
-    const numericId = parseInt(userId.slice(-12), 10);
+    const numericId = Number.parseInt(userId.slice(-12), 10);
 
     const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
       numericId,
     ]);
 
     if (userResult.rows.length === 0) {
-      return NextResponse.json({ success: false, error: '用戶不存在' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: '用戶不存在' },
+        { status: 404 }
+      );
     }
 
     const userRole = userResult.rows[0].role;
@@ -53,7 +56,14 @@ export async function PUT(
     }
 
     // 驗證必填欄位
-    if (!sales_user_id || !customer_name || !product_type || !contract_date || !contract_amount || !commission_amount) {
+    if (
+      !sales_user_id ||
+      !customer_name ||
+      !product_type ||
+      !contract_date ||
+      !contract_amount ||
+      !commission_amount
+    ) {
       return NextResponse.json(
         { success: false, error: '所有欄位都是必填的' },
         { status: 400 }
@@ -133,14 +143,17 @@ export async function DELETE(
     const userId = await getCurrentUserId(request);
 
     // 將 UUID 格式的 userId 轉換回整數 ID
-    const numericId = parseInt(userId.slice(-12), 10);
+    const numericId = Number.parseInt(userId.slice(-12), 10);
 
     const userResult = await query('SELECT role FROM app_users WHERE id = $1', [
       numericId,
     ]);
 
     if (userResult.rows.length === 0) {
-      return NextResponse.json({ success: false, error: '用戶不存在' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: '用戶不存在' },
+        { status: 404 }
+      );
     }
 
     const userRole = userResult.rows[0].role;

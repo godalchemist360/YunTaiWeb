@@ -1,20 +1,26 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { NumberWithSmallDecimals } from '@/components/ui/number-with-small-decimals';
-import { FormattedNumberInput } from '@/components/ui/formatted-number-input';
 
-type LoanCalculationTarget = 'monthly-payment' | 'loan-amount' | 'loan-term' | 'interest-rate';
+type LoanCalculationTarget =
+  | 'monthly-payment'
+  | 'loan-amount'
+  | 'loan-term'
+  | 'interest-rate';
 type RepaymentMethod = 'equal-payment' | 'equal-principal';
 
 export function LoanCalculator() {
-  const [target, setTarget] = useState<LoanCalculationTarget>('monthly-payment');
-  const [repaymentMethod, setRepaymentMethod] = useState<RepaymentMethod>('equal-payment');
+  const [target, setTarget] =
+    useState<LoanCalculationTarget>('monthly-payment');
+  const [repaymentMethod, setRepaymentMethod] =
+    useState<RepaymentMethod>('equal-payment');
   const [loanAmount, setLoanAmount] = useState<string>('1000000');
   const [annualRate, setAnnualRate] = useState<string>('2.5');
   const [loanTerm, setLoanTerm] = useState<string>('30');
@@ -56,7 +62,7 @@ export function LoanCalculator() {
 
     // 公式：每月還款 = 本金 × [r(1+r)^n] / [(1+r)^n - 1]
     const factor = Math.pow(1 + monthlyRate, totalMonths);
-    return principal * (monthlyRate * factor) / (factor - 1);
+    return (principal * (monthlyRate * factor)) / (factor - 1);
   };
 
   const buildAmortizationSchedule = (params: {
@@ -72,7 +78,12 @@ export function LoanCalculator() {
     const actualMonths = Math.max(0, totalMonths - graceMonths);
     const monthlyRate = params.annualRate / 12;
 
-    if (params.principal <= 0 || params.annualRate < 0 || totalMonths <= 0 || actualMonths <= 0) {
+    if (
+      params.principal <= 0 ||
+      params.annualRate < 0 ||
+      totalMonths <= 0 ||
+      actualMonths <= 0
+    ) {
       return [];
     }
 
@@ -142,7 +153,8 @@ export function LoanCalculator() {
       for (let m = 1; m <= actualMonths; m++) {
         const period = graceMonths + m;
         const interestPaid = monthlyRate === 0 ? 0 : remaining * monthlyRate;
-        const principalPaid = m === actualMonths ? remaining : principalPerMonth;
+        const principalPaid =
+          m === actualMonths ? remaining : principalPerMonth;
         const payment = principalPaid + interestPaid;
         remaining = Math.max(0, remaining - principalPaid);
         cumulativeInterest += interestPaid;
@@ -167,24 +179,29 @@ export function LoanCalculator() {
     setErrorMessage('');
 
     // 驗證輸入
-    const principal = parseFloat(loanAmount) || 0;
-    const r = (parseFloat(annualRate) || 0) / 100;
+    const principal = Number.parseFloat(loanAmount) || 0;
+    const r = (Number.parseFloat(annualRate) || 0) / 100;
     const monthlyRate = r / 12;
-    const years = parseFloat(loanTerm) || 0;
-    const gracePeriodYears = parseFloat(gracePeriod) || 0;
+    const years = Number.parseFloat(loanTerm) || 0;
+    const gracePeriodYears = Number.parseFloat(gracePeriod) || 0;
     const totalMonths = years * 12;
     const gracePeriodMonths = gracePeriodYears * 12;
-    const payment = parseFloat(monthlyPayment) || 0;
+    const payment = Number.parseFloat(monthlyPayment) || 0;
 
     // 驗證寬限期必須小於貸款期限
     if (gracePeriodYears >= years) {
       setErrorMessage('寬限期必須小於貸款期限');
-      setCalculateResult({ value: 0, totalPayment: 0, totalInterest: 0, isValid: false });
+      setCalculateResult({
+        value: 0,
+        totalPayment: 0,
+        totalInterest: 0,
+        isValid: false,
+      });
       return;
     }
 
     // 根據計算目標驗證必需的欄位
-    let missingFields: string[] = [];
+    const missingFields: string[] = [];
 
     switch (target) {
       case 'monthly-payment': {
@@ -223,7 +240,14 @@ export function LoanCalculator() {
     // 如果有缺少的欄位，顯示錯誤訊息
     if (missingFields.length > 0) {
       setErrorMessage(`請填寫：${missingFields.join('、')}`);
-      setCalculateResult({ value: 0, totalPayment: 0, totalInterest: 0, isValid: false, gracePeriodPayment: undefined, paymentAfterGracePeriod: undefined });
+      setCalculateResult({
+        value: 0,
+        totalPayment: 0,
+        totalInterest: 0,
+        isValid: false,
+        gracePeriodPayment: undefined,
+        paymentAfterGracePeriod: undefined,
+      });
       setScheduleRows([]);
       return;
     }
@@ -247,17 +271,27 @@ export function LoanCalculator() {
           // 寬限期內：只還利息
           const gracePeriodPayment = principal * monthlyRate;
           // 寬限期後：本息平均攤還
-          const paymentAfterGracePeriod = calculateEqualPayment(principal, monthlyRate, actualTermMonths);
+          const paymentAfterGracePeriod = calculateEqualPayment(
+            principal,
+            monthlyRate,
+            actualTermMonths
+          );
 
           // 寬限期內總還款
-          const gracePeriodTotalPayment = gracePeriodPayment * gracePeriodMonths;
+          const gracePeriodTotalPayment =
+            gracePeriodPayment * gracePeriodMonths;
           // 寬限期後總還款
-          const afterGracePeriodTotalPayment = paymentAfterGracePeriod * actualTermMonths;
-          const totalPayment = gracePeriodTotalPayment + afterGracePeriodTotalPayment;
+          const afterGracePeriodTotalPayment =
+            paymentAfterGracePeriod * actualTermMonths;
+          const totalPayment =
+            gracePeriodTotalPayment + afterGracePeriodTotalPayment;
           const totalInterest = totalPayment - principal;
 
           result = {
-            value: gracePeriodMonths > 0 ? gracePeriodPayment : paymentAfterGracePeriod, // 如果有寬限期，顯示寬限期內還款；否則顯示寬限期後還款
+            value:
+              gracePeriodMonths > 0
+                ? gracePeriodPayment
+                : paymentAfterGracePeriod, // 如果有寬限期，顯示寬限期內還款；否則顯示寬限期後還款
             totalPayment,
             totalInterest,
             isValid: principal > 0 && r > 0 && years > 0 && actualTermYears > 0,
@@ -269,18 +303,26 @@ export function LoanCalculator() {
           const gracePeriodPayment = principal * monthlyRate;
           // 寬限期後：第一個月還款最多，逐月遞減
           const principalPerMonth = principal / actualTermMonths;
-          const firstMonthPaymentAfterGrace = principalPerMonth + principal * monthlyRate;
+          const firstMonthPaymentAfterGrace =
+            principalPerMonth + principal * monthlyRate;
 
           // 寬限期內總還款
-          const gracePeriodTotalPayment = gracePeriodPayment * gracePeriodMonths;
+          const gracePeriodTotalPayment =
+            gracePeriodPayment * gracePeriodMonths;
           // 寬限期後總利息 = 月利率 × 本金 × (期數 + 1) / 2
-          const afterGracePeriodTotalInterest = monthlyRate * principal * (actualTermMonths + 1) / 2;
-          const afterGracePeriodTotalPayment = principal + afterGracePeriodTotalInterest;
-          const totalPayment = gracePeriodTotalPayment + afterGracePeriodTotalPayment;
+          const afterGracePeriodTotalInterest =
+            (monthlyRate * principal * (actualTermMonths + 1)) / 2;
+          const afterGracePeriodTotalPayment =
+            principal + afterGracePeriodTotalInterest;
+          const totalPayment =
+            gracePeriodTotalPayment + afterGracePeriodTotalPayment;
           const totalInterest = totalPayment - principal;
 
           result = {
-            value: gracePeriodMonths > 0 ? gracePeriodPayment : firstMonthPaymentAfterGrace, // 如果有寬限期，顯示寬限期內還款；否則顯示寬限期後第一個月還款
+            value:
+              gracePeriodMonths > 0
+                ? gracePeriodPayment
+                : firstMonthPaymentAfterGrace, // 如果有寬限期，顯示寬限期內還款；否則顯示寬限期後第一個月還款
             totalPayment,
             totalInterest,
             isValid: principal > 0 && r > 0 && years > 0 && actualTermYears > 0,
@@ -298,7 +340,12 @@ export function LoanCalculator() {
 
         if (repaymentMethod === 'equal-payment') {
           if (monthlyRate <= 0 || actualTermMonths <= 0 || payment <= 0) {
-            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            result = {
+              value: 0,
+              totalPayment: 0,
+              totalInterest: 0,
+              isValid: false,
+            };
             break;
           }
 
@@ -308,20 +355,29 @@ export function LoanCalculator() {
           const factor = Math.pow(1 + monthlyRate, actualTermMonths);
           const denominator = monthlyRate * factor;
           if (denominator <= 0) {
-            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            result = {
+              value: 0,
+              totalPayment: 0,
+              totalInterest: 0,
+              isValid: false,
+            };
             break;
           }
-          const requiredPrincipal = payment * (factor - 1) / denominator;
+          const requiredPrincipal = (payment * (factor - 1)) / denominator;
           const paymentAfterGracePeriod = payment;
 
           // 計算寬限期內的還款（只還利息）
-          const gracePeriodPayment = gracePeriodMonths > 0 ? requiredPrincipal * monthlyRate : 0;
+          const gracePeriodPayment =
+            gracePeriodMonths > 0 ? requiredPrincipal * monthlyRate : 0;
 
           // 寬限期內總還款
-          const gracePeriodTotalPayment = gracePeriodPayment * gracePeriodMonths;
+          const gracePeriodTotalPayment =
+            gracePeriodPayment * gracePeriodMonths;
           // 寬限期後總還款
-          const afterGracePeriodTotalPayment = paymentAfterGracePeriod * actualTermMonths;
-          const totalPayment = gracePeriodTotalPayment + afterGracePeriodTotalPayment;
+          const afterGracePeriodTotalPayment =
+            paymentAfterGracePeriod * actualTermMonths;
+          const totalPayment =
+            gracePeriodTotalPayment + afterGracePeriodTotalPayment;
           const totalInterest = totalPayment - requiredPrincipal;
 
           result = {
@@ -336,21 +392,31 @@ export function LoanCalculator() {
           // 所以：本金 = 第一個月還款 / (1/期數 + 月利率)
           const ratePerMonth = 1 / actualTermMonths + monthlyRate;
           if (ratePerMonth <= 0) {
-            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            result = {
+              value: 0,
+              totalPayment: 0,
+              totalInterest: 0,
+              isValid: false,
+            };
             break;
           }
           const requiredPrincipal = payment / ratePerMonth;
           const paymentAfterGracePeriod = payment;
 
           // 計算寬限期內的還款（只還利息）
-          const gracePeriodPayment = gracePeriodMonths > 0 ? requiredPrincipal * monthlyRate : 0;
+          const gracePeriodPayment =
+            gracePeriodMonths > 0 ? requiredPrincipal * monthlyRate : 0;
 
           // 寬限期內總還款
-          const gracePeriodTotalPayment = gracePeriodPayment * gracePeriodMonths;
+          const gracePeriodTotalPayment =
+            gracePeriodPayment * gracePeriodMonths;
           // 寬限期後總利息 = 月利率 × 本金 × (期數 + 1) / 2
-          const afterGracePeriodTotalInterest = monthlyRate * requiredPrincipal * (actualTermMonths + 1) / 2;
-          const afterGracePeriodTotalPayment = requiredPrincipal + afterGracePeriodTotalInterest;
-          const totalPayment = gracePeriodTotalPayment + afterGracePeriodTotalPayment;
+          const afterGracePeriodTotalInterest =
+            (monthlyRate * requiredPrincipal * (actualTermMonths + 1)) / 2;
+          const afterGracePeriodTotalPayment =
+            requiredPrincipal + afterGracePeriodTotalInterest;
+          const totalPayment =
+            gracePeriodTotalPayment + afterGracePeriodTotalPayment;
           const totalInterest = totalPayment - requiredPrincipal;
 
           result = {
@@ -367,7 +433,12 @@ export function LoanCalculator() {
         // 反推貸款期限（年數）
         // 假設輸入的 payment 是寬限期後的還款
         if (monthlyRate <= 0 || payment <= 0 || principal <= 0) {
-          result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+          result = {
+            value: 0,
+            totalPayment: 0,
+            totalInterest: 0,
+            isValid: false,
+          };
           break;
         }
 
@@ -379,7 +450,12 @@ export function LoanCalculator() {
           // 檢查：寬限期後的每月還款必須至少大於本金×月利率，否則永遠無法還清
           const minPayment = principal * monthlyRate;
           if (payment <= minPayment) {
-            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            result = {
+              value: 0,
+              totalPayment: 0,
+              totalInterest: 0,
+              isValid: false,
+            };
             break;
           }
 
@@ -388,20 +464,31 @@ export function LoanCalculator() {
           const maxYears = 50;
           let found = false;
 
-          for (let testTotalYears = gracePeriodYears + 0.1; testTotalYears <= maxYears; testTotalYears += 0.1) {
+          for (
+            let testTotalYears = gracePeriodYears + 0.1;
+            testTotalYears <= maxYears;
+            testTotalYears += 0.1
+          ) {
             const testActualYears = testTotalYears - gracePeriodYears;
             const testActualMonths = Math.round(testActualYears * 12); // 轉換為整數月數
 
             if (testActualMonths < 1) continue;
 
             // 計算在該實際年數下，根據貸款金額和年利率，寬限期後總共需要還多少（應還款總額）
-            const monthlyPaymentAfterGrace = calculateEqualPayment(principal, monthlyRate, testActualMonths);
-            const requiredTotalPaymentAfterGrace = monthlyPaymentAfterGrace * testActualMonths;
+            const monthlyPaymentAfterGrace = calculateEqualPayment(
+              principal,
+              monthlyRate,
+              testActualMonths
+            );
+            const requiredTotalPaymentAfterGrace =
+              monthlyPaymentAfterGrace * testActualMonths;
 
             // 計算依據當前月還款，到這年份會還多少（實際還款總額）
             const actualTotalPaymentAfterGrace = payment * testActualMonths;
-            const totalRequiredPayment = gracePeriodTotalPayment + requiredTotalPaymentAfterGrace;
-            const totalActualPayment = gracePeriodTotalPayment + actualTotalPaymentAfterGrace;
+            const totalRequiredPayment =
+              gracePeriodTotalPayment + requiredTotalPaymentAfterGrace;
+            const totalActualPayment =
+              gracePeriodTotalPayment + actualTotalPaymentAfterGrace;
 
             // 如果實際還款 >= 應還款，找到了正確的年數
             if (totalActualPayment >= totalRequiredPayment) {
@@ -410,7 +497,7 @@ export function LoanCalculator() {
                 value: testTotalYears,
                 totalPayment: totalActualPayment,
                 totalInterest,
-                isValid: true
+                isValid: true,
               };
               found = true;
               break;
@@ -419,14 +506,24 @@ export function LoanCalculator() {
 
           // 如果到了50年還是不夠，表示無解
           if (!found) {
-            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            result = {
+              value: 0,
+              totalPayment: 0,
+              totalInterest: 0,
+              isValid: false,
+            };
           }
         } else {
           // 等額本金：假設輸入的是寬限期後的還款
           // 檢查：寬限期後的還款必須至少大於本金×月利率，否則永遠無法還清
           const minPayment = principal * monthlyRate;
           if (payment <= minPayment) {
-            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            result = {
+              value: 0,
+              totalPayment: 0,
+              totalInterest: 0,
+              isValid: false,
+            };
             break;
           }
 
@@ -435,10 +532,16 @@ export function LoanCalculator() {
           // payment - principal * monthlyRate = principal / testActualMonths
           // testActualMonths = principal / (payment - principal * monthlyRate)
 
-          const calculatedActualMonths = principal / (payment - principal * monthlyRate);
+          const calculatedActualMonths =
+            principal / (payment - principal * monthlyRate);
 
           if (calculatedActualMonths <= 0 || calculatedActualMonths > 50 * 12) {
-            result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+            result = {
+              value: 0,
+              totalPayment: 0,
+              totalInterest: 0,
+              isValid: false,
+            };
             break;
           }
 
@@ -448,16 +551,19 @@ export function LoanCalculator() {
 
           // 驗證：計算實際總還款
           // 寬限期後總利息 = 月利率 × 本金 × (期數 + 1) / 2
-          const afterGracePeriodTotalInterest = monthlyRate * principal * (roundedActualMonths + 1) / 2;
-          const afterGracePeriodTotalPayment = principal + afterGracePeriodTotalInterest;
-          const totalPayment = gracePeriodTotalPayment + afterGracePeriodTotalPayment;
+          const afterGracePeriodTotalInterest =
+            (monthlyRate * principal * (roundedActualMonths + 1)) / 2;
+          const afterGracePeriodTotalPayment =
+            principal + afterGracePeriodTotalInterest;
+          const totalPayment =
+            gracePeriodTotalPayment + afterGracePeriodTotalPayment;
           const totalInterest = totalPayment - principal;
 
           result = {
             value: calculatedTotalYears,
             totalPayment,
             totalInterest,
-            isValid: true
+            isValid: true,
           };
         }
         break;
@@ -470,7 +576,12 @@ export function LoanCalculator() {
         const actualTermMonths = actualTermYears * 12;
 
         if (actualTermMonths <= 0 || payment <= 0 || principal <= 0) {
-          result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+          result = {
+            value: 0,
+            totalPayment: 0,
+            totalInterest: 0,
+            isValid: false,
+          };
           break;
         }
 
@@ -487,7 +598,11 @@ export function LoanCalculator() {
 
           let calculatedPayment: number;
           if (repaymentMethod === 'equal-payment') {
-            calculatedPayment = calculateEqualPayment(principal, midMonthlyRate, actualTermMonths);
+            calculatedPayment = calculateEqualPayment(
+              principal,
+              midMonthlyRate,
+              actualTermMonths
+            );
           } else {
             // 等額本金：第一個月還款
             const principalPerMonth = principal / actualTermMonths;
@@ -497,12 +612,19 @@ export function LoanCalculator() {
           if (Math.abs(calculatedPayment - payment) < tolerance) {
             // 寬限期內總還款（只還利息）
             const gracePeriodPayment = principal * midMonthlyRate;
-            const gracePeriodTotalPayment = gracePeriodPayment * gracePeriodMonths;
+            const gracePeriodTotalPayment =
+              gracePeriodPayment * gracePeriodMonths;
             // 寬限期後總還款
             const afterGracePeriodTotalPayment = payment * actualTermMonths;
-            const totalPayment = gracePeriodTotalPayment + afterGracePeriodTotalPayment;
+            const totalPayment =
+              gracePeriodTotalPayment + afterGracePeriodTotalPayment;
             const totalInterest = totalPayment - principal;
-            result = { value: mid * 100, totalPayment, totalInterest, isValid: true };
+            result = {
+              value: mid * 100,
+              totalPayment,
+              totalInterest,
+              isValid: true,
+            };
             found = true;
             break;
           }
@@ -519,30 +641,46 @@ export function LoanCalculator() {
           // 寬限期內總還款（只還利息）
           const finalMonthlyRate = finalRate / 100 / 12;
           const gracePeriodPayment = principal * finalMonthlyRate;
-          const gracePeriodTotalPayment = gracePeriodPayment * gracePeriodMonths;
+          const gracePeriodTotalPayment =
+            gracePeriodPayment * gracePeriodMonths;
           // 寬限期後總還款
           const afterGracePeriodTotalPayment = payment * actualTermMonths;
-          const totalPayment = gracePeriodTotalPayment + afterGracePeriodTotalPayment;
+          const totalPayment =
+            gracePeriodTotalPayment + afterGracePeriodTotalPayment;
           const totalInterest = totalPayment - principal;
-          result = { value: finalRate, totalPayment, totalInterest, isValid: true };
+          result = {
+            value: finalRate,
+            totalPayment,
+            totalInterest,
+            isValid: true,
+          };
         }
         break;
       }
 
       default:
-        result = { value: 0, totalPayment: 0, totalInterest: 0, isValid: false };
+        result = {
+          value: 0,
+          totalPayment: 0,
+          totalInterest: 0,
+          isValid: false,
+        };
     }
 
     setCalculateResult(result);
 
     // 產生每月還款明細（攤還表）
     if (result.isValid) {
-      const scenarioPrincipal = target === 'loan-amount' ? result.value : principal;
-      const scenarioAnnualRate = target === 'interest-rate' ? (result.value / 100) : r;
+      const scenarioPrincipal =
+        target === 'loan-amount' ? result.value : principal;
+      const scenarioAnnualRate =
+        target === 'interest-rate' ? result.value / 100 : r;
       const scenarioYears = target === 'loan-term' ? result.value : years;
       const afterGracePayment =
         repaymentMethod === 'equal-payment'
-          ? (target === 'monthly-payment' ? (result.paymentAfterGracePeriod ?? 0) : payment)
+          ? target === 'monthly-payment'
+            ? (result.paymentAfterGracePeriod ?? 0)
+            : payment
           : undefined;
 
       setScheduleRows(
@@ -561,7 +699,7 @@ export function LoanCalculator() {
   };
 
   // 格式化數字
-  const formatNumber = (num: number, decimals: number = 2) => {
+  const formatNumber = (num: number, decimals = 2) => {
     if (!isFinite(num) || num < 0) return '0.00';
     return new Intl.NumberFormat('zh-TW', {
       minimumFractionDigits: decimals,
@@ -612,7 +750,14 @@ export function LoanCalculator() {
               onValueChange={(v) => {
                 setTarget(v as LoanCalculationTarget);
                 // 切換計算項目時，清除計算結果和錯誤訊息，但保留輸入值
-                setCalculateResult({ value: 0, totalPayment: 0, totalInterest: 0, isValid: false, gracePeriodPayment: undefined, paymentAfterGracePeriod: undefined });
+                setCalculateResult({
+                  value: 0,
+                  totalPayment: 0,
+                  totalInterest: 0,
+                  isValid: false,
+                  gracePeriodPayment: undefined,
+                  paymentAfterGracePeriod: undefined,
+                });
                 setErrorMessage('');
               }}
               className="flex flex-wrap gap-4"
@@ -645,13 +790,18 @@ export function LoanCalculator() {
           </div>
 
           {/* 輸入欄位 */}
-          <div className={`grid grid-cols-1 gap-4 ${target === 'monthly-payment' ? 'md:grid-cols-6' : 'md:grid-cols-5'}`}>
+          <div
+            className={`grid grid-cols-1 gap-4 ${target === 'monthly-payment' ? 'md:grid-cols-6' : 'md:grid-cols-5'}`}
+          >
             {/* 貸款金額 */}
             <div className="space-y-2">
               <Label htmlFor="loanAmount">貸款金額（新台幣）</Label>
               {target === 'loan-amount' ? (
                 <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                  NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.value)} />
+                  NT${' '}
+                  <NumberWithSmallDecimals
+                    text={formatNumber(calculateResult.value)}
+                  />
                 </div>
               ) : (
                 <FormattedNumberInput
@@ -669,7 +819,10 @@ export function LoanCalculator() {
               <Label htmlFor="annualRate">年利率（%）</Label>
               {target === 'interest-rate' ? (
                 <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                  <NumberWithSmallDecimals text={formatNumber(calculateResult.value, 2)} />%
+                  <NumberWithSmallDecimals
+                    text={formatNumber(calculateResult.value, 2)}
+                  />
+                  %
                 </div>
               ) : (
                 <FormattedNumberInput
@@ -687,7 +840,10 @@ export function LoanCalculator() {
               <Label htmlFor="loanTerm">貸款期限（年）</Label>
               {target === 'loan-term' ? (
                 <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                  <NumberWithSmallDecimals text={formatNumber(calculateResult.value, 1)} /> 年
+                  <NumberWithSmallDecimals
+                    text={formatNumber(calculateResult.value, 1)}
+                  />{' '}
+                  年
                 </div>
               ) : (
                 <FormattedNumberInput
@@ -718,27 +874,40 @@ export function LoanCalculator() {
                 <div className="space-y-2">
                   <Label>寬限期間每月還款</Label>
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    {calculateResult.gracePeriodPayment !== undefined && parseFloat(gracePeriod) > 0
-                      ? (
-                          <span>
-                            NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.gracePeriodPayment)} />
-                          </span>
-                        )
-                      : '無寬限'}
+                    {calculateResult.gracePeriodPayment !== undefined &&
+                    Number.parseFloat(gracePeriod) > 0 ? (
+                      <span>
+                        NT${' '}
+                        <NumberWithSmallDecimals
+                          text={formatNumber(
+                            calculateResult.gracePeriodPayment
+                          )}
+                        />
+                      </span>
+                    ) : (
+                      '無寬限'
+                    )}
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>寬限期後每月還款</Label>
                   <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-lg font-semibold text-primary">
-                    {calculateResult.paymentAfterGracePeriod !== undefined
-                      ? (
-                          <span>
-                            NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.paymentAfterGracePeriod)} />
-                          </span>
-                        )
-                      : 'NT$ 0.00'}
+                    {calculateResult.paymentAfterGracePeriod !== undefined ? (
+                      <span>
+                        NT${' '}
+                        <NumberWithSmallDecimals
+                          text={formatNumber(
+                            calculateResult.paymentAfterGracePeriod
+                          )}
+                        />
+                      </span>
+                    ) : (
+                      'NT$ 0.00'
+                    )}
                     {repaymentMethod === 'equal-principal' && (
-                      <span className="text-xs text-muted-foreground ml-2">（第一個月）</span>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        （第一個月）
+                      </span>
                     )}
                   </div>
                 </div>
@@ -776,25 +945,38 @@ export function LoanCalculator() {
           {calculateResult.isValid && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
               <div className="space-y-1">
-                <Label className="text-muted-foreground text-sm">總還款金額</Label>
+                <Label className="text-muted-foreground text-sm">
+                  總還款金額
+                </Label>
                 <div className="text-xl font-semibold">
-                  NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.totalPayment)} />
+                  NT${' '}
+                  <NumberWithSmallDecimals
+                    text={formatNumber(calculateResult.totalPayment)}
+                  />
                 </div>
               </div>
               <div className="space-y-1">
-                <Label className="text-muted-foreground text-sm">總利息支出</Label>
+                <Label className="text-muted-foreground text-sm">
+                  總利息支出
+                </Label>
                 <div className="text-xl font-semibold text-orange-600">
-                  NT$ <NumberWithSmallDecimals text={formatNumber(calculateResult.totalInterest)} />
+                  NT${' '}
+                  <NumberWithSmallDecimals
+                    text={formatNumber(calculateResult.totalInterest)}
+                  />
                 </div>
               </div>
               <div className="space-y-1">
-                <Label className="text-muted-foreground text-sm">利息佔比</Label>
+                <Label className="text-muted-foreground text-sm">
+                  利息佔比
+                </Label>
                 <div className="text-xl font-semibold">
                   <NumberWithSmallDecimals
                     text={
                       calculateResult.totalPayment > 0
                         ? (
-                            (calculateResult.totalInterest / calculateResult.totalPayment) *
+                            (calculateResult.totalInterest /
+                              calculateResult.totalPayment) *
                             100
                           ).toFixed(2)
                         : '0.00'
@@ -851,11 +1033,38 @@ export function LoanCalculator() {
                       ))}
                       <tr className="border-t bg-muted/10 [&>td]:px-3 [&>td]:py-2 [&>td]:text-center font-semibold">
                         <td>總計</td>
-                        <td>{formatInt(scheduleRows[scheduleRows.length - 1]?.period ? scheduleRows.reduce((s, r) => s + r.principalPaid, 0) : 0)}</td>
-                        <td>{formatInt(scheduleRows.reduce((s, r) => s + r.interestPaid, 0))}</td>
-                        <td>{formatInt(scheduleRows.reduce((s, r) => s + r.payment, 0))}</td>
-                        <td>{formatInt(scheduleRows[scheduleRows.length - 1]?.remainingPrincipal ?? 0)}</td>
-                        <td>{formatInt(scheduleRows[scheduleRows.length - 1]?.cumulativeInterest ?? 0)}</td>
+                        <td>
+                          {formatInt(
+                            scheduleRows[scheduleRows.length - 1]?.period
+                              ? scheduleRows.reduce(
+                                  (s, r) => s + r.principalPaid,
+                                  0
+                                )
+                              : 0
+                          )}
+                        </td>
+                        <td>
+                          {formatInt(
+                            scheduleRows.reduce((s, r) => s + r.interestPaid, 0)
+                          )}
+                        </td>
+                        <td>
+                          {formatInt(
+                            scheduleRows.reduce((s, r) => s + r.payment, 0)
+                          )}
+                        </td>
+                        <td>
+                          {formatInt(
+                            scheduleRows[scheduleRows.length - 1]
+                              ?.remainingPrincipal ?? 0
+                          )}
+                        </td>
+                        <td>
+                          {formatInt(
+                            scheduleRows[scheduleRows.length - 1]
+                              ?.cumulativeInterest ?? 0
+                          )}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -874,4 +1083,3 @@ export function LoanCalculator() {
     </div>
   );
 }
-

@@ -13,12 +13,14 @@ export default function AuthLayout({
     <div
       className="relative h-screen w-full bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: "url('/images/yourtime-bg.png')"
+        backgroundImage: "url('/images/yourtime-bg.png')",
       }}
     >
       <BackButtonSmall className="absolute top-6 left-6 z-20 text-white hover:text-amber-400" />
       <div className="flex h-full items-center justify-center">
-        <div className="flex w-full max-w-sm flex-col gap-6 px-6">{children}</div>
+        <div className="flex w-full max-w-sm flex-col gap-6 px-6">
+          {children}
+        </div>
       </div>
     </div>
   );

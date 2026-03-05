@@ -44,7 +44,7 @@ export async function GET() {
         COUNT(*) FILTER (WHERE role = 'management') as management_count
       FROM app_users
     `);
-    
+
     const stats = result.rows[0];
 
     const response = {
