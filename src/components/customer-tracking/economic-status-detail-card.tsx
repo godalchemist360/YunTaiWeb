@@ -16,10 +16,15 @@ import {
   Save,
   TrendingDown,
   TrendingUp,
+  Upload,
   X,
   XCircle,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  parseEconomicStatusFile,
+  parsedToEditFormat,
+} from '@/lib/economic-status-import';
 import {
   Cell,
   Legend,
@@ -473,6 +478,8 @@ export function EconomicStatusDetailCard({
   const [activeExpenseIndex, setActiveExpenseIndex] = useState<
     number | undefined
   >(undefined);
+  const [isImporting, setIsImporting] = useState(false);
+  const importFileInputRef = useRef<HTMLInputElement>(null);
 
   // 當卡片關閉時重置編輯狀態
   useEffect(() => {
@@ -731,6 +738,39 @@ export function EconomicStatusDetailCard({
     setEditData(transformedData);
     setIsEditing(false);
     setNewItemInputs({});
+  };
+
+  // 匯入 CSV/Excel - 完全覆蓋編輯資料
+  const handleImportClick = () => {
+    importFileInputRef.current?.click();
+  };
+
+  const handleImportFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const parsed = await parseEconomicStatusFile(file);
+      const editFormat = parsedToEditFormat(parsed);
+      setEditData((prev: any) => ({
+        ...prev,
+        income: editFormat.income,
+        expense: editFormat.expense,
+        assets: editFormat.assets,
+        liabilities: editFormat.liabilities,
+      }));
+      setNewItemInputs({});
+    } catch (err) {
+      onError?.(
+        err instanceof Error ? err.message : '匯入失敗，請確認檔案格式'
+      );
+    } finally {
+      setIsImporting(false);
+      e.target.value = '';
+    }
   };
 
   // 開始編輯
@@ -1745,11 +1785,45 @@ export function EconomicStatusDetailCard({
 
         {/* Footer with gradient background */}
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-b-2xl border-t border-gray-200">
-          <div className="flex justify-end gap-3">
+          <div
+            className={
+              isEditing
+                ? 'flex items-center justify-between gap-3'
+                : 'flex justify-end gap-3'
+            }
+          >
             {isEditing ? (
               <>
-                <button
-                  onClick={handleCancel}
+                <div className="flex items-center gap-3">
+                  <input
+                    ref={importFileInputRef}
+                    type="file"
+                    accept=".csv,.xlsx,.xls,.xlsm"
+                    onChange={handleImportFileChange}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleImportClick}
+                    disabled={isLoading || isImporting}
+                    className="flex items-center gap-2 px-6 py-3 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 disabled:bg-emerald-50 disabled:text-emerald-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isImporting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600" />
+                        匯入中...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" />
+                        匯入
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleCancel}
                   disabled={isLoading}
                   className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
                 >
@@ -1770,9 +1844,10 @@ export function EconomicStatusDetailCard({
                     <>
                       <Save className="h-4 w-4" />
                       儲存
-                    </>
-                  )}
-                </button>
+                      </>
+                    )}
+                  </button>
+                </div>
               </>
             ) : (
               <button

@@ -109,7 +109,7 @@ export function NextActionEditor({
         const response = await fetch(
           `/api/customer-interactions/${interactionId}`,
           {
-            method: 'PATCH',
+            method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
             },
@@ -121,8 +121,17 @@ export function NextActionEditor({
         );
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || '更新失敗');
+          let errorMessage = '更新失敗';
+          try {
+            const text = await response.text();
+            if (text) {
+              const errorData = JSON.parse(text);
+              errorMessage = errorData.error || errorMessage;
+            }
+          } catch {
+            // 回應體為空或非 JSON 時使用預設訊息
+          }
+          throw new Error(errorMessage);
         }
 
         // 成功後關閉對話框並觸發成功回調
