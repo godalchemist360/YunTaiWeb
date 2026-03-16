@@ -20,6 +20,7 @@ import {
   Pencil,
   Plus,
   Search,
+  Trash2,
   UserCheck,
   Users,
 } from 'lucide-react';
@@ -250,6 +251,11 @@ export default function CustomerTrackingPage() {
     isLoading?: boolean;
   }>({ isOpen: false });
 
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{
+    id: string;
+  } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   // 通知狀態管理
   const [notification, setNotification] = useState<{
     isOpen: boolean;
@@ -371,6 +377,42 @@ export default function CustomerTrackingPage() {
       title,
       message,
     });
+  };
+
+  // 刪除客戶互動記錄
+  const handleDeleteRecord = async (id: string) => {
+    try {
+      setDeleteLoading(true);
+      const response = await fetch(`/api/customer-interactions/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        let errorMessage = '刪除失敗';
+        try {
+          const text = await response.text();
+          if (text) {
+            const errorData = JSON.parse(text);
+            errorMessage = errorData.error || errorMessage;
+          }
+        } catch {
+          // 回應體為空或非 JSON 時使用預設訊息
+        }
+        throw new Error(errorMessage);
+      }
+
+      showNotification('success', '刪除成功', '客戶互動記錄已成功刪除');
+      setDeleteConfirmTarget(null);
+      await fetchCustomerInteractions(searchQuery);
+    } catch (error) {
+      showNotification(
+        'error',
+        '刪除失敗',
+        error instanceof Error ? error.message : '刪除記錄失敗'
+      );
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   return (
@@ -539,13 +581,14 @@ export default function CustomerTrackingPage() {
                           會面紀錄
                         </div>
                       </th>
+                      <th className="px-1 py-3 w-8 align-middle" />
                     </tr>
                   </thead>
                   <tbody className="bg-card divide-y divide-border">
                     {loading ? (
                       <tr>
                         <td
-                          colSpan={8}
+                          colSpan={9}
                           className="px-6 py-8 text-center text-muted-foreground"
                         >
                           載入中...
@@ -554,7 +597,7 @@ export default function CustomerTrackingPage() {
                     ) : error ? (
                       <tr>
                         <td
-                          colSpan={8}
+                          colSpan={9}
                           className="px-6 py-8 text-center text-destructive"
                         >
                           載入失敗: {error}
@@ -563,7 +606,7 @@ export default function CustomerTrackingPage() {
                     ) : statistics.total === 0 ? (
                       <tr>
                         <td
-                          colSpan={8}
+                          colSpan={9}
                           className="px-6 py-8 text-center text-muted-foreground"
                         >
                           暫無客戶互動記錄
@@ -794,6 +837,20 @@ export default function CustomerTrackingPage() {
                                 />
                               </div>
                             </td>
+                            <td className="px-1 py-4 w-8 align-middle">
+                              <div className="flex items-center justify-center">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setDeleteConfirmTarget({ id: interaction.id })
+                                  }
+                                  className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded transition-colors"
+                                  title="刪除此筆記錄"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            </td>
                           </tr>
                         );
                       })
@@ -940,6 +997,35 @@ export default function CustomerTrackingPage() {
         title={notification.title}
         message={notification.message}
       />
+
+      {/* 刪除確認提示框 */}
+      {deleteConfirmTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-card rounded-xl shadow-xl w-56 p-5">
+            <p className="text-sm font-medium text-foreground mb-5 text-center">
+              確定刪除客戶紀錄?
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmTarget(null)}
+                disabled={deleteLoading}
+                className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted rounded-lg transition-colors disabled:opacity-50"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteRecord(deleteConfirmTarget.id)}
+                disabled={deleteLoading}
+                className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {deleteLoading ? '處理中...' : '確定'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

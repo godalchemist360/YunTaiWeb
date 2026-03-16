@@ -791,8 +791,8 @@ export function EconomicStatusDetailCard({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header with gradient background */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-t-2xl">
+        {/* Header with gradient background - 主標題用較深藍 */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white bg-opacity-20 rounded-lg">
@@ -814,12 +814,12 @@ export function EconomicStatusDetailCard({
           <div className="grid grid-cols-2 gap-6">
             {/* 左側：收入和資產 */}
             <div className="space-y-6">
-              {/* 收入區域 */}
-              <div className="bg-white border-2 border-green-200 rounded-xl shadow-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-green-500 to-green-600 px-4 py-3">
+              {/* 收入區域 - 四分區用較淺藍 */}
+              <div className="bg-white border-2 border-blue-200 rounded-xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-400 to-blue-500 px-4 py-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-800 bg-opacity-30 rounded-lg">
+                      <div className="p-2 bg-blue-800 bg-opacity-30 rounded-lg">
                         <TrendingUp className="h-5 w-5 text-white" />
                       </div>
                       <h4 className="text-lg font-bold text-white">
@@ -856,7 +856,7 @@ export function EconomicStatusDetailCard({
                         return (
                           <div
                             key={key}
-                            className="flex items-center justify-between py-3 px-4 bg-green-50 rounded-lg border border-green-100 hover:bg-green-100 transition-colors"
+                            className="flex items-center justify-between py-3 px-4 bg-blue-50 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors"
                           >
                             <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">
                               {key}
@@ -873,11 +873,11 @@ export function EconomicStatusDetailCard({
                                       e.target.value
                                     )
                                   }
-                                  className="w-28 px-3 py-2 text-sm border border-green-300 rounded-lg text-right focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                  className="w-28 px-3 py-2 text-sm border border-blue-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   placeholder="0"
                                 />
                               ) : (
-                                <span className="text-sm font-bold text-green-700 bg-white px-3 py-1 rounded-lg border border-green-200">
+                                <span className="text-sm font-bold text-blue-700 bg-white px-3 py-1 rounded-lg border border-blue-200">
                                   {value}
                                 </span>
                               )}
@@ -898,7 +898,7 @@ export function EconomicStatusDetailCard({
 
                   {/* 新增收入項目 */}
                   {isEditing && (
-                    <div className="mt-4 pt-4 border-t border-green-200">
+                    <div className="mt-4 pt-4 border-t border-blue-200">
                       <button
                         onClick={() => {
                           const inputKey = `income-${Date.now()}`;
@@ -907,7 +907,7 @@ export function EconomicStatusDetailCard({
                             [inputKey]: { name: '', value: '' },
                           }));
                         }}
-                        className="flex items-center gap-2 text-green-600 hover:text-green-700 text-sm font-medium bg-green-50 hover:bg-green-100 px-4 py-2 rounded-lg border border-green-200 transition-colors"
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg border border-blue-200 transition-colors"
                       >
                         <Plus className="h-4 w-4" />
                         新增收入項目
@@ -919,7 +919,7 @@ export function EconomicStatusDetailCard({
                         .map((inputKey) => (
                           <div
                             key={inputKey}
-                            className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg"
+                            className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
                           >
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
@@ -938,7 +938,7 @@ export function EconomicStatusDetailCard({
                                       },
                                     }))
                                   }
-                                  className="w-full px-3 py-2 border border-green-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                  className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   placeholder="請輸入項目名稱"
                                 />
                               </div>
@@ -958,7 +958,7 @@ export function EconomicStatusDetailCard({
                                       },
                                     }))
                                   }
-                                  className="w-full px-3 py-2 border border-green-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                  className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   placeholder="0"
                                 />
                               </div>
@@ -966,7 +966,7 @@ export function EconomicStatusDetailCard({
                             <div className="flex gap-3 mt-4">
                               <button
                                 onClick={() => addNewItem('income', inputKey)}
-                                className="flex items-center gap-2 text-green-600 hover:text-green-700 text-sm font-medium bg-green-100 hover:bg-green-200 px-4 py-2 rounded-lg border border-green-300 transition-colors"
+                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg border border-blue-300 transition-colors"
                               >
                                 <Plus className="h-4 w-4" />
                                 新增項目
@@ -992,9 +992,9 @@ export function EconomicStatusDetailCard({
                 </div>
               </div>
 
-              {/* 資產區域 */}
+              {/* 資產區域 - 四分區用較淺藍 */}
               <div className="bg-white border-2 border-blue-200 rounded-xl shadow-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
+                <div className="bg-gradient-to-r from-blue-400 to-blue-500 px-4 py-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-blue-800 bg-opacity-30 rounded-lg">
@@ -1204,12 +1204,12 @@ export function EconomicStatusDetailCard({
 
             {/* 右側：支出和負債 */}
             <div className="space-y-6">
-              {/* 支出區域 */}
-              <div className="bg-white border-2 border-purple-200 rounded-xl shadow-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-3">
+              {/* 支出區域 - 四分區用較淺藍 */}
+              <div className="bg-white border-2 border-blue-200 rounded-xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-400 to-blue-500 px-4 py-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-800 bg-opacity-30 rounded-lg">
+                      <div className="p-2 bg-blue-800 bg-opacity-30 rounded-lg">
                         <TrendingDown className="h-5 w-5 text-white" />
                       </div>
                       <h4 className="text-lg font-bold text-white">
@@ -1263,21 +1263,21 @@ export function EconomicStatusDetailCard({
                         return (
                           <div
                             key={categoryKey}
-                            className="border border-purple-200 rounded-lg overflow-hidden"
+                            className="border border-blue-200 rounded-lg overflow-hidden"
                           >
                             {/* 分類標題（可點擊展開/折疊） */}
                             <button
                               type="button"
                               onClick={() => toggleExpenseCategory(categoryKey)}
-                              className="w-full flex items-center justify-between px-4 py-2 bg-purple-50 hover:bg-purple-100 transition-colors"
+                              className="w-full flex items-center justify-between px-4 py-2 bg-blue-50 hover:bg-blue-100 transition-colors"
                             >
-                              <span className="text-sm font-semibold text-purple-800">
+                              <span className="text-sm font-semibold text-blue-800">
                                 {categoryKey}
                               </span>
                               {isCollapsed ? (
-                                <ChevronRight className="h-4 w-4 text-purple-600" />
+                                <ChevronRight className="h-4 w-4 text-blue-600" />
                               ) : (
-                                <ChevronDown className="h-4 w-4 text-purple-600" />
+                                <ChevronDown className="h-4 w-4 text-blue-600" />
                               )}
                             </button>
 
@@ -1291,7 +1291,7 @@ export function EconomicStatusDetailCard({
                                   return (
                                     <div
                                       key={itemKey}
-                                      className="flex items-center justify-between py-2 px-3 bg-purple-50 rounded border border-purple-100 hover:bg-purple-100 transition-colors"
+                                      className="flex items-center justify-between py-2 px-3 bg-blue-50 rounded border border-blue-100 hover:bg-blue-100 transition-colors"
                                     >
                                       <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">
                                         {itemKey}
@@ -1317,11 +1317,11 @@ export function EconomicStatusDetailCard({
                                                 return newData;
                                               });
                                             }}
-                                            className="w-24 px-2 py-1 text-sm border border-purple-300 rounded text-right focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                            className="w-24 px-2 py-1 text-sm border border-blue-300 rounded text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                             placeholder="0"
                                           />
                                         ) : (
-                                          <span className="text-sm font-bold text-purple-700 bg-white px-2 py-1 rounded border border-purple-200">
+                                          <span className="text-sm font-bold text-blue-700 bg-white px-2 py-1 rounded border border-blue-200">
                                             {value}
                                           </span>
                                         )}
@@ -1352,7 +1352,7 @@ export function EconomicStatusDetailCard({
 
                   {/* 新增支出項目 */}
                   {isEditing && (
-                    <div className="mt-4 pt-4 border-t border-purple-200">
+                    <div className="mt-4 pt-4 border-t border-blue-200">
                       <button
                         onClick={() => {
                           const inputKey = `expense-${Date.now()}`;
@@ -1366,7 +1366,7 @@ export function EconomicStatusDetailCard({
                             },
                           }));
                         }}
-                        className="flex items-center gap-2 text-purple-600 hover:text-purple-700 text-sm font-medium bg-purple-50 hover:bg-purple-100 px-4 py-2 rounded-lg border border-purple-200 transition-colors"
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg border border-blue-200 transition-colors"
                       >
                         <Plus className="h-4 w-4" />
                         新增支出項目
@@ -1390,7 +1390,7 @@ export function EconomicStatusDetailCard({
                           return (
                             <div
                               key={inputKey}
-                              className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg"
+                              className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
                             >
                               <div className="grid grid-cols-1 gap-4">
                                 {/* 第一層級：分類 */}
@@ -1411,7 +1411,7 @@ export function EconomicStatusDetailCard({
                                         },
                                       }))
                                     }
-                                    className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   >
                                     <option value="">請選擇分類</option>
                                     {EXPENSE_CATEGORY_KEYS.map((cat) => (
@@ -1439,7 +1439,7 @@ export function EconomicStatusDetailCard({
                                           },
                                         }))
                                       }
-                                      className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                      className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     >
                                       <option value="">請選擇子分類</option>
                                       {subCategories.map((sub) => (
@@ -1468,7 +1468,7 @@ export function EconomicStatusDetailCard({
                                           },
                                         }))
                                       }
-                                      className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                      className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                       placeholder="請輸入自訂項目名稱"
                                     />
                                   </div>
@@ -1491,7 +1491,7 @@ export function EconomicStatusDetailCard({
                                         },
                                       }))
                                     }
-                                    className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     placeholder="0"
                                   />
                                 </div>
@@ -1501,7 +1501,7 @@ export function EconomicStatusDetailCard({
                                   onClick={() =>
                                     addNewItem('expense', inputKey)
                                   }
-                                  className="flex items-center gap-2 text-purple-600 hover:text-purple-700 text-sm font-medium bg-purple-100 hover:bg-purple-200 px-4 py-2 rounded-lg border border-purple-300 transition-colors"
+                                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg border border-blue-300 transition-colors"
                                 >
                                   <Plus className="h-4 w-4" />
                                   新增項目
@@ -1528,12 +1528,12 @@ export function EconomicStatusDetailCard({
                 </div>
               </div>
 
-              {/* 負債區域 */}
-              <div className="bg-white border-2 border-orange-200 rounded-xl shadow-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3">
+              {/* 負債區域 - 四分區用較淺藍 */}
+              <div className="bg-white border-2 border-blue-200 rounded-xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-400 to-blue-500 px-4 py-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-orange-800 bg-opacity-30 rounded-lg">
+                      <div className="p-2 bg-blue-800 bg-opacity-30 rounded-lg">
                         <X className="h-5 w-5 text-white" />
                       </div>
                       <h4 className="text-lg font-bold text-white">負債</h4>
@@ -1562,7 +1562,7 @@ export function EconomicStatusDetailCard({
                           return (
                             <div
                               key={key}
-                              className="flex items-center justify-between py-3 px-4 bg-orange-50 rounded-lg border border-orange-100 hover:bg-orange-100 transition-colors"
+                              className="flex items-center justify-between py-3 px-4 bg-blue-50 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors"
                             >
                               <span className="text-sm font-medium text-gray-700">
                                 {
@@ -1582,11 +1582,11 @@ export function EconomicStatusDetailCard({
                                       e.target.value
                                     )
                                   }
-                                  className="w-28 px-3 py-2 text-sm border border-orange-300 rounded-lg text-right focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                  className="w-28 px-3 py-2 text-sm border border-blue-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   placeholder="0"
                                 />
                               ) : (
-                                <span className="text-sm font-bold text-orange-700 bg-white px-3 py-1 rounded-lg border border-orange-200">
+                                <span className="text-sm font-bold text-blue-700 bg-white px-3 py-1 rounded-lg border border-blue-200">
                                   {value}
                                 </span>
                               )}
@@ -1604,7 +1604,7 @@ export function EconomicStatusDetailCard({
                               return (
                                 <div
                                   key={`extra-${key}`}
-                                  className="flex items-center justify-between py-3 px-4 bg-orange-50 rounded-lg border border-orange-100 hover:bg-orange-100 transition-colors"
+                                  className="flex items-center justify-between py-3 px-4 bg-blue-50 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors"
                                 >
                                   <span className="text-sm font-medium text-gray-700 flex-1 min-w-0">
                                     {key}
@@ -1621,11 +1621,11 @@ export function EconomicStatusDetailCard({
                                             e.target.value
                                           )
                                         }
-                                        className="w-28 px-3 py-2 text-sm border border-orange-300 rounded-lg text-right focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                        className="w-28 px-3 py-2 text-sm border border-blue-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         placeholder="0"
                                       />
                                     ) : (
-                                      <span className="text-sm font-bold text-orange-700 bg-white px-3 py-1 rounded-lg border border-orange-200">
+                                      <span className="text-sm font-bold text-blue-700 bg-white px-3 py-1 rounded-lg border border-blue-200">
                                         {value}
                                       </span>
                                     )}
@@ -1649,7 +1649,7 @@ export function EconomicStatusDetailCard({
 
                   {/* 新增負債項目 */}
                   {isEditing && (
-                    <div className="mt-4 pt-4 border-t border-orange-200">
+                    <div className="mt-4 pt-4 border-t border-blue-200">
                       <button
                         onClick={() => {
                           const inputKey = `liabilities-${Date.now()}`;
@@ -1658,7 +1658,7 @@ export function EconomicStatusDetailCard({
                             [inputKey]: { name: '', value: '' },
                           }));
                         }}
-                        className="flex items-center gap-2 text-orange-600 hover:text-orange-700 text-sm font-medium bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-lg border border-orange-200 transition-colors"
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg border border-blue-200 transition-colors"
                       >
                         <Plus className="h-4 w-4" />
                         新增負債項目
@@ -1670,7 +1670,7 @@ export function EconomicStatusDetailCard({
                         .map((inputKey) => (
                           <div
                             key={inputKey}
-                            className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg"
+                            className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
                           >
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
@@ -1689,7 +1689,7 @@ export function EconomicStatusDetailCard({
                                       },
                                     }))
                                   }
-                                  className="w-full px-3 py-2 border border-orange-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                  className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   placeholder="請輸入項目名稱"
                                 />
                               </div>
@@ -1709,7 +1709,7 @@ export function EconomicStatusDetailCard({
                                       },
                                     }))
                                   }
-                                  className="w-full px-3 py-2 border border-orange-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                  className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   placeholder="0"
                                 />
                               </div>
@@ -1719,7 +1719,7 @@ export function EconomicStatusDetailCard({
                                 onClick={() =>
                                   addNewItem('liabilities', inputKey)
                                 }
-                                className="flex items-center gap-2 text-orange-600 hover:text-orange-700 text-sm font-medium bg-orange-100 hover:bg-orange-200 px-4 py-2 rounded-lg border border-orange-300 transition-colors"
+                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg border border-blue-300 transition-colors"
                               >
                                 <Plus className="h-4 w-4" />
                                 新增項目
@@ -1759,7 +1759,7 @@ export function EconomicStatusDetailCard({
                 <div
                   className={`inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 ${
                     monthlyBalance >= 0
-                      ? 'text-green-700 bg-green-50 border-green-200'
+                      ? 'text-blue-700 bg-blue-50 border-blue-200'
                       : 'text-red-700 bg-red-50 border-red-200'
                   }`}
                 >
@@ -1772,7 +1772,7 @@ export function EconomicStatusDetailCard({
                 <div className="mt-3">
                   <span
                     className={`text-sm font-medium ${
-                      monthlyBalance >= 0 ? 'text-green-600' : 'text-red-600'
+                      monthlyBalance >= 0 ? 'text-blue-600' : 'text-red-600'
                     }`}
                   >
                     {monthlyBalance >= 0 ? '收入大於支出' : '支出大於收入'}
@@ -1833,7 +1833,7 @@ export function EconomicStatusDetailCard({
                 <button
                   onClick={handleSave}
                   disabled={isLoading}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   {isLoading ? (
                     <>
@@ -1852,7 +1852,7 @@ export function EconomicStatusDetailCard({
             ) : (
               <button
                 onClick={handleEdit}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 <Edit className="h-4 w-4" />
                 編輯

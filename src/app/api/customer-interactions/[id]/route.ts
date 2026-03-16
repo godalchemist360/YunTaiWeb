@@ -1,8 +1,57 @@
 export const runtime = 'nodejs';
 
-import { getCurrentUserId } from '@/lib/auth';
+import { getCurrentUserId, getCurrentUserInfo } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { NextResponse } from 'next/server';
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const userInfo = await getCurrentUserInfo(req);
+    const numericId = userInfo.numericId;
+    const userRole = userInfo.role;
+    const { id } = await params;
+
+    // 檢查記錄是否存在
+    const checkResult = await query(
+      'SELECT id, sales_user_id FROM customer_interactions WHERE id = $1',
+      [id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return NextResponse.json(
+        { error: '客戶互動記錄不存在' },
+        { status: 404 }
+      );
+    }
+
+    // 權限檢查：與 GET 一致，sales 只能刪除自己的記錄
+    if (userRole === 'sales') {
+      const row = checkResult.rows[0] as { sales_user_id: number };
+      if (row.sales_user_id !== numericId) {
+        return NextResponse.json(
+          { error: '無權限刪除此記錄' },
+          { status: 403 }
+        );
+      }
+    }
+
+    await query('DELETE FROM customer_interactions WHERE id = $1', [id]);
+
+    return NextResponse.json({
+      success: true,
+      message: '客戶互動記錄已刪除',
+    });
+  } catch (error) {
+    console.error('Error deleting customer interaction:', error);
+    return NextResponse.json(
+      { error: '刪除記錄失敗' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function PUT(
   req: Request,

@@ -338,8 +338,9 @@ async function _getCustomerInteractions(req: Request) {
     }
 
     if (q?.trim()) {
+      // 業務員 ID 支援零填充格式比對（如 000011），LPAD 將 11 轉為 000011
       whereConditions.push(
-        `(customer_name ILIKE $${paramIndex} OR COALESCE(sales_user_name, '') ILIKE $${paramIndex} OR sales_user_id::text ILIKE $${paramIndex})`
+        `(customer_name ILIKE $${paramIndex} OR COALESCE(sales_user_name, '') ILIKE $${paramIndex} OR sales_user_id::text ILIKE $${paramIndex} OR LPAD(sales_user_id::text, 6, '0') ILIKE $${paramIndex})`
       );
       params.push(`%${q}%`);
       paramIndex++;
@@ -371,6 +372,7 @@ async function _getCustomerInteractions(req: Request) {
           created_at
         FROM customer_interactions
         ${whereSQL}
+        ORDER BY updated_at DESC NULLS LAST
         LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
       ),
       count_query AS (
